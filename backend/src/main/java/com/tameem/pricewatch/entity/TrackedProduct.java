@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Table(name="tracked_product")
 public class TrackedProduct {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     @Column(length = 300, nullable = false)
     private String name;

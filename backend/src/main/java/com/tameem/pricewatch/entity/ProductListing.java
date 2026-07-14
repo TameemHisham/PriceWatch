@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 @Table(name = "product_listing", uniqueConstraints = @UniqueConstraint(columnNames = {"tracked_product_id", "store"}))
 public class ProductListing {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tracked_product_id", nullable = false)
-    private TrackedProduct trackedProductId;
+    private TrackedProduct trackedProduct;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Store store;
@@ -37,12 +37,12 @@ public class ProductListing {
         this.id = id;
     }
 
-    public TrackedProduct getTrackedProductId() {
-        return trackedProductId;
+    public TrackedProduct getTrackedProduct() {
+        return trackedProduct;
     }
 
-    public void setTrackedProductId(TrackedProduct trackedProductId) {
-        this.trackedProductId = trackedProductId;
+    public void setTrackedProduct(TrackedProduct trackedProduct) {
+        this.trackedProduct = trackedProduct;
     }
 
     public Store getStore() {

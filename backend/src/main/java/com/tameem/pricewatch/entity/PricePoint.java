@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 public class PricePoint {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_listing_id", nullable = false)
-    private ProductListing productListingId;
+    private ProductListing productListing;
 
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
@@ -32,12 +32,12 @@ public class PricePoint {
         this.id = id;
     }
 
-    public ProductListing getProductListingId() {
-        return productListingId;
+    public ProductListing getProductListing() {
+        return productListing;
     }
 
-    public void setProductListingId(ProductListing productListingId) {
-        this.productListingId = productListingId;
+    public void setProductListing(ProductListing productListing) {
+        this.productListing = productListing;
     }
 
     public BigDecimal getPrice() {

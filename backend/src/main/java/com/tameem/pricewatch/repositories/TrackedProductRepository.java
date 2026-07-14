@@ -3,5 +3,4 @@ package com.tameem.pricewatch.repositories;
 import com.tameem.pricewatch.entity.TrackedProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TrackedPriceRepository extends JpaRepository<TrackedProduct, Long> {
-}
+public interface TrackedProductRepository extends JpaRepository<TrackedProduct, Long> {}
