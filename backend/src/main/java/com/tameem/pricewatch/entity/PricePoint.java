@@ -3,6 +3,7 @@ package com.tameem.pricewatch.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,7 +21,7 @@ public class PricePoint {
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
     @Column(nullable = false, name = "checked_at")
-    private LocalDateTime checkedAt;
+    private Instant checkedAt;
 
     public PricePoint() {}
 
@@ -48,11 +49,11 @@ public class PricePoint {
         this.price = price;
     }
 
-    public LocalDateTime getCheckedAt() {
+    public Instant getCheckedAt() {
         return checkedAt;
     }
 
-    public void setCheckedAt(LocalDateTime checkedAt) {
+    public void setCheckedAt(Instant checkedAt) {
         this.checkedAt = checkedAt;
     }
 

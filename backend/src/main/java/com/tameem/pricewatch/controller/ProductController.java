@@ -1,9 +1,10 @@
 package com.tameem.pricewatch.controller;
 
 
-import com.tameem.pricewatch.entity.TrackedProduct;
-import com.tameem.pricewatch.service.TrackRequest;
+import com.tameem.pricewatch.dto.TrackedProductResponse;
+import com.tameem.pricewatch.dto.TrackRequest;
 import com.tameem.pricewatch.service.TrackedProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,20 +24,20 @@ public class ProductController {
 
 
     @PostMapping("/tracked-products")
-    public ResponseEntity<TrackedProduct> trackProduct(@RequestBody TrackRequest request) {
+    public ResponseEntity<TrackedProductResponse> trackProduct(@RequestBody @Valid TrackRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(trackedProductService.trackProduct(request.url()));
     }
     @PostMapping("/tracked-products/{id}/refresh")
-    public ResponseEntity<TrackedProduct> refreshProduct(@PathVariable long id) {
+    public ResponseEntity<TrackedProductResponse> refreshProduct(@PathVariable long id) {
         return ResponseEntity.ok(trackedProductService.reTrack(id));
     }
 
     @GetMapping("/tracked-products")
-    public List<TrackedProduct> getTrackedProducts() {
+    public List<TrackedProductResponse> getTrackedProducts() {
         return trackedProductService.getAllProducts();
     }
     @GetMapping("/tracked-products/{id}")
-    public TrackedProduct getTrackedProducts(@PathVariable long id) {
+    public TrackedProductResponse getTrackedProduct(@PathVariable long id) {
         return trackedProductService.getProduct(id);
     }
     @DeleteMapping("/tracked-products/{id}")

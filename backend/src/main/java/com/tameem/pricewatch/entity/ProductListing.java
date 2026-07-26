@@ -3,7 +3,7 @@ package com.tameem.pricewatch.entity;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "product_listing", uniqueConstraints = @UniqueConstraint(columnNames = {"tracked_product_id", "store"}))
@@ -23,9 +23,9 @@ public class ProductListing {
     @Column(length = 50, nullable = false)
     private String currency;
     @Column(nullable = true, name = "last_checked")
-    private LocalDateTime lastChecked;
+    private Instant lastChecked;
     @Column(nullable = false, name = "created_at")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public ProductListing() {}
 
@@ -69,24 +69,24 @@ public class ProductListing {
         this.currency = currency;
     }
 
-    public LocalDateTime getLastChecked() {
+    public Instant getLastChecked() {
         return lastChecked;
     }
 
-    public void setLastChecked(LocalDateTime lastChecked) {
+    public void setLastChecked(Instant lastChecked) {
         this.lastChecked = lastChecked;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
     @PrePersist
     public void onPrePersist() {
-        this.setCreatedAt(LocalDateTime.now());
+        this.setCreatedAt(Instant.now());
     }
 
 

@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PricePointRepository extends JpaRepository<PricePoint,Long> {
     void deleteByProductListing(ProductListing productListing);
+
+    PricePoint findTopByProductListingOrderByCheckedAtDesc(ProductListing productListing);
 }

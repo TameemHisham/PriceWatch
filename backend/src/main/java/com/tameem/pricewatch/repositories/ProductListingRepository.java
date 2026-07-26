@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ProductListingRepository extends JpaRepository<ProductListing, Long> {
     List<ProductListing> findByTrackedProduct(TrackedProduct trackedProduct);
+
+    int countByTrackedProduct(TrackedProduct savedProduct);
 }

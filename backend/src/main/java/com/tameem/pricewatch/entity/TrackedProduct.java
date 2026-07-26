@@ -3,7 +3,7 @@ package com.tameem.pricewatch.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name="tracked_product")
@@ -20,7 +20,7 @@ public class TrackedProduct {
     @Column(precision = 10, scale = 2, nullable = true, name = "target_price")
     private BigDecimal targetPrice;
     @Column(nullable = false, name = "created_at")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     @Column(length = 2083, nullable = true, name = "image_url")
     private String imageUrl;
 
@@ -74,19 +74,19 @@ public class TrackedProduct {
         this.targetPrice = targetPrice;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
 
     @PrePersist
     public void onPrePersist() {
-        this.setCreatedAt(LocalDateTime.now());
+        this.setCreatedAt(Instant.now());
     }
 
 }

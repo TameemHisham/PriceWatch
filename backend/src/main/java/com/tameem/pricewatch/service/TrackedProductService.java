@@ -1,5 +1,6 @@
 package com.tameem.pricewatch.service;
 
+import com.tameem.pricewatch.dto.TrackedProductResponse;
 import com.tameem.pricewatch.entity.PricePoint;
 import com.tameem.pricewatch.entity.ProductListing;
 import com.tameem.pricewatch.entity.Store;
@@ -12,7 +13,9 @@ import com.tameem.pricewatch.scraper.ProductScraper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -34,7 +37,7 @@ public class TrackedProductService {
     }
 
     @Transactional
-    public TrackedProduct trackProduct(String url) {
+    public TrackedProductResponse trackProduct(String url) {
         ProductData productData = productScraper.scrape(url);
 
         TrackedProduct product = new TrackedProduct();
@@ -52,20 +55,26 @@ public class TrackedProductService {
         PricePoint pricePoint = new PricePoint();
         pricePoint.setProductListing(savedListing);
         pricePoint.setPrice(productData.price());
-        pricePoint.setCheckedAt(LocalDateTime.now());
+        pricePoint.setCheckedAt(Instant.now());
         pricePointRepository.save(pricePoint);
-
-        return savedProduct;
+        return this.toResponse(savedProduct);
     }
-    public List<TrackedProduct> getAllProducts() {
-        return trackedProductRepository.findAll();
+    public List<TrackedProductResponse> getAllProducts() {
+        List<TrackedProductResponse> products  = new ArrayList<TrackedProductResponse>();
+        for (TrackedProduct product : trackedProductRepository.findAll()) {
+            products.add(this.toResponse(product));
+        }
+        return products;
     }
-    public TrackedProduct getProduct(long id) {
+    public TrackedProductResponse getProduct(long id) {
+        return this.toResponse(this.getEntity(id));
+    }
+    private TrackedProduct getEntity(long id) {
         return trackedProductRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No product with id: " + id));
     }
     @Transactional
     public void deleteProduct(long id) {
-        TrackedProduct product = getProduct(id);
+        TrackedProduct product = getEntity(id);
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
         for (ProductListing listing : listings) {
             pricePointRepository.deleteByProductListing(listing);
@@ -75,20 +84,37 @@ public class TrackedProductService {
     }
 
     @Transactional
-    public TrackedProduct reTrack(long id) {
-        TrackedProduct product = getProduct(id);
+    public TrackedProductResponse reTrack(long id) {
+        TrackedProduct product = getEntity(id);
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
         for (ProductListing listing : listings) {
             ProductData productData = productScraper.scrape(listing.getUrl());
             PricePoint pricePoint = new PricePoint();
             pricePoint.setProductListing(listing);
             pricePoint.setPrice(productData.price());
-            pricePoint.setCheckedAt(LocalDateTime.now());
+            pricePoint.setCheckedAt(Instant.now());
             pricePointRepository.save(pricePoint);
-            listing.setLastChecked(LocalDateTime.now());
+            listing.setLastChecked(Instant.now());
             productListingRepository.save(listing);
         }
-        return product;
+        return this.toResponse(product);
+    }
+    private TrackedProductResponse toResponse(TrackedProduct product) {
+        List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
+        String currency = null;
+        BigDecimal lowestPrice = null;
+        for (ProductListing listing : listings) {
+            PricePoint latest = pricePointRepository.findTopByProductListingOrderByCheckedAtDesc(listing);
+            if (latest == null) continue;
+            if (lowestPrice == null || latest.getPrice().compareTo(lowestPrice) < 0) {
+                lowestPrice = latest.getPrice();
+                currency = listing.getCurrency();
+            }
+        }
+        return new TrackedProductResponse(
+                product.getId(), product.getName(), product.getBrand(), product.getCategory(),
+                product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
+                currency, lowestPrice, listings.size());
     }
 
 }
