@@ -55,10 +55,15 @@ export default function ProductCard({
 }
 
 function formatPrice(price: number | null, currency: string | null): string {
-    return price !== null && currency !== null
-        ? new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: currency,
-          }).format(price)
-        : "——";
+    if (price === null || currency === null) return "——";
+    try {
+        return new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: currency,
+        }).format(price);
+    } catch (err) {
+        // if (err instanceof RangeError) return `${currency} ${price}`;
+        // return `UNKNOWN ${price}`;
+        return `${currency} ${price}`;
+    }
 }

@@ -10,7 +10,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [query, setQuery] = useState<string>("");
-    const [layout, setLayout] = useState<"grid" | "list">("list");
+    const [layout, setLayout] = useState<"grid" | "list">("grid");
     const navigate = useNavigate();
 
     useEffect(() => {

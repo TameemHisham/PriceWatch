@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import ProductDetail from "./pages/ProductDetail";
 import AddProduct from "./pages/AddProduct";
 import Alerts from "./pages/Alerts";
+import NotFound from "./pages/NotFound";
 
 function App() {
     const [theme, setTheme] = useState<string>(
@@ -29,6 +30,7 @@ function App() {
                     <Route path="/product/:id" element={<ProductDetail />} />
                     <Route path="/add" element={<AddProduct />} />
                     <Route path="/alerts" element={<Alerts />} />
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>
         </div>
