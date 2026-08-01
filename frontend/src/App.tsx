@@ -1,28 +1,38 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
+import { Route, Routes } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import ProductDetail from "./pages/ProductDetail";
+import AddProduct from "./pages/AddProduct";
+import Alerts from "./pages/Alerts";
 
 function App() {
-  const [theme, setTheme] = useState<string>(
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light",
-  );
-  useEffect(
-    () => document.documentElement.setAttribute("data-theme", theme),
-    [theme],
-  );
+    const [theme, setTheme] = useState<string>(
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light",
+    );
+    useEffect(
+        () => document.documentElement.setAttribute("data-theme", theme),
+        [theme],
+    );
 
-  function onThemeChange() {
-    setTheme(theme === "dark" ? "light" : "dark");
-  }
-  return (
-    <div className="app-container">
-      <Sidebar theme={theme} onThemeChange={onThemeChange} />
-      <main>
-        <h1>Hello there!!</h1>
-      </main>
-    </div>
-  );
+    function onThemeChange() {
+        setTheme(theme === "dark" ? "light" : "dark");
+    }
+    return (
+        <div className="app--container">
+            <Sidebar theme={theme} onThemeChange={onThemeChange} />
+            <main className="">
+                <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route path="/add" element={<AddProduct />} />
+                    <Route path="/alerts" element={<Alerts />} />
+                </Routes>
+            </main>
+        </div>
+    );
 }
 
 export default App;

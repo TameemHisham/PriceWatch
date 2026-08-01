@@ -1,205 +1,614 @@
 /* @import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"); */
 
 :root {
-  --hero-bg: #1f1e1d;
-  --hero-text: #faf9f5;
-  --hero-sub: rgba(250, 249, 245, 0.55);
-  --hero-good: #9fb386;
+    --hero-bg: #1f1e1d;
+    --hero-text: #faf9f5;
+    --hero-sub: rgba(250, 249, 245, 0.55);
+    --hero-good: #9fb386;
 }
 
 [data-theme="dark"] {
-  --bg: #201e1b;
-  --bg-2: #181614;
-  --surface: #2a2723;
-  --surface-2: #302c27;
-  --hover: #35302a;
-  --border: rgba(250, 249, 245, 0.08);
-  --border-2: rgba(250, 249, 245, 0.15);
-  --text: #f5f1ea;
-  --text-2: #b8afa3;
-  --text-3: #8a8177;
-  --accent: #d97757;
-  --accent-soft: color-mix(in srgb, #d97757 18%, transparent);
-  --accent-2: #8fa37b;
-  --accent-2-soft: color-mix(in srgb, #8fa37b 18%, transparent);
-  --down: #8fa37b;
-  --down-soft: color-mix(in srgb, #8fa37b 16%, transparent);
-  --up: #e2896b;
-  --up-soft: color-mix(in srgb, #e2896b 15%, transparent);
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 30px rgba(0, 0, 0, 0.28);
+    --bg: #201e1b;
+    --bg-2: #181614;
+    --surface: #2a2723;
+    --surface-2: #302c27;
+    --hover: #35302a;
+    --border: rgba(250, 249, 245, 0.08);
+    --border-2: rgba(250, 249, 245, 0.15);
+    --text: #f5f1ea;
+    --text-2: #b8afa3;
+    --text-3: #8a8177;
+    --accent: #d97757;
+    --accent-soft: color-mix(in srgb, #d97757 18%, transparent);
+    --accent-2: #8fa37b;
+    --accent-2-soft: color-mix(in srgb, #8fa37b 18%, transparent);
+    --down: #8fa37b;
+    --down-soft: color-mix(in srgb, #8fa37b 16%, transparent);
+    --up: #e2896b;
+    --up-soft: color-mix(in srgb, #e2896b 15%, transparent);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 30px rgba(0, 0, 0, 0.28);
 }
 
 [data-theme="light"] {
-  --bg: #f5f4ee;
-  --bg-2: #efede4;
-  --surface: #ffffff;
-  --surface-2: #faf9f5;
-  --hover: #f0eee6;
-  --border: rgba(31, 30, 29, 0.09);
-  --border-2: rgba(31, 30, 29, 0.16);
-  --text: #1f1e1d;
-  --text-2: #5a564e;
-  --text-3: #8c877d;
-  --accent: #d97757;
-  --accent-soft: color-mix(in srgb, #d97757 12%, transparent);
-  --accent-2: #6a7d5d;
-  --accent-2-soft: color-mix(in srgb, #6a7d5d 12%, transparent);
-  --down: #6a7d5d;
-  --down-soft: color-mix(in srgb, #6a7d5d 13%, transparent);
-  --up: #b8492f;
-  --up-soft: color-mix(in srgb, #b8492f 12%, transparent);
-  --shadow:
-    0 1px 2px rgba(31, 30, 29, 0.07), 0 12px 30px rgba(31, 30, 29, 0.09);
+    --bg: #f5f4ee;
+    --bg-2: #efede4;
+    --surface: #ffffff;
+    --surface-2: #faf9f5;
+    --hover: #f0eee6;
+    --border: rgba(31, 30, 29, 0.09);
+    --border-2: rgba(31, 30, 29, 0.16);
+    --text: #1f1e1d;
+    --text-2: #5a564e;
+    --text-3: #8c877d;
+    --accent: #d97757;
+    --accent-soft: color-mix(in srgb, #d97757 12%, transparent);
+    --accent-2: #6a7d5d;
+    --accent-2-soft: color-mix(in srgb, #6a7d5d 12%, transparent);
+    --down: #6a7d5d;
+    --down-soft: color-mix(in srgb, #6a7d5d 13%, transparent);
+    --up: #b8492f;
+    --up-soft: color-mix(in srgb, #b8492f 12%, transparent);
+    --shadow:
+        0 1px 2px rgba(31, 30, 29, 0.07), 0 12px 30px rgba(31, 30, 29, 0.09);
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html,
 body {
-  margin: 0;
-  color: var(--text);
-  background: var(--bg);
-  font-family: "Hanken Grotesk", system-ui, sans-serif;
+    margin: 0;
+    color: var(--text);
+    background: var(--bg);
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
 }
 
 input {
-  font-family: inherit;
-  outline: none;
+    font-family: inherit;
+    outline: none;
 }
 
 button {
-  font-family: inherit;
+    font-family: inherit;
 }
 
 .pw-scroll::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+    width: 0;
+    height: 0;
 }
 
 @keyframes pw-pop {
-  0% {
-    transform: scale(0.7);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.06);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.06);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 @keyframes pw-fade {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 @keyframes pw-slide {
-  from {
-    opacity: 0;
-    transform: translateX(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+    from {
+        opacity: 0;
+        transform: translateX(14px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
-.app-container {
-  display: flex;
-  flex-direction: row;
-  height: 100vh;
-  background: var(--bg);
-  color: var(--text);
-  font-family: "Hanken Grotesk", system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 1.45;
-  -webkit-font-smoothing: antialiased;
+.app--container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
 }
 
-.app-container > main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow-y: auto;
+.app--container > main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
 }
-/* ========================== Components ========================== */
+/* ==================================================== Components ==================================================== */
+
 .sidebar {
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-2);
-  /* height: 100dvh; */
-  flex: 0 0 236px;
-  gap: 4px;
-  padding: 18px 14px;
-  border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-2);
+    /* height: 100dvh; */
+    flex: 0 0 236px;
+    gap: 4px;
+    padding: 18px 14px;
+    border-right: 1px solid var(--border);
 }
 
 .sidebar--btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 9px 11px;
-  border-radius: 9px;
-  border: none;
-  cursor: pointer;
-  font-size: 13.5px;
-  font-weight: 500;
-  text-align: left;
-  transition:
-    background 0.12s,
-    color 0.12s;
-  background: transparent;
-  color: var(--text-2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 11px;
+    border-radius: 9px;
+    border: none;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-align: left;
+    transition:
+        background 0.12s,
+        color 0.12s;
+    background: transparent;
+    color: var(--text-2);
+    text-decoration: none;
+    &:hover {
+        background: var(--hover);
+        color: var(--text);
+    }
+}
+
+.sidebar--btn.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
 }
 
 .logo--container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px 16px;
 }
 .logo--icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
 }
 
 .logo--name {
-  font-size: 15.5px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+    font-size: 15.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
 }
 
 .theme--btn {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  padding: 9px 11px;
-  margin-top: 4px;
-  border-radius: 9px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-2);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 9px 11px;
+    margin-top: 4px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-2);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Segmented bar: the mask carves the box into 5 slices (70% shown, 30% gap).
+No border-radius here — the mask would clip the rounded right edge away. */
+.loader {
+    width: 120px;
+    height: 12px;
+    -webkit-mask: linear-gradient(90deg, #000 70%, #0000 0) left/20% 100%;
+    mask: linear-gradient(90deg, #000 70%, #0000 0) left/20% 100%;
+    background:
+        linear-gradient(var(--accent) 0 0) left -25% top 0 / 20% 100% no-repeat,
+        var(--surface-2);
+    animation: l7 1s infinite steps(6);
+}
+@keyframes l7 {
+    100% {
+        background-position: right -25% top 0;
+    }
+}
+
+.error {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 520px;
+    margin: 32px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--up) 35%, transparent);
+    background: var(--up-soft);
+    color: var(--up);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+/* Server messages are long and unwrapped — keep them readable and contained. */
+.error--detail {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--text-2);
+    word-break: break-word;
+}
+
+/* PRODUCT STYLING */
+
+.product--card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition:
+        transform 0.12s,
+        box-shadow 0.12s,
+        border-color 0.12s;
+    &:hover {
+        border-color: var(--border-2);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+}
+.product--card-inner {
+    flex: 1;
+    min-width: 0;
+}
+.product--image {
+    width: 60px;
+    height: 60px;
+    flex: 0 0 auto;
+    border-radius: 11px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: repeating-linear-gradient(
+        135deg,
+        var(--surface-2) 0 9px,
+        var(--bg-2) 9px 18px
+    );
+}
+.product--brand {
+    font-family: "JetBrains Mono";
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+.product--price {
+    font-family: "JetBrains Mono";
+    font-size: 18px;
+    font-weight: 600;
+}
+.product--name {
+    font-size: 14.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.product--stores {
+    font-size: 11.5px;
+    color: var(--text-2);
+}
+
+.product--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 12px;
+    /* padding: 22px 26px 48px; */
+}
+.product--list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.empty-state {
+    margin-top: 16px;
+    padding: 44px 24px;
+    border: 1px dashed var(--border-2);
+    border-radius: 16px;
+    text-align: center;
+}
+
+.empty-state--icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    border-radius: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.empty-state--title {
+    margin-bottom: 4px;
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.empty-state--description {
+    max-width: 360px;
+    margin: 0 auto;
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.header {
+    position: sticky;
+    top: 0px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 26px;
+    background: color-mix(in oklch, var(--bg) 82%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+}
+.filter--container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0px 11px;
+    height: 38px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    width: 260px;
+}
+.filter--container > input {
+    flex: 1 1 0%;
+    border-width: medium;
+    border-style: none;
+    border-color: currentcolor;
+    border-image: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 13.5px;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+}
+
+.view-toggle--button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 30px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: transparent;
+    color: var(--text-3);
+
+    cursor: pointer;
+    transition: 0.12s;
+}
+
+.view-toggle--button.active {
+    background: var(--accent);
+    color: #fff;
+}
+
+.view-toggle--button:hover:not(.active) {
+    background: var(--surface-2);
+}
+
+.view-toggle--button svg {
+    width: 16px;
+    height: 16px;
+}
+
+.header > button {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0px 15px;
+    border-radius: 9px;
+    border-width: medium;
+    border-style: none;
+    border-color: currentcolor;
+    border-image: none;
+    background: var(--accent);
+    color: rgb(255, 255, 255);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.header--desc {
+    flex: 1 1 0%;
+    min-width: 0px;
+}
+.header--title {
+    margin: 0px;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.products-header {
+    display: grid;
+    grid-template-columns: 2.4fr 1fr 1fr 1fr;
+    gap: 12px;
+
+    padding: 11px 18px;
+
+    border-bottom: 1px solid var(--border);
+
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-3);
+
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.products-header--title {
+    display: flex;
+    align-items: center;
+}
+.product-row {
+    display: grid;
+    grid-template-columns: 2.4fr 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: center;
+
+    padding: 12px 18px;
+
+    border-bottom: 1px solid var(--border);
+
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.product-row:hover {
+    background: var(--surface-2);
+}
+
+.product-row--info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.product-row--image {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+
+    border-radius: 9px;
+    border: 1px solid var(--border);
+
+    background: repeating-linear-gradient(
+        135deg,
+        var(--surface-2) 0 7px,
+        var(--bg-2) 7px 14px
+    );
+}
+
+.product-row--details {
+    min-width: 0;
+}
+
+.product-row--name {
+    font-weight: 600;
+    font-size: 13.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-row--brand {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+
+    color: var(--text-3);
+
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.product-row--price {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.product-row--price-value {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.product-row--price-indicator {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--down);
+    box-shadow: 0 0 0 3px var(--down-soft);
+}
+
+.product-row--store {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.product-row--trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+
+    width: fit-content;
+
+    padding: 3px 8px;
+
+    border-radius: 999px;
+
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+
+    color: var(--down);
+    background: var(--down-soft);
+}
+/* ==================================================== Utilities ==================================================== */
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.product--container {
+    padding: 20px 26px 40px;
+    max-width: 1400px;
 }

@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 export default function Sidebar({
   theme,
   onThemeChange,
@@ -25,7 +26,7 @@ export default function Sidebar({
         </div>
         <span className="logo--name">PriceWatch</span>
       </div>
-      <div className="sidebar--btn">
+      <NavLink to="/" end className="sidebar--btn">
         <svg
           width="17"
           height="17"
@@ -43,8 +44,8 @@ export default function Sidebar({
         </svg>
 
         <span style={{ flex: "1" }}>Dashboard</span>
-      </div>
-      <div className="sidebar--btn">
+      </NavLink>
+      <NavLink to="/alerts" className="sidebar--btn">
         <svg
           width="17"
           height="17"
@@ -60,8 +61,8 @@ export default function Sidebar({
         </svg>
 
         <span style={{ flex: "1" }}>Alerts</span>
-      </div>
-      <div className="sidebar--btn">
+      </NavLink>
+      <NavLink to="/add" className="sidebar--btn">
         <svg
           width="17"
           height="17"
@@ -78,7 +79,7 @@ export default function Sidebar({
           <line x1="8" y1="11" x2="14" y2="11"></line>
         </svg>
         <span style={{ flex: "1" }}>Add product</span>
-      </div>
+      </NavLink>
       <div style={{ flex: "1 1 0%" }}></div>
       <button className="theme--btn" onClick={onThemeChange}>
         {theme === "dark" ? (
