@@ -1,6 +1,8 @@
 package com.tameem.pricewatch.controller;
 
 
+import com.tameem.pricewatch.dto.TrackResult;
+import com.tameem.pricewatch.dto.TrackedProductDetailResponse;
 import com.tameem.pricewatch.dto.TrackedProductResponse;
 import com.tameem.pricewatch.dto.TrackRequest;
 import com.tameem.pricewatch.service.TrackedProductService;
@@ -23,23 +25,31 @@ public class ProductController {
     }
 
 
+    /** POST /api/tracked-products — track a URL. 201 when newly scraped, 200 when already tracked. */
     @PostMapping("/tracked-products")
     public ResponseEntity<TrackedProductResponse> trackProduct(@RequestBody @Valid TrackRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(trackedProductService.trackProduct(request.url()));
+        TrackResult result = trackedProductService.trackProduct(request.url());
+        // 201 when we scraped and inserted, 200 when this listing was already tracked.
+        HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+        return ResponseEntity.status(status).body(result.product());
     }
+    /** POST /api/tracked-products/{id}/refresh — re-scrape now and record a new price point. */
     @PostMapping("/tracked-products/{id}/refresh")
     public ResponseEntity<TrackedProductResponse> refreshProduct(@PathVariable long id) {
         return ResponseEntity.ok(trackedProductService.reTrack(id));
     }
 
+    /** GET /api/tracked-products — every tracked product, for the dashboard grid. */
     @GetMapping("/tracked-products")
-    public List<TrackedProductResponse> getTrackedProducts() {
+    public List<TrackedProductDetailResponse> getTrackedProducts() {
         return trackedProductService.getAllProducts();
     }
+    /** GET /api/tracked-products/{id} — one product, for the detail page. */
     @GetMapping("/tracked-products/{id}")
-    public TrackedProductResponse getTrackedProduct(@PathVariable long id) {
+    public TrackedProductDetailResponse getTrackedProduct(@PathVariable long id) {
         return trackedProductService.getProduct(id);
     }
+    /** DELETE /api/tracked-products/{id} — stop tracking; cascades to listings and price points. 204. */
     @DeleteMapping("/tracked-products/{id}")
     public ResponseEntity<Void> deleteTrackedProducts(@PathVariable long id) {
         trackedProductService.deleteProduct(id);

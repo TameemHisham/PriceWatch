@@ -43,10 +43,12 @@ public class AmazonScraper implements ProductScraper {
 //        System.out.println(data);
 //    }
 
+    /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
     private String randomUserAgent() {
         return USER_AGENTS.get(ThreadLocalRandom.current().nextInt(USER_AGENTS.size()));
     }
 
+    /** Fetches an Amazon product page and extracts title, price, currency and image. */
     public ProductData scrape(String url) {
         Document response = fetch(url);
 
@@ -72,6 +74,7 @@ public class AmazonScraper implements ProductScraper {
         return new ProductData(title, price, currency, imageUrl);
     }
 
+    /** Requests the page with browser-like headers; throws ScrapeException on any network failure. */
     public Document fetch(String url) {
         try {
             return Jsoup.connect(url)
@@ -96,6 +99,7 @@ public class AmazonScraper implements ProductScraper {
      * If wantAttribute is true, extracts the "src" attribute (for images);
      * otherwise extracts text content.
      */
+    /** Returns the first non-blank match across the selector list — layout varies, so order is fallback order. */
     private String findFirstMatch(Document doc, String[] selectors, boolean wantAttribute) {
         for (String selector : selectors) {
             Element el = doc.selectFirst(selector);
@@ -109,6 +113,7 @@ public class AmazonScraper implements ProductScraper {
         return null;
     }
 
+    /** Parses a displayed price, resolving whether comma or dot is the decimal separator. */
     private BigDecimal parsePrice(String raw) {
         if (raw == null || raw.isBlank()) return null;
         // Strip everything except digits, dot, comma - then normalise
@@ -139,6 +144,7 @@ public class AmazonScraper implements ProductScraper {
         }
     }
 
+    /** Maps the currency symbol in the price text to an ISO code, or UNKNOWN when unrecognised. */
     private String parseCurrency(String raw) {
         if (raw == null) return null;
 

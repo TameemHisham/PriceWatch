@@ -6,7 +6,12 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "product_listing", uniqueConstraints = @UniqueConstraint(columnNames = {"tracked_product_id", "store"}))
+@Table(name = "product_listing", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"tracked_product_id", "store"}),
+        // URLs are normalised before saving, so this is the real duplicate guard —
+        // it closes the race window in the service's check-then-act.
+        @UniqueConstraint(name = "uk_product_listing_url", columnNames = {"url"})
+})
 public class ProductListing {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
