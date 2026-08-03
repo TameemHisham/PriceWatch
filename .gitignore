@@ -44,3 +44,6 @@ CLAUDE.MD
 
 # Design mockup snapshot — reference only
 frontend/design/
+
+# Architecture plan — personal working document
+backend/docs/
