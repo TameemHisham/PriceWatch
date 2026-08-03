@@ -34,3 +34,5 @@ build/
 ### Secrets ###
 application-secrets.properties
 .env
+# Personal task tracker — not part of the project
+TASKS.md
