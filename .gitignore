@@ -36,3 +36,8 @@ application-secrets.properties
 .env
 # Personal task tracker — not part of the project
 TASKS.md
+
+# AI assistant instructions — personal, not part of the project
+CLAUDE.md
+CLAUDE.MD
+.claude/
