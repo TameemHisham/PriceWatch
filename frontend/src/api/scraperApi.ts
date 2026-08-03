@@ -3,8 +3,6 @@ import type { TrackRequest } from "../types/TrackRequest";
 
 const BASE = "/api/tracked-products";
 
-// Shared helper: the 4 steps for any call that returns JSON.
-// <T> = the shape we expect back, so callers get a typed result.
 // Shape of Spring's default error body. Every field is optional — a proxy or
 // gateway can fail before Spring is ever reached.
 type SpringError = {
@@ -12,9 +10,7 @@ type SpringError = {
     errors?: { defaultMessage?: string }[];
 };
 
-// The useful text lives in the BODY, not on the Response object, so it has to be
-// awaited. An error response is not guaranteed to be JSON (a dead proxy returns
-// HTML), so parsing must never throw — fall back to the status line.
+/** Pulls the readable message out of Spring's error body, falling back to the status line. */
 async function errorMessage(res: Response): Promise<string> {
     const status = `Request failed: ${res.status} ${res.statusText}`;
     try {
@@ -27,6 +23,7 @@ async function errorMessage(res: Response): Promise<string> {
     }
 }
 
+/** Fetches JSON and throws on any non-2xx — fetch itself does not reject on 4xx/5xx. */
 async function jsonRequest<T>(url: string, options?: RequestInit): Promise<T> {
     const res = await fetch(url, options);
     if (!res.ok) {
@@ -36,14 +33,14 @@ async function jsonRequest<T>(url: string, options?: RequestInit): Promise<T> {
     return (await res.json()) as T;
 }
 
-// GET /api/tracked-products  -> array of cards for the dashboard
+/** GET every tracked product for the dashboard. Pass a signal to cancel on unmount. */
 export function getTrackedProducts(
     options?: RequestInit,
 ): Promise<TrackedProductResponse[]> {
     return jsonRequest<TrackedProductResponse[]>(BASE, options);
 }
 
-// GET /api/tracked-products/{id}  -> one product for the detail page
+/** GET one tracked product by id for the detail page. Pass a signal to cancel on unmount. */
 export function getTrackedProduct(
     id: number,
     options?: RequestInit,
@@ -51,7 +48,7 @@ export function getTrackedProduct(
     return jsonRequest<TrackedProductResponse>(`${BASE}/${id}`, options);
 }
 
-// POST /api/tracked-products  -> scrape + track a new url
+/** POST a product URL to start tracking. Slow — it scrapes live. Do not abort: the insert completes anyway. */
 export function trackProduct(url: string): Promise<TrackedProductResponse> {
     const payload: TrackRequest = { url };
     return jsonRequest<TrackedProductResponse>(BASE, {
@@ -61,14 +58,14 @@ export function trackProduct(url: string): Promise<TrackedProductResponse> {
     });
 }
 
-// POST /api/tracked-products/{id}/refresh  -> re-scrape, new price point
+/** POST to re-scrape now and record a new price point. Do not abort: the write completes anyway. */
 export function refreshProduct(id: number): Promise<TrackedProductResponse> {
     return jsonRequest<TrackedProductResponse>(`${BASE}/${id}/refresh`, {
         method: "POST",
     });
 }
 
-// DELETE /api/tracked-products/{id}  -> 204, empty body (do NOT parse json)
+/** DELETE a tracked product. Returns 204 with an empty body, so no JSON parsing. */
 export async function deleteProduct(id: number): Promise<void> {
     const res = await fetch(`${BASE}/${id}`, { method: "DELETE" });
     if (!res.ok) {

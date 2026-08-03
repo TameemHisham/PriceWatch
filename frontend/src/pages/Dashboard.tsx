@@ -5,6 +5,7 @@ import ProductCard from "../components/ProductCard";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 
+/** Dashboard: fetches every tracked product, with client-side search and a grid/list toggle. */
 export default function Dashboard() {
     const [products, setProducts] = useState<TrackedProductResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(true);

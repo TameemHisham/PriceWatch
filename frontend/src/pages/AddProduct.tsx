@@ -1,9 +1,11 @@
 import { useState } from "react";
 import Header from "../components/Header";
 import { trackProduct } from "../api/scraperApi";
-import type { TrackedProductResponse } from "../types/TrackedProductResponse";
+// import type { TrackedProductResponse } from "../types/TrackedProductResponse";
 import { useNavigate } from "react-router-dom";
+import type { TrackedProductResponse } from "../types/TrackedProductResponse";
 
+/** Add Product: submits a URL to be scraped and tracked, then returns to the dashboard. */
 export default function AddProduct() {
     const [query, setQuery] = useState<string>("");
     const [submitting, setSubmitting] = useState<boolean>(false);
@@ -15,11 +17,11 @@ export default function AddProduct() {
         try {
             setSubmitting(true);
             setError(null);
-            // const newTrackedProduct: TrackedProductResponse =
-            await trackProduct(query);
-            // navigate(`/product/${newTrackedProduct.id}`);
-            setQuery("");
-            navigate(`/`);
+            const newTrackedProduct: TrackedProductResponse =
+                await trackProduct(query);
+            navigate(`/product/${newTrackedProduct.id}`);
+            // setQuery("");
+            // navigate(`/`);
         } catch (err) {
             setError((err as Error).message);
         } finally {

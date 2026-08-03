@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+/** Fixed app navigation: logo, route links, and the light/dark toggle. */
 export default function Sidebar({
   theme,
   onThemeChange,

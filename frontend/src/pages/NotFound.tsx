@@ -1,3 +1,4 @@
+/** Catch-all page for URLs that match no route. */
 export default function NotFound() {
     return (
         <div className="center" style={{ minHeight: "100vh", fontWeight: 600 }}>

@@ -7,6 +7,7 @@ import AddProduct from "./pages/AddProduct";
 import Alerts from "./pages/Alerts";
 import NotFound from "./pages/NotFound";
 
+/** App shell: owns the theme, renders the sidebar, and maps URLs to pages. */
 function App() {
     const [theme, setTheme] = useState<string>(
         window.matchMedia("(prefers-color-scheme: dark)").matches

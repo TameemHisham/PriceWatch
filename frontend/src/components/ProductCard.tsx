@@ -1,5 +1,7 @@
+import { useNavigate } from "react-router-dom";
 import type { TrackedProductResponse } from "../types/TrackedProductResponse";
 
+/** One product as a grid card or a list row, chosen by the `layout` prop. */
 export default function ProductCard({
     product,
     layout,
@@ -7,8 +9,13 @@ export default function ProductCard({
     product: TrackedProductResponse;
     layout: "grid" | "list";
 }) {
+    const navigate = useNavigate();
+
     return layout === "grid" ? (
-        <div className="product--card">
+        <div
+            className="product--card"
+            onClick={() => navigate(`/product/${product.id}`)}
+        >
             <div className="product--image">
                 {/* <img src={product.imageUrl ?? ""} alt="Image of product" /> */}
             </div>
@@ -26,7 +33,10 @@ export default function ProductCard({
             </div>
         </div>
     ) : (
-        <div className="product-row">
+        <div
+            className="product-row"
+            onClick={() => navigate(`/product/${product.id}`)}
+        >
             <div className="product-row--info">
                 <div className="product-row--image"></div>
 
@@ -54,6 +64,7 @@ export default function ProductCard({
     );
 }
 
+/** Formats a price for display, degrading to `amount CODE` when the currency is not valid ISO 4217. */
 function formatPrice(price: number | null, currency: string | null): string {
     if (price === null || currency === null) return "——";
     try {
@@ -61,7 +72,7 @@ function formatPrice(price: number | null, currency: string | null): string {
             style: "currency",
             currency: currency,
         }).format(price);
-    } catch (err) {
+    } catch {
         // if (err instanceof RangeError) return `${currency} ${price}`;
         // return `UNKNOWN ${price}`;
         return `${currency} ${price}`;
