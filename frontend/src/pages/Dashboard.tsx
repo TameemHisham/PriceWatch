@@ -129,7 +129,12 @@ export default function Dashboard() {
                         </svg>
                     </button>
                 </div>
-                <button onClick={() => navigate("/add")}>+ Add product</button>
+                <button
+                    className="header-add-product"
+                    onClick={() => navigate("/add")}
+                >
+                    + Add product
+                </button>
             </Header>
             {loading ? (
                 <div className="center">

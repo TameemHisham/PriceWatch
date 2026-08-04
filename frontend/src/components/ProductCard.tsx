@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { TrackedProductResponse } from "../types/TrackedProductResponse";
+import { formatPrice } from "../utils/format";
 
 /** One product as a grid card or a list row, chosen by the `layout` prop. */
 export default function ProductCard({
@@ -62,19 +63,4 @@ export default function ProductCard({
             <div className="product-row--trend">--</div>
         </div>
     );
-}
-
-/** Formats a price for display, degrading to `amount CODE` when the currency is not valid ISO 4217. */
-function formatPrice(price: number | null, currency: string | null): string {
-    if (price === null || currency === null) return "——";
-    try {
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: currency,
-        }).format(price);
-    } catch {
-        // if (err instanceof RangeError) return `${currency} ${price}`;
-        // return `UNKNOWN ${price}`;
-        return `${currency} ${price}`;
-    }
 }

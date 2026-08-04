@@ -1,0 +1,82 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    color: var(--text);
+    background: var(--bg);
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
+}
+
+input {
+    font-family: inherit;
+    outline: none;
+}
+
+button {
+    font-family: inherit;
+}
+
+.pw-scroll::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+@keyframes pw-pop {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.06);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes pw-fade {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes pw-slide {
+    from {
+        opacity: 0;
+        transform: translateX(14px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.app--container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+}
+
+.app--container > main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+}

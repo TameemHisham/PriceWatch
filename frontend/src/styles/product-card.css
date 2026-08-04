@@ -1,0 +1,110 @@
+/* PRODUCT STYLING */
+
+.product--card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition:
+        transform 0.12s,
+        box-shadow 0.12s,
+        border-color 0.12s;
+    &:hover {
+        border-color: var(--border-2);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+}
+.product--card-inner {
+    flex: 1;
+    min-width: 0;
+}
+.product--image {
+    width: 60px;
+    height: 60px;
+    flex: 0 0 auto;
+    border-radius: 11px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: repeating-linear-gradient(
+        135deg,
+        var(--surface-2) 0 9px,
+        var(--bg-2) 9px 18px
+    );
+}
+.product--brand {
+    font-family: "JetBrains Mono";
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+.product--price {
+    font-family: "JetBrains Mono";
+    font-size: 18px;
+    font-weight: 600;
+}
+.product--name {
+    font-size: 14.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.product--stores {
+    font-size: 11.5px;
+    color: var(--text-2);
+}
+
+.product--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 12px;
+    /* padding: 22px 26px 48px; */
+}
+.product--list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.empty-state {
+    margin-top: 16px;
+    padding: 44px 24px;
+    border: 1px dashed var(--border-2);
+    border-radius: 16px;
+    text-align: center;
+}
+
+.empty-state--icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    border-radius: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.empty-state--title {
+    margin-bottom: 4px;
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.empty-state--description {
+    max-width: 360px;
+    margin: 0 auto;
+    font-size: 13px;
+    color: var(--text-2);
+}

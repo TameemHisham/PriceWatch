@@ -1,3 +1,4 @@
+import type { TrackedProductDetailResponse } from "../types/TrackedProductDetailResponse";
 import type { TrackedProductResponse } from "../types/TrackedProductResponse";
 import type { TrackRequest } from "../types/TrackRequest";
 
@@ -37,6 +38,7 @@ async function jsonRequest<T>(url: string, options?: RequestInit): Promise<T> {
 export function getTrackedProducts(
     options?: RequestInit,
 ): Promise<TrackedProductResponse[]> {
+    // The list endpoint returns the flat DTO — no listings array.
     return jsonRequest<TrackedProductResponse[]>(BASE, options);
 }
 
@@ -44,8 +46,8 @@ export function getTrackedProducts(
 export function getTrackedProduct(
     id: number,
     options?: RequestInit,
-): Promise<TrackedProductResponse> {
-    return jsonRequest<TrackedProductResponse>(`${BASE}/${id}`, options);
+): Promise<TrackedProductDetailResponse> {
+    return jsonRequest<TrackedProductDetailResponse>(`${BASE}/${id}`, options);
 }
 
 /** POST a product URL to start tracking. Slow — it scrapes live. Do not abort: the insert completes anyway. */
@@ -59,8 +61,10 @@ export function trackProduct(url: string): Promise<TrackedProductResponse> {
 }
 
 /** POST to re-scrape now and record a new price point. Do not abort: the write completes anyway. */
-export function refreshProduct(id: number): Promise<TrackedProductResponse> {
-    return jsonRequest<TrackedProductResponse>(`${BASE}/${id}/refresh`, {
+export function refreshProduct(
+    id: number,
+): Promise<TrackedProductDetailResponse> {
+    return jsonRequest<TrackedProductDetailResponse>(`${BASE}/${id}/refresh`, {
         method: "POST",
     });
 }

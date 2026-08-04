@@ -1,0 +1,72 @@
+.add-product--container {
+    padding: 28px 26px 48px;
+    max-width: 720px;
+    margin: 0px auto;
+    width: 100%;
+}
+.add-product--form {
+    padding: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    &:focus-within {
+        border-color: var(--accent);
+    }
+}
+
+.add-product--input-container {
+    display: flex;
+    gap: 9px;
+}
+.add-product--form-label {
+    font-size: 13px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.add-product--input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: 1 1 0%;
+    height: 44px;
+    padding: 0px 13px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+}
+
+.add-product--input-wrapper svg {
+    flex-shrink: 0;
+}
+
+.add-product--input {
+    flex: 1 1 0%;
+    min-width: 0px;
+    border-style: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.add-product--input::placeholder {
+    color: var(--text-3);
+}
+
+.add-product--button {
+    height: 44px;
+    padding: 0px 20px;
+    border-radius: 10px;
+    border-style: none;
+    background: var(--accent);
+    color: rgb(255, 255, 255);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.add-product--button:hover {
+    filter: brightness(1.08);
+}
