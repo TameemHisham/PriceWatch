@@ -26,6 +26,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class TrackedProductService {
@@ -34,6 +36,7 @@ public class TrackedProductService {
     private final ProductListingRepository productListingRepository;
     private final PricePointRepository pricePointRepository;
     private final ProductScraper productScraper;
+    private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
 
     public TrackedProductService(TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
@@ -105,10 +108,10 @@ public class TrackedProductService {
     }
     /** Every tracked product as a dashboard card. Runs one query per product per listing (N+1, cached in Phase 6). */
     @Transactional(readOnly = true)
-    public List<TrackedProductDetailResponse> getAllProducts() {
-        List<TrackedProductDetailResponse> products  = new ArrayList<>();
+    public List<TrackedProductResponse> getAllProducts() {
+        List<TrackedProductResponse> products  = new ArrayList<>();
         for (TrackedProduct product : trackedProductRepository.findAll()) {
-            products.add(this.toDetailResponse(product));
+            products.add(this.toResponse(product));
         }
         return products;
     }
@@ -135,10 +138,11 @@ public class TrackedProductService {
 
     /** Re-scrapes every listing of a product and appends a new price point to each. */
     @Transactional
-    public TrackedProductResponse reTrack(long id) {
+    public TrackedProductDetailResponse reTrack(long id) {
         TrackedProduct product = getEntity(id);
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
         for (ProductListing listing : listings) {
+            try {
             ProductData productData = productScraper.scrape(listing.getUrl());
             PricePoint pricePoint = new PricePoint();
             pricePoint.setProductListing(listing);
@@ -147,8 +151,11 @@ public class TrackedProductService {
             pricePointRepository.save(pricePoint);
             listing.setLastChecked(Instant.now());
             productListingRepository.save(listing);
+            } catch (ScrapeException e) {
+                log.warn("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.getMessage());
+            }
         }
-        return this.toResponse(product);
+        return this.toDetailResponse(product);
     }
     /** Builds the card DTO, deriving the lowest current price and its currency across the product's listings. */
     private TrackedProductResponse toResponse(TrackedProduct product) {

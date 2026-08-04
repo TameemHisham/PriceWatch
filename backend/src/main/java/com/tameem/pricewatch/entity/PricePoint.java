@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
+//import java.time.LocalDateTime;
 
 @Entity
 @Table(name="price_point", indexes = @Index(columnList = "product_listing_id, checked_at"))

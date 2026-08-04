@@ -35,13 +35,13 @@ public class ProductController {
     }
     /** POST /api/tracked-products/{id}/refresh — re-scrape now and record a new price point. */
     @PostMapping("/tracked-products/{id}/refresh")
-    public ResponseEntity<TrackedProductResponse> refreshProduct(@PathVariable long id) {
+    public ResponseEntity<TrackedProductDetailResponse> refreshProduct(@PathVariable long id) {
         return ResponseEntity.ok(trackedProductService.reTrack(id));
     }
 
     /** GET /api/tracked-products — every tracked product, for the dashboard grid. */
     @GetMapping("/tracked-products")
-    public List<TrackedProductDetailResponse> getTrackedProducts() {
+    public List<TrackedProductResponse> getTrackedProducts() {
         return trackedProductService.getAllProducts();
     }
     /** GET /api/tracked-products/{id} — one product, for the detail page. */

@@ -13,5 +13,5 @@ public interface ProductListingRepository extends JpaRepository<ProductListing, 
     /** Finds a listing by its normalised URL — the duplicate check on track. */
     Optional<ProductListing> findByUrl(String url);
     /** How many stores a product is listed on. */
-    int countByTrackedProduct(TrackedProduct savedProduct);
+//    int countByTrackedProduct(TrackedProduct savedProduct);
 }
