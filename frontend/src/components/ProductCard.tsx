@@ -14,22 +14,26 @@ export default function ProductCard({
 
     return layout === "grid" ? (
         <div
-            className="product--card"
+            className="product-card"
             onClick={() => navigate(`/product/${product.id}`)}
         >
-            <div className="product--image">
+            <div className="product-card--image">
                 {/* <img src={product.imageUrl ?? ""} alt="Image of product" /> */}
             </div>
-            <div className="product--card-inner">
-                <div className="product--brand">{product.brand ?? "——"}</div>
-                {/* <div className="product--name">{product.name.slice(0, 35)}</div> */}
-                <div className="product--name">{product.name}</div>
-                <div className="product--price">
+            <div className="product-card--body">
+                <div className="product-card--brand">
+                    {product.brand ?? "——"}
+                </div>
+                {/* <div className="product-card--name">{product.name.slice(0, 35)}</div> */}
+                <div className="product-card--name">{product.name}</div>
+                <div className="product-card--price">
                     {formatPrice(product.currentPrice, product.currency)}
                 </div>
-                {/* <div className="product--trend">{}</div> */}
-                <div className="product--stores">
-                    {product.storeCount} Stores
+                {/* <div className="product-card--trend">{}</div> */}
+                <div className="product-card--stores">
+                    {product.storeCount === 1
+                        ? `${product.storeCount} Store`
+                        : `${product.storeCount} Stores`}
                 </div>
             </div>
         </div>

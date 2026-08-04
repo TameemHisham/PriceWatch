@@ -1,28 +1,31 @@
 .add-product--container {
-    padding: 28px 26px 48px;
-    max-width: 720px;
-    margin: 0px auto;
     width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 26px 48px;
 }
+
 .add-product--form {
     padding: 22px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 16px;
+
     &:focus-within {
         border-color: var(--accent);
     }
 }
 
+.add-product--label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
 .add-product--input-container {
     display: flex;
     gap: 9px;
-}
-.add-product--form-label {
-    font-size: 13px;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 8px;
 }
 
 .add-product--input-wrapper {
@@ -31,10 +34,10 @@
     gap: 9px;
     flex: 1 1 0%;
     height: 44px;
-    padding: 0px 13px;
-    border-radius: 10px;
+    padding: 0 13px;
     background: var(--surface-2);
     border: 1px solid var(--border);
+    border-radius: 10px;
 }
 
 .add-product--input-wrapper svg {
@@ -43,8 +46,8 @@
 
 .add-product--input {
     flex: 1 1 0%;
-    min-width: 0px;
-    border-style: none;
+    min-width: 0;
+    border: none;
     background: transparent;
     color: var(--text);
     font-size: 14px;
@@ -56,17 +59,95 @@
 
 .add-product--button {
     height: 44px;
-    padding: 0px 20px;
+    padding: 0 20px;
+    border: none;
     border-radius: 10px;
-    border-style: none;
     background: var(--accent);
-    color: rgb(255, 255, 255);
+    color: #fff;
     font-size: 14px;
     font-weight: 600;
-    cursor: pointer;
     white-space: nowrap;
+    cursor: pointer;
 }
 
-.add-product--button:hover {
+.add-product--button:hover:not(:disabled) {
     filter: brightness(1.08);
+}
+
+.add-product--button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+
+/* The mockup drops the form card entirely on mobile: the input and button sit
+   directly on the page background, full width, 48px tall. A card inside a
+   phone-width column is a border around the whole screen. */
+@media (max-width: 860px) {
+    .add-product--container {
+        padding: 6px 20px 40px;
+    }
+
+    .add-product--form {
+        padding: 0;
+        background: none;
+        border: none;
+    }
+
+    /* The placeholder already says what to paste. */
+    .add-product--label {
+        display: none;
+    }
+
+    .add-product--input-container {
+        flex-direction: column;
+        gap: 11px;
+    }
+
+    .add-product--container {
+        flex: 1 1 0%;
+        min-height: 0px;
+        overflow-y: auto;
+        padding: 10px 20px 120px;
+    }
+
+    /* The desktop rule sets flex: 1 1 0%, which is a *width* instruction while
+       the container is a row. Turning the container into a column makes that
+       flex-basis govern height instead, and flex-basis outranks the height
+       property — so any height set here was ignored until this reset. */
+    .add-product--input-wrapper {
+        display: flex;
+        align-items: center;
+        flex: 0 0 auto;
+        height: 52px;
+        padding: 0 13px;
+        gap: 9px;
+        border-radius: 14px;
+        background: var(--surface);
+    }
+
+    /* 16px is the threshold below which iOS Safari zooms the page on focus. */
+    .add-product--input {
+        font-size: 16px;
+    }
+
+    /* :focus-within moves to the wrapper now that the card is gone. */
+    .add-product--input-wrapper:focus-within {
+        border-color: var(--accent);
+    }
+
+    .add-product--button {
+        width: 100%;
+        height: 52px;
+        margin-top: 4px;
+        border-radius: 14px;
+        font-size: 15.5px;
+    }
+
+    /* The mockup has no hint panel on mobile — the placeholder and the button
+     already say what to do, and a dashed box repeating it eats the screen. */
+    .add-product--container .empty-state {
+        display: none;
+    }
 }

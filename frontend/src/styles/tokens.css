@@ -1,63 +1,63 @@
 /* @import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"); */
 
 :root {
-    --hero-bg: #1f1e1d;
-    --hero-text: #faf9f5;
-    --hero-sub: rgba(250, 249, 245, 0.55);
-    --hero-good: #9fb386;
+  --hero-bg: #1f1e1d;
+  --hero-text: #faf9f5;
+  --hero-sub: rgba(250, 249, 245, 0.55);
+  --hero-good: #9fb386;
 }
 
 [data-theme="dark"] {
-    --bg: #201e1b;
-    --bg-2: #181614;
-    --surface: #2a2723;
-    --surface-2: #302c27;
-    --hover: #35302a;
-    --border: rgba(250, 249, 245, 0.08);
-    --border-2: rgba(250, 249, 245, 0.15);
-    --text: #f5f1ea;
-    --text-2: #b8afa3;
-    --text-3: #8a8177;
-    --accent: #d97757;
-    --accent-soft: color-mix(in srgb, #d97757 18%, transparent);
-    --accent-2: #8fa37b;
-    --accent-2-soft: color-mix(in srgb, #8fa37b 18%, transparent);
-    --down: #8fa37b;
-    --down-soft: color-mix(in srgb, #8fa37b 16%, transparent);
-    --up: #e2896b;
-    --up-soft: color-mix(in srgb, #e2896b 15%, transparent);
-    /* Destructive actions only. Deliberately redder than --accent and --up,
+  --bg: #201e1b;
+  --bg-2: #181614;
+  --surface: #2a2723;
+  --surface-2: #302c27;
+  --hover: #35302a;
+  --border: rgba(250, 249, 245, 0.08);
+  --border-2: rgba(250, 249, 245, 0.15);
+  --text: #f5f1ea;
+  --text-2: #b8afa3;
+  --text-3: #8a8177;
+  --accent: #d97757;
+  --accent-soft: color-mix(in srgb, #d97757 18%, transparent);
+  --accent-2: #8fa37b;
+  --accent-2-soft: color-mix(in srgb, #8fa37b 18%, transparent);
+  --down: #8fa37b;
+  --down-soft: color-mix(in srgb, #8fa37b 16%, transparent);
+  --up: #e2896b;
+  --up-soft: color-mix(in srgb, #e2896b 15%, transparent);
+  /* Destructive actions only. Deliberately redder than --accent and --up,
        both of which are warm orange and mean "price", not "danger". */
-    --danger: #e0685f;
-    --danger-soft: color-mix(in srgb, #e0685f 15%, transparent);
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 30px rgba(0, 0, 0, 0.28);
+  --danger: #e0685f;
+  --danger-soft: color-mix(in srgb, #e0685f 15%, transparent);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 30px rgba(0, 0, 0, 0.28);
 }
 
 [data-theme="light"] {
-    --bg: #f5f4ee;
-    --bg-2: #efede4;
-    --surface: #ffffff;
-    --surface-2: #faf9f5;
-    --hover: #f0eee6;
-    --border: rgba(31, 30, 29, 0.09);
-    --border-2: rgba(31, 30, 29, 0.16);
-    --text: #1f1e1d;
-    --text-2: #5a564e;
-    --text-3: #8c877d;
-    --accent: #d97757;
-    --accent-soft: color-mix(in srgb, #d97757 12%, transparent);
-    --accent-2: #6a7d5d;
-    --accent-2-soft: color-mix(in srgb, #6a7d5d 12%, transparent);
-    --down: #6a7d5d;
-    --down-soft: color-mix(in srgb, #6a7d5d 13%, transparent);
-    --up: #b8492f;
-    --up-soft: color-mix(in srgb, #b8492f 12%, transparent);
-    --danger: #b3322b;
-    --danger-soft: color-mix(in srgb, #b3322b 12%, transparent);
-    --shadow:
-        0 1px 2px rgba(31, 30, 29, 0.07), 0 12px 30px rgba(31, 30, 29, 0.09);
+  --bg: #f5f4ee;
+  --bg-2: #efede4;
+  --surface: #ffffff;
+  --surface-2: #faf9f5;
+  --hover: #f0eee6;
+  --border: rgba(31, 30, 29, 0.09);
+  --border-2: rgba(31, 30, 29, 0.16);
+  --text: #1f1e1d;
+  --text-2: #5a564e;
+  --text-3: #8c877d;
+  --accent: #d97757;
+  --accent-soft: color-mix(in srgb, #d97757 12%, transparent);
+  --accent-2: #6a7d5d;
+  --accent-2-soft: color-mix(in srgb, #6a7d5d 12%, transparent);
+  --down: #6a7d5d;
+  --down-soft: color-mix(in srgb, #6a7d5d 13%, transparent);
+  --up: #b8492f;
+  --up-soft: color-mix(in srgb, #b8492f 12%, transparent);
+  --danger: #b3322b;
+  --danger-soft: color-mix(in srgb, #b3322b 12%, transparent);
+  --shadow:
+    0 1px 2px rgba(31, 30, 29, 0.07), 0 12px 30px rgba(31, 30, 29, 0.09);
 }
 
 ::selection {
-    background: var(--accent-soft);
+  background: var(--accent-soft);
 }

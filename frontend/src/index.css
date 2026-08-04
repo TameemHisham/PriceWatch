@@ -1,7 +1,3 @@
-/* Entry point only. Every rule lives in ./styles/*.css.
-   Order matters: tokens define the custom properties everything else reads,
-   base sets the reset, then components, then utilities last so they win ties. */
-
 @import "./styles/tokens.css";
 @import "./styles/base.css";
 

@@ -1,15 +1,17 @@
+/* Single-purpose helpers.  */
+
 .center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.product--container {
-    padding: 20px 26px 40px;
-    max-width: 1400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .link {
-    text-decoration: none;
-    color: var(--accent);
-    font-weight: 600;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
 }

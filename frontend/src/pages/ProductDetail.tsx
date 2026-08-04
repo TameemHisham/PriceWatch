@@ -89,7 +89,7 @@ export default function ProductDetail() {
         <div>
             <Header>
                 {/* <div className="productDetail--header"> */}
-                <Link to="/" className="dashboard-button">
+                <Link to="/" className="header--button">
                     <svg
                         width="16"
                         height="16"
@@ -103,18 +103,19 @@ export default function ProductDetail() {
                         <line x1="19" y1="12" x2="5" y2="12" />
                         <polyline points="11 18 5 12 11 6" />
                     </svg>
-                    Dashboard
+                    <span>Dashboard</span>
                 </Link>
-                <div style={{ flex: 1 }}></div>
+                <div className="header--product-name">{product?.name}</div>
+                <div className="header--spacer"></div>
                 <button
-                    className="refresh-button"
+                    className="header--button"
                     onClick={handleRefresh}
                     disabled={refreshing}
                 >
                     {/* Stroke-based like every other icon here, so it inherits the
                         button's colour through currentColor instead of painting black. */}
                     <svg
-                        className={refreshing ? "spinning" : ""}
+                        className={refreshing ? "is-spinning" : ""}
                         width="15"
                         height="15"
                         viewBox="0 0 24 24"
@@ -131,7 +132,7 @@ export default function ProductDetail() {
                     </svg>
                     <span>Reload</span>
                 </button>
-                <button className="product-card--watch-button">
+                <button className="header--button is-accent">
                     <svg
                         width="15"
                         height="15"
@@ -148,7 +149,7 @@ export default function ProductDetail() {
                     <span>Watching</span>
                 </button>
                 <button
-                    className="delete-button"
+                    className="header--button is-danger"
                     onClick={handleDelete}
                     disabled={deleting}
                 >
@@ -181,7 +182,7 @@ export default function ProductDetail() {
                     <span className="error--detail">{error}</span>
                 </div>
             ) : !product ? null : (
-                <div className="page--container">
+                <div className="page--container is-narrow">
                     <div className="product-details">
                         <div className="product-details--image">
                             {product.category && (
@@ -293,7 +294,7 @@ export default function ProductDetail() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            Visit
+                                            <span>Visit</span>
                                             <svg
                                                 width="13"
                                                 height="13"

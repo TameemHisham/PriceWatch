@@ -1,126 +1,340 @@
 .header {
-    position: sticky;
-    top: 0px;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 26px;
-    background: color-mix(in oklch, var(--bg) 82%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
-}
-.filter--container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0px 11px;
-    height: 38px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    width: 260px;
-}
-.filter--container > input {
-    flex: 1 1 0%;
-    border-width: medium;
-    border-style: none;
-    border-color: currentcolor;
-    border-image: none;
-    background: transparent;
-    color: var(--text);
-    font-size: 13.5px;
-}
-
-.view-toggle {
-    display: flex;
-    gap: 2px;
-    padding: 3px;
-
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-}
-
-.view-toggle--button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 32px;
-    height: 30px;
-
-    border: none;
-    border-radius: 7px;
-
-    background: transparent;
-    color: var(--text-3);
-
-    cursor: pointer;
-    transition: 0.12s;
-}
-
-.view-toggle--button.active {
-    background: var(--accent);
-    color: #fff;
-}
-
-.view-toggle--button:hover:not(.active) {
-    background: var(--surface-2);
-}
-
-.view-toggle--button svg {
-    width: 16px;
-    height: 16px;
-}
-
-.header-add-product {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    height: 38px;
-    padding: 0px 15px;
-    border-radius: 9px;
-    border-width: medium;
-    border-style: none;
-    border-color: currentcolor;
-    border-image: none;
-    background: var(--accent);
-    color: rgb(255, 255, 255);
-    font-size: 13.5px;
-    font-weight: 600;
-    cursor: pointer;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 26px;
+  background: color-mix(in oklch, var(--bg) 82%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
 }
 
 .header--desc {
-    flex: 1 1 0%;
-    min-width: 0px;
+  flex: 1 1 0%;
+  min-width: 0;
 }
+
 .header--title {
-    margin: 0px;
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-.products-header {
-    display: grid;
-    grid-template-columns: 2.4fr 1fr 1fr 1fr;
-    gap: 12px;
+/* Pushes everything after it to the right edge. */
+.header--spacer {
+  flex: 1;
+}
 
-    padding: 11px 18px;
+/* Mobile-only: the detail header repeats the product name, because the card
+   below it is scrolled away most of the time. Desktop already shows the name
+   as an H1 a few pixels lower, so it would just be duplication there. */
+.header--product-name {
+  display: none;
+}
 
-    border-bottom: 1px solid var(--border);
+/* ── Header buttons ────────────────────────────────────────────────── */
 
-    font-size: 11.5px;
+/* One base for every header action, neutral by default. Variants are opt-in
+   via .is-* so a new button is quiet unless it asks to be loud. Replaces the
+   old bare `.header > button` selector, which made every new button accent
+   coloured whether it wanted to be or not. */
+.header--button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    filter 0.15s;
+}
+
+.header--button:hover:not(:disabled),
+.header--button:focus-visible {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.header--button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.header--button svg {
+  flex-shrink: 0;
+}
+
+/* Primary call to action — one per page, at most. */
+.header--button.is-primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.header--button.is-primary:hover:not(:disabled),
+.header--button.is-primary:focus-visible {
+  background: var(--accent);
+  color: #fff;
+  filter: brightness(1.08);
+}
+
+/* Active state, not an action: "you are watching this". */
+.header--button.is-accent {
+  border-color: color-mix(in oklch, var(--accent) 35%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.header--button.is-accent:hover:not(:disabled),
+.header--button.is-accent:focus-visible {
+  background: var(--accent-soft);
+  color: var(--accent);
+  filter: brightness(0.97);
+}
+
+/* Destructive: neutral at rest, red only on hover/focus. A permanently red
+   button pulls the eye to the one action the user almost never wants. */
+.header--button.is-danger:hover:not(:disabled),
+.header--button.is-danger:focus-visible {
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Spin lives on the icon, not the button — on the button the label would
+   orbit with it. transform-origin is needed because SVG defaults to 0 0. */
+.header--button .is-spinning {
+  animation: spin 0.8s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* A looping spinner is exactly what this setting is about. The disabled
+   state still communicates "busy" without it. */
+@media (prefers-reduced-motion: reduce) {
+  .header--button .is-spinning {
+    animation: none;
+  }
+}
+
+/* ── Search ────────────────────────────────────────────────────────── */
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 260px;
+  height: 38px;
+  padding: 0 11px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.search-box:focus-within {
+  border-color: var(--accent);
+}
+
+.search-box--input {
+  flex: 1 1 0%;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+/* ── Grid / list toggle ────────────────────────────────────────────── */
+
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.view-toggle--button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 30px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: 0.12s;
+}
+
+.view-toggle--button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.view-toggle--button:hover:not(.active) {
+  background: var(--surface-2);
+}
+
+.view-toggle--button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .header {
+    /* Sits below the fixed top bar rather than under it — but only on home,
+       which is the only screen that has one. Elsewhere 56px would leave the
+       header floating over a dead strip. */
+    top: 56px;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 20px;
+    /* No rule and no blur: the phone layout is one continuous surface. */
+    border-bottom: none;
+    background: var(--bg);
+    backdrop-filter: none;
+  }
+
+  /* Title claims the first row on its own; controls wrap onto the second. */
+  .header--desc {
+    flex: 1 0 100%;
+  }
+
+  .header--title {
+    font-size: 28px;
+    letter-spacing: -0.02em;
+  }
+
+  /* The subtitle under a page title. */
+  .header--desc > span {
+    display: block;
+    margin-top: 1px;
+    font-size: 12.5px;
+    color: var(--text-2);
+  }
+
+  /* Dashboard only — :has(.search-box) is what distinguishes it. The page
+     title repeats the tab label, the add button repeats the FAB, and the
+     grid/list toggle has nothing to toggle: mobile is cards only. */
+  .header:has(.search-box) .header--desc,
+  .header:has(.search-box) .view-toggle,
+  .header:has(.search-box) .header--button.is-primary {
+    display: none;
+  }
+
+  /* Search gets the whole row it just freed up. */
+  .search-box {
+    flex: 1 1 100%;
+    width: auto;
+    height: 46px;
+    border-radius: 13px;
+  }
+
+  /* 16px is the threshold below which iOS Safari zooms the page on focus. */
+  .search-box--input {
+    font-size: 16px;
+  }
+
+  .app--container:not(.is-home) .header {
+    top: 0;
+  }
+
+  /* Detail header: back button, product name, actions. Buttons go icon-only
+     at every mobile width so all four still fit beside the name. */
+  .header:has(.header--product-name) {
+    gap: 8px;
+    padding: calc(12px + env(safe-area-inset-top)) 14px 10px;
+  }
+
+  .header--product-name {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
     font-weight: 600;
-    color: var(--text-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  .header:has(.header--product-name) .header--spacer {
+    display: none;
+  }
+
+  .header:has(.header--product-name) .header--button {
+    gap: 0;
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 11px;
+  }
+
+  .header:has(.header--product-name) .header--button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Add product has a header of pure text — nothing to keep pinned. */
+  .header:has(.header--desc):not(:has(.search-box)) {
+    position: static;
+    /* Mockup says 58px top; most of that is the iOS status bar, which the
+       browser hands us as an inset rather than as padding we invent. */
+    padding: calc(40px + env(safe-area-inset-top)) 20px 12px;
+  }
 }
 
-.products-header--title {
-    display: flex;
-    align-items: center;
+@media (max-width: 560px) {
+  /* Four labelled buttons will not fit. Icons carry the meaning; the label
+       stays in the DOM as the accessible name rather than being deleted. */
+  .header--button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .header--button {
+    gap: 0;
+    padding: 0 12px;
+    /* Icon-only buttons still need a real touch target. */
+    min-width: 44px;
+    height: 42px;
+    justify-content: center;
+  }
 }

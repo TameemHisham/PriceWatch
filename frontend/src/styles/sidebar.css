@@ -1,79 +1,295 @@
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    background: var(--bg-2);
-    /* height: 100dvh; */
-    flex: 0 0 236px;
-    gap: 4px;
-    padding: 18px 14px;
-    border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 236px;
+  gap: 4px;
+  padding: 18px 14px;
+  background: var(--bg-2);
+  border-right: 1px solid var(--border);
 }
 
-.sidebar--btn {
-    display: flex;
+.sidebar--button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 11px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+
+  &:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
+}
+
+/* Route links, grouped so they can detach into a bottom bar on mobile
+   while the logo and theme toggle stay in a top bar. */
+.sidebar--nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Label fills the row so the whole button is one hit area. */
+.sidebar--button > span {
+  flex: 1;
+}
+
+/* Desktop and mobile mockups disagree on two icons and one label. Rather than
+   branch in JS on a media query — which React cannot see without a resize
+   listener — both are in the DOM and CSS picks one. */
+.sidebar--icon-mobile,
+.sidebar--label-mobile {
+  display: none;
+}
+
+/* `.active` is written by React Router's NavLink — do not rename it. */
+.sidebar--button.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sidebar--logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 16px;
+}
+
+.sidebar--logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+}
+
+.sidebar--logo-name {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.sidebar--theme-button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 11px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Pushes the theme toggle to the bottom on desktop; neutralised on mobile
+   below, where the bar is horizontal. */
+.sidebar--spacer {
+  flex: 1;
+}
+
+/* ── Mobile: top bar + bottom tab bar ──────────────────────────────── */
+
+/* Both bars are position: fixed, which takes them out of flow entirely. That
+   is what lets one DOM order produce two bars at opposite edges — flex
+   ordering alone cannot split a container in two. */
+@media (max-width: 860px) {
+  .sidebar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 20;
+
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 9px 11px;
+    gap: 12px;
+
+    height: 56px;
+    padding: 0 20px;
+
+    border-right: none;
+    /* Deliberately NOT backdrop-filter: it creates a containing block for
+           fixed descendants, which would trap .sidebar--nav inside this 56px
+           bar instead of pinning it to the viewport bottom. */
+    background: var(--bg);
+  }
+
+  .sidebar--logo {
+    flex: 1;
+    padding: 0;
+  }
+
+  .sidebar--logo-icon {
+    width: 30px;
+    height: 30px;
     border-radius: 9px;
-    border: none;
-    cursor: pointer;
-    font-size: 13.5px;
-    font-weight: 500;
-    text-align: left;
-    transition:
-        background 0.12s,
-        color 0.12s;
-    background: transparent;
-    color: var(--text-2);
-    text-decoration: none;
-    &:hover {
-        background: var(--hover);
-        color: var(--text);
-    }
-}
+  }
 
-.sidebar--btn.active {
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-weight: 600;
-}
+  .sidebar--logo-name {
+    font-size: 21px;
+    letter-spacing: -0.02em;
+  }
 
-.logo--container {
-    display: flex;
+  .sidebar--spacer {
+    display: none;
+  }
+
+  /* The tab bar has no fixed children, so the blur is safe here. */
+  .sidebar--nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
-    padding: 6px 8px 16px;
-}
-.logo--icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    justify-content: space-around;
+
+    padding: 11px 24px 28px;
+    padding-bottom: max(28px, env(safe-area-inset-bottom));
+
+    border-top: 1px solid var(--border);
+    background: color-mix(in oklch, var(--bg) 88%, transparent);
+    backdrop-filter: blur(16px);
+  }
+
+  .sidebar--button {
     flex: 0 0 auto;
-}
-
-.logo--name {
-    font-size: 15.5px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-}
-
-.theme--btn {
-    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 9px;
-    width: 100%;
-    padding: 9px 11px;
-    margin-top: 4px;
-    border-radius: 9px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text-2);
-    cursor: pointer;
+    gap: 4px;
+
+    width: auto;
+    min-height: 46px;
+    padding: 6px 16px;
+
+    background: none;
+    color: var(--text-3);
+
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .sidebar--button:hover {
+    background: none;
+  }
+
+  .sidebar--button.active {
+    background: none;
+    color: var(--accent);
+  }
+
+  /* Label sits under the icon; flex: 1 from desktop would stretch it. */
+  .sidebar--button > span {
+    flex: 0 0 auto;
+  }
+
+  /* Swap to the mobile icon and label. */
+  .sidebar--icon-mobile {
+    display: block;
+  }
+
+  .sidebar--label-mobile {
+    display: inline;
+  }
+
+  /* Hide the desktop icon only on the links that ship a mobile one —
+       Alerts has a single icon and must keep it. */
+  .sidebar--button:has(.sidebar--icon-mobile) > svg:not(.sidebar--icon-mobile) {
+    display: none;
+  }
+
+  .sidebar--label-desktop,
+  .sidebar--button.is-fab > span {
+    display: none;
+  }
+
+  /* Mockup draws tab icons at 23px; the attributes on the svg say 17. */
+  .sidebar--button > svg {
+    display: block;
+    width: 29px;
+    height: 29px;
+  }
+
+  /* Add product leaves the row of tabs and becomes a raised button: a
+       rounded square, not a circle, matching the mockup. */
+  .sidebar--button.is-fab {
+    /* display:grid + place-items beats flex here: an <svg> is inline, so flex
+       centring still parks it on a text baseline a couple of pixels low.
+       Grid ignores baselines entirely. */
+    display: grid;
+    place-items: center;
+    gap: 0;
+    line-height: 0;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    border-radius: 19px;
+    background: var(--accent-2);
+    color: #fff;
+    box-shadow: 0 6px 16px var(--accent-2-soft);
+  }
+
+  .sidebar--button.is-fab > svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .sidebar--button.is-fab:hover,
+  .sidebar--button.is-fab.active {
+    background: var(--accent-2);
+    color: #fff;
+  }
+
+  /* Rounded square icon button in the top bar, 11px radius per the mockup. */
+  .sidebar--theme-button {
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    padding: 0;
+    margin-top: 0;
+    border-radius: 11px;
+    background: var(--surface);
+    font-size: 16px;
+  }
+
+  .sidebar--theme-button > span:last-child {
+    display: none;
+  }
+}
+
+/* Home is the only mobile screen with the PriceWatch bar. Elsewhere the bar
+   collapses to nothing — the nav is position: fixed, so it survives its
+   parent losing all height. */
+@media (max-width: 860px) {
+  .app--container:not(.is-home) .sidebar {
+    height: 0;
+    padding: 0;
+    border: none;
+    background: none;
+  }
+
+  .app--container:not(.is-home) .sidebar--logo,
+  .app--container:not(.is-home) .sidebar--theme-button {
+    display: none;
+  }
 }

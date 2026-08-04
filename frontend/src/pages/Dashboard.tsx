@@ -14,6 +14,20 @@ export default function Dashboard() {
     const [layout, setLayout] = useState<"grid" | "list">("grid");
     const navigate = useNavigate();
 
+    // The list layout renders different markup, not just different CSS, so a
+    // media query cannot undo it — the toggle is hidden on mobile and the
+    // layout is forced back to cards here. Listening rather than checking once
+    // covers rotation and desktop window resizing.
+    useEffect(() => {
+        const mobile = window.matchMedia("(max-width: 860px)");
+        const apply = () => {
+            if (mobile.matches) setLayout("grid");
+        };
+        apply();
+        mobile.addEventListener("change", apply);
+        return () => mobile.removeEventListener("change", apply);
+    }, []);
+
     useEffect(() => {
         const controller = new AbortController();
         const fetchData = async () => {
@@ -21,7 +35,9 @@ export default function Dashboard() {
                 setLoading(true);
                 setError(null);
                 const response: TrackedProductResponse[] =
-                    await getTrackedProducts({ signal: controller.signal });
+                    await getTrackedProducts({
+                        signal: controller.signal,
+                    });
                 setProducts(response);
             } catch (err) {
                 // Only update error state if the request wasn't intentionally aborted
@@ -46,6 +62,10 @@ export default function Dashboard() {
             products.brand?.toLowerCase().includes(query.toLowerCase()) ||
             products.category?.toLowerCase().includes(query.toLowerCase()),
     );
+    const totalStoreCount: number = products.reduce(
+        (acc, product) => product.storeCount + acc,
+        0,
+    );
     return (
         <div>
             <Header>
@@ -53,14 +73,12 @@ export default function Dashboard() {
                     <div className="header--title">Dashboard</div>
                     <span>
                         Tracking {products.length} products and{" "}
-                        {products.reduce(
-                            (acc, product) => product.storeCount + acc,
-                            0,
-                        )}{" "}
-                        stores
+                        {totalStoreCount === 1
+                            ? `${totalStoreCount} Store`
+                            : `${totalStoreCount} Stores`}
                     </span>
                 </div>
-                <div className="filter--container">
+                <div className="search-box">
                     <svg
                         width="15"
                         height="15"
@@ -74,6 +92,7 @@ export default function Dashboard() {
                         <line x1="21" y1="21" x2="16" y2="16"></line>
                     </svg>
                     <input
+                        className="search-box--input"
                         type="search"
                         name="filter"
                         id="filter"
@@ -130,10 +149,10 @@ export default function Dashboard() {
                     </button>
                 </div>
                 <button
-                    className="header-add-product"
+                    className="header--button is-primary"
                     onClick={() => navigate("/add")}
                 >
-                    + Add product
+                    <span>+ Add product</span>
                 </button>
             </Header>
             {loading ? (
@@ -178,20 +197,20 @@ export default function Dashboard() {
             ) : filtered.length === 0 ? (
                 <div className="empty-state ">no results for that search!</div>
             ) : (
-                <div className="product--container">
-                    <div className={`product--${layout}`}>
+                <div className="page--container">
+                    <div className={`product-${layout}`}>
                         {layout === "list" && (
-                            <div className="products-header">
-                                <span className="products-header--title">
+                            <div className="product-list--header">
+                                <span className="product-list--heading">
                                     Product
                                 </span>
-                                <span className="products-header--title">
+                                <span className="product-list--heading">
                                     Lowest
                                 </span>
-                                <span className="products-header--title">
+                                <span className="product-list--heading">
                                     Store
                                 </span>
-                                <span className="products-header--title">
+                                <span className="product-list--heading">
                                     Trend
                                 </span>
                             </div>

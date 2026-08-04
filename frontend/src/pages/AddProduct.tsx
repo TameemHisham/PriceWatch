@@ -48,7 +48,7 @@ export default function AddProduct() {
                     <form className="add-product--form" onSubmit={handleSubmit}>
                         <label
                             htmlFor="add-product--input"
-                            className="add-product--form-label"
+                            className="add-product--label"
                         >
                             Product link or search
                         </label>
@@ -72,7 +72,7 @@ export default function AddProduct() {
                                 <input
                                     id="add-product--input"
                                     className="add-product--input"
-                                    placeholder="https://store.com/product  ·  or a product name"
+                                    placeholder="Paste a product link"
                                     value={query}
                                     onChange={(e) => setQuery(e.target.value)}
                                     disabled={submitting}
