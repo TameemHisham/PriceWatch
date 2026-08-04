@@ -120,6 +120,49 @@
     }
 }
 
+/* Destructive, so it stays neutral at rest and only turns red on hover/focus.
+   A permanently red button in the header would pull the eye to the one action
+   the user almost never wants. */
+.header > .delete-button {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    height: 38px;
+    padding: 0 13px;
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    background: var(--surface);
+    color: var(--text-2);
+
+    font-size: 13px;
+    font-weight: 500;
+
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        border-color 0.15s,
+        color 0.15s;
+}
+
+.header > .delete-button:hover:not(:disabled),
+.header > .delete-button:focus-visible {
+    background: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+    color: var(--danger);
+}
+
+.header > .delete-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.header > .delete-button svg {
+    flex-shrink: 0;
+}
+
 /* Page body below a sticky header: content flows from the top, never centred. */
 .page--container {
     padding: 22px 26px 48px;

@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import type { TrackedProductDetailResponse } from "../types/TrackedProductDetailResponse";
-import { getTrackedProduct, refreshProduct } from "../api/scraperApi";
+import {
+    deleteProduct,
+    getTrackedProduct,
+    refreshProduct,
+} from "../api/scraperApi";
 import { formatPrice, storeColor, storeLabel } from "../utils/format";
 import Header from "../components/Header";
 
@@ -16,7 +20,8 @@ export default function ProductDetail() {
         null,
     );
     const [refreshing, setRefreshing] = useState<boolean>(false);
-
+    const [deleting, setDeleting] = useState<boolean>(false);
+    const navigate = useNavigate();
     useEffect(() => {
         if (!validId) return;
 
@@ -61,6 +66,22 @@ export default function ProductDetail() {
             if (err instanceof Error) setError(err.message);
         } finally {
             setRefreshing(false);
+        }
+    }
+    async function handleDelete() {
+        if (
+            !window.confirm(
+                "Stop tracking this product? Its price history will be deleted.",
+            )
+        )
+            return;
+        try {
+            setDeleting(true);
+            await deleteProduct(productId);
+            navigate("/");
+        } catch (err) {
+            setDeleting(false);
+            if (err instanceof Error) setError(err.message);
         }
     }
 
@@ -125,6 +146,28 @@ export default function ProductDetail() {
                     </svg>
 
                     <span>Watching</span>
+                </button>
+                <button
+                    className="delete-button"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                >
+                    <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6M14 11v6" />
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                    </svg>
+                    <span>{deleting ? "Deleting…" : "Delete"}</span>
                 </button>
                 {/* </div> */}
             </Header>

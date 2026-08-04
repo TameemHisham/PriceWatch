@@ -26,6 +26,10 @@
     --down-soft: color-mix(in srgb, #8fa37b 16%, transparent);
     --up: #e2896b;
     --up-soft: color-mix(in srgb, #e2896b 15%, transparent);
+    /* Destructive actions only. Deliberately redder than --accent and --up,
+       both of which are warm orange and mean "price", not "danger". */
+    --danger: #e0685f;
+    --danger-soft: color-mix(in srgb, #e0685f 15%, transparent);
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 30px rgba(0, 0, 0, 0.28);
 }
 
@@ -48,6 +52,8 @@
     --down-soft: color-mix(in srgb, #6a7d5d 13%, transparent);
     --up: #b8492f;
     --up-soft: color-mix(in srgb, #b8492f 12%, transparent);
+    --danger: #b3322b;
+    --danger-soft: color-mix(in srgb, #b3322b 12%, transparent);
     --shadow:
         0 1px 2px rgba(31, 30, 29, 0.07), 0 12px 30px rgba(31, 30, 29, 0.09);
 }
