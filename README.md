@@ -20,9 +20,12 @@ Working end to end today:
 - Product detail with per-store pricing
 - Duplicate detection: the same product submitted twice returns the existing record
 
+- Scheduled re-scraping — a background sweep re-checks listings on a fixed interval
+  and appends a price observation
+
 **One scraper (Amazon) is implemented.** Additional retailers, the price-history chart,
-scheduled re-scraping, and alerts are in progress. The UI deliberately shows only what
-the data supports rather than placeholder values.
+and alerts are in progress. The UI deliberately shows only what the data supports
+rather than placeholder values.
 
 ---
 
@@ -104,6 +107,30 @@ Base path `/api`.
 | `GET` | `/tracked-products/{id}` | One product with its per-store listings |
 | `POST` | `/tracked-products/{id}/refresh` | Re-scrape now, append a price point |
 | `DELETE` | `/tracked-products/{id}` | Stop tracking; cascades to listings and price points |
+
+---
+
+## Measurements
+
+Each phase of infrastructure in this project is preceded by a measurement, so the
+before/after is recorded rather than asserted. Numbers below are from this machine
+against live retailer pages, so they include real network latency.
+
+### Scheduled sweep (sequential)
+
+The scheduler selects listings whose `last_checked` is older than the interval, then
+scrapes them one at a time on a single thread. A deliberate 2s pause sits between
+requests — the interval alone is not politeness if the sweep fires N requests back to
+back.
+
+| Date | Listings swept | Wall clock | Notes |
+|---|---|---|---|
+| 2026-08-06 | 2 | 6s | 2 scrapes + one 2s inter-request pause |
+
+Sequential cost is roughly `N × (scrape latency + pause)`, so it grows linearly with
+listings and is bounded by the slowest store in the set. This table is the baseline the
+queueing work is measured against; it is expected to become the argument for it once the
+tracked set is large enough for the linear growth to hurt.
 
 ---
 
