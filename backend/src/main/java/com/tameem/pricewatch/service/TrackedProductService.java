@@ -143,14 +143,7 @@ public class TrackedProductService {
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
         for (ProductListing listing : listings) {
             try {
-            ProductData productData = productScraper.scrape(listing.getUrl());
-            PricePoint pricePoint = new PricePoint();
-            pricePoint.setProductListing(listing);
-            pricePoint.setPrice(productData.price());
-            pricePoint.setCheckedAt(Instant.now());
-            pricePointRepository.save(pricePoint);
-            listing.setLastChecked(Instant.now());
-            productListingRepository.save(listing);
+                refreshListing(listing);
             } catch (ScrapeException e) {
                 log.warn("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.getMessage());
             }
@@ -175,7 +168,7 @@ public class TrackedProductService {
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
                 currency, lowestPrice, listings.size());
     }
-    private TrackedProductDetailResponse toDetailResponse(TrackedProduct product) {
+    public TrackedProductDetailResponse toDetailResponse(TrackedProduct product) {
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
         String currency = null;
         BigDecimal lowestPrice = null;
@@ -201,6 +194,27 @@ public class TrackedProductService {
                 currency, lowestPrice, listings.size(),listingResponse);
 
         }
+
+    @Transactional
+    public void refreshListing(ProductListing listing) {
+        ProductData productData = productScraper.scrape(listing.getUrl());
+        if (productData.title() == null || productData.title().isBlank()) {
+            throw new ScrapeException("Could not locate product title for URL: " + listing.getUrl());
+        }
+        Instant now = Instant.now();
+        listing.setLastChecked(now);
+        ProductListing savedListing = productListingRepository.save(listing);
+
+        PricePoint pricePoint = new PricePoint();
+        pricePoint.setProductListing(savedListing);
+        pricePoint.setPrice(productData.price());
+        pricePoint.setCheckedAt(now);
+        pricePointRepository.save(pricePoint);
+
+    }
+
+
+
 
 
 }
