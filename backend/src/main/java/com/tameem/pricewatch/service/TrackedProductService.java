@@ -11,6 +11,7 @@ import com.tameem.pricewatch.entity.TrackedProduct;
 import com.tameem.pricewatch.repositories.PricePointRepository;
 import com.tameem.pricewatch.repositories.ProductListingRepository;
 import com.tameem.pricewatch.repositories.TrackedProductRepository;
+import com.tameem.pricewatch.config.MarketplaceRegistry;
 import com.tameem.pricewatch.scraper.ProductData;
 import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
@@ -36,16 +37,19 @@ public class TrackedProductService {
     private final ProductListingRepository productListingRepository;
     private final PricePointRepository pricePointRepository;
     private final ProductScraper productScraper;
+    private final MarketplaceRegistry marketplaces;
     private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
 
     public TrackedProductService(TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
-                                 ProductScraper productScraper) {
+                                 ProductScraper productScraper,
+                                 MarketplaceRegistry marketplaces) {
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
         this.pricePointRepository = pricePointRepository;
         this.productScraper = productScraper;
+        this.marketplaces = marketplaces;
     }
 
     /** Strips query string, trailing slash and host casing so the same product always yields one key. */
@@ -94,19 +98,30 @@ public class TrackedProductService {
         listing.setTrackedProduct(savedProduct);
         listing.setStore(Store.AMAZON);
         listing.setUrl(normalized);
-        listing.setCurrency(productData.currency());
+        listing.setMarketplace(marketplaces.idFor(normalized));
+        // currency is NOT NULL on the listing, and an unavailable product has no
+        // observed currency yet. The sentinel heals on the first sweep that finds
+        // a real offer.
+        listing.setCurrency(productData.currency() == null ? "UNKNOWN" : productData.currency());
         listing.setLastChecked(now);
         ProductListing savedListing = productListingRepository.save(listing);
 
-        PricePoint pricePoint = new PricePoint();
-        pricePoint.setProductListing(savedListing);
-        pricePoint.setPrice(productData.price());
-        // Recorded as observed, even when UNKNOWN: an amount whose currency we
-        // cannot name is still a fact about this moment, and mislabelling it
-        // with the listing's last-known currency would be worse.
-        pricePoint.setCurrency(productData.currency());
-        pricePoint.setCheckedAt(now);
-        pricePointRepository.save(pricePoint);
+        // Track it even with no offer today — the product is real and a later
+        // sweep may find a price. Recording a null price point is not an option:
+        // a price point means "this cost this much at this time".
+        if (productData.hasPrice()) {
+            PricePoint pricePoint = new PricePoint();
+            pricePoint.setProductListing(savedListing);
+            pricePoint.setPrice(productData.price());
+            // Recorded as observed, even when UNKNOWN: an amount whose currency we
+            // cannot name is still a fact about this moment, and mislabelling it
+            // with the listing's last-known currency would be worse.
+            pricePoint.setCurrency(productData.currency());
+            pricePoint.setCheckedAt(now);
+            pricePointRepository.save(pricePoint);
+        } else {
+            log.info("Tracking {} with no current offer — no initial price point", normalized);
+        }
 
         return new TrackResult(this.toResponse(savedProduct), true);
     }
@@ -206,6 +221,17 @@ public class TrackedProductService {
             throw new ScrapeException("Could not locate product title for URL: " + listing.getUrl());
         }
         Instant now = Instant.now();
+        // No offer at this location: record the check, record no price. This is a
+        // successful observation, not a failure — the chart should show a gap
+        // rather than a fabricated value.
+        if (!productData.hasPrice()) {
+            listing.setLastChecked(now);
+            productListingRepository.save(listing);
+            log.info("No offer for listing {} ({}) — recorded check, no price point",
+                    listing.getId(), listing.getUrl());
+            return;
+        }
+
         // Retailers localise by visitor IP, so an observed currency can differ
         // between sweeps — and the first scrape may not have resolved one at all.
         // Refresh it every time rather than trusting the value written at track.

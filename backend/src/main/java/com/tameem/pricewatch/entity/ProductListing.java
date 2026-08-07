@@ -25,6 +25,13 @@ public class ProductListing {
     private Store store;
     @Column(length = 2083, nullable = false)
     private String url;
+    /**
+     * Id of the configured marketplace this listing is priced for, e.g. AMAZON_UK.
+     * Text rather than an enum because marketplaces are configuration — adding a
+     * storefront should not need a rebuild. Nullable only because rows predate it.
+     */
+    @Column(length = 40)
+    private String marketplace;
     @Column(length = 50, nullable = false)
     private String currency;
     @Column(nullable = true, name = "last_checked")
@@ -48,6 +55,14 @@ public class ProductListing {
 
     public void setTrackedProduct(TrackedProduct trackedProduct) {
         this.trackedProduct = trackedProduct;
+    }
+
+    public String getMarketplace() {
+        return marketplace;
+    }
+
+    public void setMarketplace(String marketplace) {
+        this.marketplace = marketplace;
     }
 
     public Store getStore() {
