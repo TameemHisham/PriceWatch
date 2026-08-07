@@ -20,12 +20,23 @@ public class AmazonScraper implements ProductScraper {
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
     );
 
+    /**
+     * Ordered most specific first. Every selector is scoped to the main product
+     * column: an unscoped `.a-price` matches recommendation carousels too, and
+     * `selectFirst` would then return a different product's price. Amazon renames
+     * these containers over time, so several generations are listed.
+     */
     private static final String[] PRICE_SELECTORS = {
-            ".a-price .a-offscreen",
+            "#corePriceDisplay_desktop_feature_div .a-price .a-offscreen",
+            "#corePrice_desktop .a-price .a-offscreen",
             "#corePrice_feature_div .a-price .a-offscreen",
-            ".apex-core-price-identifier .apex-pricetopay-value .a-price .a-offscreen",
+            "#apex_desktop .a-price .a-offscreen",
+            "#buybox .a-price .a-offscreen",
             "#priceblock_ourprice",
-            "#priceblock_dealprice"
+            "#priceblock_dealprice",
+            // Widest net still inside the product column, never the whole page.
+            "#centerCol .a-price .a-offscreen",
+            "#ppd .a-price .a-offscreen"
     };
 
     private static final String[] TITLE_SELECTORS = {
@@ -58,7 +69,9 @@ public class AmazonScraper implements ProductScraper {
 
         String rawPrice = findFirstMatch(response, PRICE_SELECTORS, false);
         if (rawPrice == null) {
-            throw new ScrapeException("Could not locate price for URL: " + url);
+            // Usually means the listing is unavailable. Failing is correct: the
+            // only prices left on the page belong to other products.
+            throw new ScrapeException("No price in the product column (unavailable?) for URL: " + url);
         }
 
         String title = findFirstMatch(response, TITLE_SELECTORS, false);

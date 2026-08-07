@@ -28,6 +28,7 @@
   flex: 0 0 auto;
   width: 42px;
   height: 42px;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 9px;
   background: repeating-linear-gradient(

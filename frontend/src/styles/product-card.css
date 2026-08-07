@@ -67,6 +67,18 @@
   color: var(--text-2);
 }
 
+
+/* Product photo sitting on top of a striped placeholder box. The box keeps its
+   own background, so a null or broken image degrades to the stripes rather than
+   to a broken-image glyph. object-fit stops non-square photos stretching —
+   retailer images rarely match our aspect ratio. */
+.thumb {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 /* ── Layout containers ─────────────────────────────────────────────── */
 
 .product-grid {

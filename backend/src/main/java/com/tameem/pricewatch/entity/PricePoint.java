@@ -20,6 +20,16 @@ public class PricePoint {
 
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
+
+    /**
+     * The currency this observation was priced in. Stored per observation, not on
+     * the listing: retailers localise by visitor IP, so the same URL can return
+     * GBP one sweep and AED the next. Keeping it on the listing would silently
+     * re-denominate every historical price whenever the observed currency changed.
+     * Nullable because rows written before this column existed have no true value.
+     */
+    @Column(length = 8)
+    private String currency;
     @Column(nullable = false, name = "checked_at")
     private Instant checkedAt;
 
@@ -47,6 +57,14 @@ public class PricePoint {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
     public Instant getCheckedAt() {

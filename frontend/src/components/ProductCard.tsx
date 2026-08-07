@@ -17,8 +17,20 @@ export default function ProductCard({
             className="product-card"
             onClick={() => navigate(`/product/${product.id}`)}
         >
+            {/* Hidden on error rather than removed: the striped placeholder
+                behind it shows through, and Amazon CDN URLs do expire. */}
             <div className="product-card--image">
-                {/* <img src={product.imageUrl ?? ""} alt="Image of product" /> */}
+                {product.imageUrl && (
+                    <img
+                        className="thumb"
+                        src={product.imageUrl}
+                        alt=""
+                        loading="lazy"
+                        onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                        }}
+                    />
+                )}
             </div>
             <div className="product-card--body">
                 <div className="product-card--brand">
@@ -43,7 +55,19 @@ export default function ProductCard({
             onClick={() => navigate(`/product/${product.id}`)}
         >
             <div className="product-row--info">
-                <div className="product-row--image"></div>
+                <div className="product-row--image">
+                    {product.imageUrl && (
+                        <img
+                            className="thumb"
+                            src={product.imageUrl}
+                            alt=""
+                            loading="lazy"
+                            onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                            }}
+                        />
+                    )}
+                </div>
 
                 <div className="product-row--details">
                     <div className="product-row--name">{product.name}</div>

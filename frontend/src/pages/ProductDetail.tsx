@@ -185,6 +185,17 @@ export default function ProductDetail() {
                 <div className="page--container is-narrow">
                     <div className="product-details">
                         <div className="product-details--image">
+                            {product.imageUrl && (
+                                <img
+                                    className="thumb"
+                                    src={product.imageUrl}
+                                    alt=""
+                                    loading="lazy"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = "none";
+                                    }}
+                                />
+                            )}
                             {product.category && (
                                 <span className="product-details--category-label">
                                     {product.category}

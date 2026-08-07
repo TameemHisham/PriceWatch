@@ -101,6 +101,10 @@ public class TrackedProductService {
         PricePoint pricePoint = new PricePoint();
         pricePoint.setProductListing(savedListing);
         pricePoint.setPrice(productData.price());
+        // Recorded as observed, even when UNKNOWN: an amount whose currency we
+        // cannot name is still a fact about this moment, and mislabelling it
+        // with the listing's last-known currency would be worse.
+        pricePoint.setCurrency(productData.currency());
         pricePoint.setCheckedAt(now);
         pricePointRepository.save(pricePoint);
 
@@ -202,12 +206,25 @@ public class TrackedProductService {
             throw new ScrapeException("Could not locate product title for URL: " + listing.getUrl());
         }
         Instant now = Instant.now();
+        // Retailers localise by visitor IP, so an observed currency can differ
+        // between sweeps — and the first scrape may not have resolved one at all.
+        // Refresh it every time rather than trusting the value written at track.
+        // Never downgrade a known currency to the parser's UNKNOWN sentinel:
+        // a single unparseable sweep would otherwise destroy a good value.
+        String observed = productData.currency();
+        if (observed != null && !observed.isBlank() && !"UNKNOWN".equals(observed)) {
+            listing.setCurrency(observed);
+        }
         listing.setLastChecked(now);
         ProductListing savedListing = productListingRepository.save(listing);
 
         PricePoint pricePoint = new PricePoint();
         pricePoint.setProductListing(savedListing);
         pricePoint.setPrice(productData.price());
+        // Recorded as observed, even when UNKNOWN: an amount whose currency we
+        // cannot name is still a fact about this moment, and labelling it with
+        // the listing's last-known currency would be worse.
+        pricePoint.setCurrency(productData.currency());
         pricePoint.setCheckedAt(now);
         pricePointRepository.save(pricePoint);
 

@@ -30,6 +30,7 @@
   width: 168px;
   height: 168px;
   flex: none;
+  overflow: hidden;
 
   display: flex;
   align-items: center;
