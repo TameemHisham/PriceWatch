@@ -132,22 +132,6 @@ export default function ProductDetail() {
                     </svg>
                     <span>Reload</span>
                 </button>
-                <button className="header--button is-accent">
-                    <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                    </svg>
-
-                    <span>Watching</span>
-                </button>
                 <button
                     className="header--button is-danger"
                     onClick={handleDelete}
