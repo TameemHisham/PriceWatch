@@ -17,7 +17,6 @@ import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
 //import jakarta.transaction.Transactional;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

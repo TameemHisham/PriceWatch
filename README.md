@@ -126,6 +126,7 @@ back.
 | Date | Listings swept | Wall clock | Notes |
 |---|---|---|---|
 | 2026-08-06 | 2 | 6s | 2 scrapes + one 2s inter-request pause |
+| 2026-08-07 | 18 | 73s | 8 priced, 10 with no offer at this location; 17 x 2s pause |
 
 Sequential cost is roughly `N × (scrape latency + pause)`, so it grows linearly with
 listings and is bounded by the slowest store in the set. This table is the baseline the
@@ -141,10 +142,98 @@ the same product yields a different URL string every time you copy the link. Str
 the query string and trailing slash makes duplicate detection work; a `UNIQUE` constraint
 on the column closes the race that the application-level check alone leaves open.
 
-**Currency is recorded as observed, not inferred.** Retailers localise prices by visitor
+**Currency is stored per observation, not per listing.** Retailers localise by visitor
 IP, so the same `.co.uk` link can return GBP or AED depending on where the request comes
-from. The price and its currency are always stored together and consistent with each
-other. Cross-currency comparison is deferred until multiple stores make it meaningful.
+from. Currency therefore belongs on the price point, beside the amount it describes —
+holding it on the listing means one change of location silently re-denominates the entire
+history, and a chart would draw a line whose y-axis changes meaning halfway along. The
+listing keeps a "most recently observed" currency for display only.
+
+**A marketplace is a storefront plus a delivery country, and it is configuration.**
+"Amazon" is not a market: `amazon.co.uk` shipping to GB and `amazon.ae` shipping to AE
+are different catalogues, currencies, and offers for the same product, so prices are only
+comparable within one. Marketplaces live in `application.properties` rather than an enum,
+because adding a storefront is a deployment concern, not a code change — and because
+store x country grows combinatorially once more retailers arrive.
+
+**Scraper egress is an input, not an accident.** Retailers price and stock by the
+requesting IP's country, so where a request leaves from is part of the observation. Each
+marketplace can be given a proxy in its own country; unset, prices reflect whatever
+country the host happens to sit in. This is the deployment decision too — in production
+the scraper runs in the marketplace's region rather than behind a third-party proxy.
+
+**Unavailability is data, not an error.** A product with no purchasable offer at the
+requesting location is a successful observation: the check happened, and there was no
+price. It is recorded as such, distinct from a scrape failure (network error, changed
+markup). Conflating the two is what allowed wrong prices into the database — see below.
+
+**Prices are selected by the retailer's semantics, never by position.** A product page
+carries several prices, and the real one is not reliably first.
+
+---
+
+## Problems worth writing down
+
+Most of the engineering in this project has been in scraping, and none of it was
+predictable from the outside. These are the failures that shaped the current design.
+
+### A page shows several prices, and the first one is usually wrong
+
+A single Amazon product page contains:
+
+- the price you pay (`.apex-pricetopay-value`)
+- a per-unit price (`.apex-priceperunit-value`) - AED 44.68 "per count" on an 11-piece set
+- a crossed-out RRP (`.apex-basisprice-value`)
+- prices for entirely different products, in recommendation carousels
+
+Selecting `.a-price .a-offscreen` and taking the first match returns whichever of these
+renders earliest. A cookware set was recorded at 44.68 instead of 491.68 for exactly this
+reason. The fix was to stop reasoning about position: Amazon marks non-payable prices
+with `.a-text-price`, so excluding that class makes document order irrelevant.
+
+### On discounted listings the accessible price is empty
+
+The screen-reader span inside the real price is normally the cleanest source. On a
+discounted item it is empty, and the price exists only as separate symbol, whole and
+fraction elements - while the crossed-out RRP *does* populate its span. So a parser that
+reads only `.a-offscreen` silently records the RRP as the current price. The reader now
+falls back to assembling the parts.
+
+### A missing price usually means "no offer here", not "scraper broken"
+
+Ten of eighteen tracked products return no price, and the split is stable across sweeps.
+The pages are not broken and the markup has not changed: Amazon shows no price when an
+item cannot ship to the requesting location, because there is no offer to show. Tracking
+`.co.uk` links from outside the UK therefore prices whichever products happen to ship
+internationally and silently finds nothing for the rest.
+
+With no explicit availability check, the scraper fell through to the carousel prices
+above and recorded confident, wrong numbers - one product produced 84.03, 12.79, 133.39
+and 7.06 across four consecutive sweeps.
+
+Availability is now decided before the price is read, from `#outOfStock` and the presence
+of a buy button. Two products recorded the same price to the penny is the signature of
+this bug, and worth checking for in any scraped dataset.
+
+The deeper point is that a tracked price is only meaningful relative to a market. Where
+the request comes from must be a property of the system, not of whoever happens to be
+running it - otherwise the same listing yields different history on a laptop, on a
+colleague's laptop, and in production. That is why a listing records its marketplace and
+why egress is configurable per marketplace: results should not move when the operator
+does.
+
+### Amazon's own API is not a way out
+
+The Product Advertising API requires an Associates account, and access is revoked without
+qualifying sales. A portfolio project built on it stops working a few months after being
+written. Scraping is the honest choice here; where a retailer offers a real public API,
+using it is the better one, and the `ProductScraper` interface exists so both can coexist.
+
+### Verify a retailer renders prices server-side before writing a scraper for it
+
+One `curl` and a search for the price is enough. If it is not in the HTML, the choice is
+between the JSON endpoint the page itself calls and a headless browser - a decision worth
+making before writing selectors rather than after.
 
 **The service layer does not know about HTTP.** Tracking returns whether a record was
 created; the controller translates that into a status code. The same method can be called

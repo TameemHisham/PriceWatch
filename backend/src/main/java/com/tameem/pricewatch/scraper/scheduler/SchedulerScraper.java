@@ -1,14 +1,8 @@
 package com.tameem.pricewatch.scraper.scheduler;
 
 
-import com.tameem.pricewatch.dto.TrackedProductDetailResponse;
-import com.tameem.pricewatch.entity.PricePoint;
 import com.tameem.pricewatch.entity.ProductListing;
-import com.tameem.pricewatch.repositories.PricePointRepository;
 import com.tameem.pricewatch.repositories.ProductListingRepository;
-import com.tameem.pricewatch.repositories.TrackedProductRepository;
-import com.tameem.pricewatch.scraper.ProductData;
-import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
 import com.tameem.pricewatch.service.TrackedProductService;
 import org.slf4j.Logger;
@@ -16,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;

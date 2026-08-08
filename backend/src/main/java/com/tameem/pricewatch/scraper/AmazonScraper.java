@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +49,12 @@ public class AmazonScraper implements ProductScraper {
     /** Optional currency code or symbol, then a number: "£7.73", "AED 1,724.76". */
     private static final Pattern PRICE_TOKEN =
             Pattern.compile("(?:[A-Z]{2,3}|[^\\w\\s])\\s?\\d[\\d.,]*");
+
+    /**
+     * Path case must be preserved; ASIN pattern expects uppercase characters.
+     * **/
+    private static final Pattern ASIN_TOKEN =
+            Pattern.compile("/(?:dp|gp/product|gp/aw/d)/([A-Z0-9]{10})");
 
     private static final String[] PRICE_LABEL_SELECTORS = {
             "#apex-pricetopay-accessibility-label",
@@ -131,7 +138,16 @@ public class AmazonScraper implements ProductScraper {
 //        ProductData data = myScraper.scrape("https://www.amazon.co.uk/dp/B0925CM4BB");
 //        System.out.println(data);
 //    }
+    @Override
+    public Optional<String> productKey(String url) {
+        Matcher matcher = ASIN_TOKEN.matcher(url);
 
+        if (matcher.find()) {
+            return Optional.of(matcher.group(1));
+        }
+
+        return Optional.empty();
+    }
     /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
     private String randomUserAgent() {
         return USER_AGENTS.get(ThreadLocalRandom.current().nextInt(USER_AGENTS.size()));
@@ -152,17 +168,28 @@ public class AmazonScraper implements ProductScraper {
 
         String imageUrl = findFirstMatch(response, IMAGE_SELECTORS, true);
 
-        // Availability is decided before price, not inferred from its absence.
-        // "No offer here" is a real observation; "markup changed" is a failure.
-        // Conflating them is how carousel prices got recorded as product prices.
-        if (!isPurchasable(response)) {
+        // Three outcomes, deliberately kept apart. Collapsing them is what let
+        // carousel prices in, and what would later hide a markup change as a
+        // stream of "no offer" observations.
+        if (isExplicitlyUnavailable(response)) {
             return new ProductData(title, null, null, imageUrl, Availability.UNAVAILABLE);
         }
 
         String rawPrice = findPrice(response);
         if (rawPrice == null) {
-            // Purchasable but no price found: the page shape changed. A real failure.
-            throw new ScrapeException("Offer present but no price element matched for URL: " + url);
+            if (hasBuyButton(response)) {
+                // Buyable but unreadable: the page shape changed. A real failure.
+                throw new ScrapeException("Offer present but no price element matched for URL: " + url);
+            }
+            if (hasAnyPriceElement(response)) {
+                // Prices exist on the page but none in the product column, and no
+                // way to buy. Ambiguous enough to be worth a human look.
+                throw new ScrapeException("No buy option and no readable product price for URL: " + url);
+            }
+            // No buy option and no price element anywhere: unavailable variants are
+            // rendered this way, without the #outOfStock marker a whole product gets.
+            log.debug("No offer markers and no price elements at all — treating as unavailable: {}", url);
+            return new ProductData(title, null, null, imageUrl, Availability.UNAVAILABLE);
         }
 
         BigDecimal price = parsePrice(rawPrice);
@@ -281,19 +308,29 @@ public class AmazonScraper implements ProductScraper {
         return assembled.isBlank() ? null : assembled;
     }
 
-    /**
-     * True when the page shows a live, purchasable offer. An explicit
-     * out-of-stock marker wins over a buy button, since Amazon leaves stale
-     * buttons in the markup on some layouts.
-     */
-    private boolean isPurchasable(Document doc) {
+/** The retailer says outright that this cannot be bought here. */
+    private boolean isExplicitlyUnavailable(Document doc) {
         for (String selector : UNAVAILABLE_SELECTORS) {
-            if (doc.selectFirst(selector) != null) return false;
+            if (doc.selectFirst(selector) != null) return true;
         }
+        return false;
+    }
+
+    /** A live offer renders one of these. */
+    private boolean hasBuyButton(Document doc) {
         for (String selector : PURCHASABLE_SELECTORS) {
             if (doc.selectFirst(selector) != null) return true;
         }
         return false;
+    }
+
+    /**
+     * Whether the page carries any price markup at all, anywhere — including
+     * carousels. Used only to tell "this page has no prices on it" (an
+     * unavailable variant) from "prices exist but not where we look" (our bug).
+     */
+    private boolean hasAnyPriceElement(Document doc) {
+        return doc.selectFirst(".a-price") != null;
     }
 
     /**
