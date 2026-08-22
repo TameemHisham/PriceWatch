@@ -112,8 +112,6 @@ export default function ProductDetail() {
                     onClick={handleRefresh}
                     disabled={refreshing}
                 >
-                    {/* Stroke-based like every other icon here, so it inherits the
-                        button's colour through currentColor instead of painting black. */}
                     <svg
                         className={refreshing ? "is-spinning" : ""}
                         width="15"
