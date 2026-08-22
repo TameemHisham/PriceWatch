@@ -12,8 +12,13 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.CookieManager;
+import java.net.CookieStore;
+import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +30,20 @@ public class AmazonScraper implements ProductScraper {
     private static final Logger log = LoggerFactory.getLogger(AmazonScraper.class);
 
     private final MarketplaceRegistry marketplaces;
+
+    /**
+     * One cookie store per marketplace. {@link #fetch} builds a fresh connection on
+     * every call, which throws away everything the storefront set — including the
+     * session and locale cookies Amazon issues on first contact. A client that is
+     * handed a cookie and never returns it looks less like a browser with every
+     * request, and the storefront is free to answer with an interstitial instead of
+     * the product.
+     *
+     * <p>Kept per marketplace and never shared: a cookie set by amazon.ae carries
+     * that storefront's locale, and replaying it against amazon.co.uk would ask for
+     * a different market than the one this listing claims to record.
+     */
+    private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>();
 
     public AmazonScraper(MarketplaceRegistry marketplaces) {
         this.marketplaces = marketplaces;
@@ -128,6 +147,17 @@ public class AmazonScraper implements ProductScraper {
             "#buy-now-button"
     };
 
+    /**
+     * Where the page states which ASIN it is for. Both selectors are scoped to the
+     * product block on purpose: a bare {@code [data-asin]} also matches every
+     * recommendation carousel tile, so it finds *an* ASIN on any Amazon page and the
+     * identity check would pass while looking at a completely different product.
+     */
+    private static final String[] PAGE_ASIN_SELECTORS = {
+            "input#ASIN",
+            "#ppd[data-csa-c-asin]"
+    };
+
     private static final String[] IMAGE_SELECTORS = {
             "#landingImage",
             "#imgTagWrapperId img"
@@ -155,33 +185,53 @@ public class AmazonScraper implements ProductScraper {
 
     /** Fetches an Amazon product page and extracts title, price, currency and image. */
     public ProductData scrape(String url) {
-        Document response = fetch(url, marketplaces.configFor(marketplaces.idFor(url)));
+        String marketplaceId = marketplaces.idFor(url);
+        ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
+        Fetched fetched = fetch(url, marketplaceId, marketplace);
+        Document document = fetched.document();
 
-        if (response.html().contains("validateCaptcha")) {
+        if (document.html().contains("validateCaptcha")) {
             throw new ScrapeException("Amazon blocked request with CAPTCHA");
         }
 
-        String title = findFirstMatch(response, TITLE_SELECTORS, false);
+        // Everything below decides what a page MEANS. These three checks decide
+        // whether it is the right page at all, and they run first for one reason: a
+        // bot wall, a sign-in interstitial and a geo-redirect all parse cleanly and
+        // all carry no price. Read in the old order they came out the far side as a
+        // tidy UNAVAILABLE row — an observation asserting "checked, no offer here"
+        // about a page that was never looked at.
+        requireExpectedHost(fetched.finalUrl(), marketplace, url);
+
+        String title = findFirstMatch(document, TITLE_SELECTORS, false);
         if (title != null) {
             title = title.trim();
         }
+        // #productTitle renders on every real /dp/ page, out-of-stock ones included,
+        // so its absence does not mean "no offer" — it means this is not a product
+        // page. Cheapest of the three checks and it catches every interstitial
+        // variant, including ones with no distinguishing markup of their own.
+        if (title == null || title.isBlank()) {
+            throw new ScrapeException("No product title on page — not a product page: " + url);
+        }
 
-        String imageUrl = findFirstMatch(response, IMAGE_SELECTORS, true);
+        requireExpectedAsin(document, url);
+
+        String imageUrl = findFirstMatch(document, IMAGE_SELECTORS, true);
 
         // Three outcomes, deliberately kept apart. Collapsing them is what let
         // carousel prices in, and what would later hide a markup change as a
         // stream of "no offer" observations.
-        if (isExplicitlyUnavailable(response)) {
+        if (isExplicitlyUnavailable(document)) {
             return new ProductData(title, null, null, imageUrl, Availability.UNAVAILABLE);
         }
 
-        String rawPrice = findPrice(response);
+        String rawPrice = findPrice(document);
         if (rawPrice == null) {
-            if (hasBuyButton(response)) {
+            if (hasBuyButton(document)) {
                 // Buyable but unreadable: the page shape changed. A real failure.
                 throw new ScrapeException("Offer present but no price element matched for URL: " + url);
             }
-            if (hasAnyPriceElement(response)) {
+            if (hasAnyPriceElement(document)) {
                 // Prices exist on the page but none in the product column, and no
                 // way to buy. Ambiguous enough to be worth a human look.
                 throw new ScrapeException("No buy option and no readable product price for URL: " + url);
@@ -199,12 +249,25 @@ public class AmazonScraper implements ProductScraper {
     }
 
     /**
+     * A fetched page together with the URL it actually came from.
+     *
+     * <p>The final URL is carried out of {@link #fetch} deliberately. jsoup follows
+     * redirects silently, so the document alone cannot say whether it came from the
+     * storefront that was asked for.
+     */
+    private record Fetched(Document document, URL finalUrl) {}
+
+    /**
      * Requests the page with browser-like headers, in the marketplace's locale and
      * (when configured) through a proxy in its country. Throws ScrapeException on
      * any network failure.
      */
-    public Document fetch(String url, ScrapeProperties.MarketplaceConfig marketplace) {
+
+    private Fetched fetch(String url, String marketplaceId, ScrapeProperties.MarketplaceConfig marketplace) {
         try {
+            CookieStore cookies = cookieStores.computeIfAbsent(
+                    marketplaceId, id -> new CookieManager().getCookieStore());
+
             Connection connection = Jsoup.connect(url)
                     .userAgent(randomUserAgent())
                     .header("Accept",
@@ -215,8 +278,8 @@ public class AmazonScraper implements ProductScraper {
                     .header("Sec-Fetch-Dest", "document")
                     .header("Sec-Fetch-Mode", "navigate")
                     .header("Sec-Fetch-Site", "none")
+                    .cookieStore(cookies)
                     .timeout(10000);
-
             // Egress country decides which offers exist and in what currency, so a
             // marketplace with a proxy configured must not fall back to local egress:
             // the prices would be for the wrong country and look valid.
@@ -227,10 +290,73 @@ public class AmazonScraper implements ProductScraper {
                         marketplace.getDeliveryCountry());
             }
 
-            return connection.get();
+            // execute() rather than get(): the response knows the URL it ended on
+            // after redirects, and the document does not.
+            Connection.Response response = connection.execute();
+            return new Fetched(response.parse(), response.url());
         } catch (IOException e) {
             throw new ScrapeException("Failed to fetch page: " + url, e);
         }
+    }
+
+    /**
+     * Fails when the page was served by a different storefront than the one asked
+     * for.
+     *
+     * <p>Host only, never the path. Amazon rewrites paths and appends its own
+     * {@code ref=} segments on nearly every request, so comparing paths would reject
+     * good pages constantly. Subdomains pass: the configured host is
+     * {@code amazon.co.uk} and the response lands on {@code www.amazon.co.uk}.
+     */
+    private void requireExpectedHost(URL finalUrl, ScrapeProperties.MarketplaceConfig marketplace,
+                                     String requestedUrl) {
+        String configured = marketplace.getHost();
+        if (configured == null || configured.isBlank()) return;
+
+        String expected = configured.toLowerCase();
+        String actual = finalUrl.getHost() == null ? "" : finalUrl.getHost().toLowerCase();
+        if (actual.equals(expected) || actual.endsWith("." + expected)) return;
+
+        throw new ScrapeException("Request for " + requestedUrl + " was answered by " + actual
+                + ", not " + expected + " — redirected off the requested marketplace");
+    }
+
+    /**
+     * Fails when the page is for a different product than the URL asked for.
+     *
+     * <p>Checked only when both sides state an ASIN. A missing page ASIN is logged
+     * rather than thrown: these selectors are Amazon's markup, not a contract, and
+     * turning one rename into a total scrape outage trades a rare wrong row for
+     * guaranteed no rows. A mismatch is different — that is the page telling us
+     * outright that it is not the product we asked for.
+     */
+    private void requireExpectedAsin(Document doc, String requestedUrl) {
+        Optional<String> requested = productKey(requestedUrl);
+        if (requested.isEmpty()) return;
+
+        String onPage = pageAsin(doc);
+        if (onPage == null) {
+            log.debug("No ASIN element on page for {} — identity check skipped", requestedUrl);
+            return;
+        }
+        if (!onPage.equalsIgnoreCase(requested.get())) {
+            throw new ScrapeException("Page for ASIN " + onPage + " was returned for requested ASIN "
+                    + requested.get() + " (" + requestedUrl + ")");
+        }
+    }
+
+    /** The ASIN the page claims to be for, or null when it does not say. */
+    private String pageAsin(Document doc) {
+        for (String selector : PAGE_ASIN_SELECTORS) {
+            Element element = doc.selectFirst(selector);
+            if (element == null) continue;
+            // input#ASIN carries it as a form value, #ppd as a data attribute.
+            String value = element.hasAttr("value")
+                    ? element.attr("value")
+                    : element.attr("data-csa-c-asin");
+            if (!value.isBlank()) return value.trim();
+        }
+        return null;
     }
 
     /**
