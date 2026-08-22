@@ -51,18 +51,18 @@ public class SchedulerScraper {
                     Thread.sleep(2000);
                 trackedProductService.refreshListing(listing);
                 succeeded++;
-            }
-                 catch (ScrapeException e) {
-                failed++;
-                log.warn("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.getMessage());
-            } catch ( InterruptedException e) {
+            } catch (InterruptedException e) {
                 failed++;
                 Thread.currentThread().interrupt();
-                break;
+            } catch (ScrapeException e) {
+                failed++;
+                log.warn("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.toString());
+            } catch (Exception e) {
+                failed++;
+                log.error("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.toString());
             }
+            long timeAfterLoop = System.nanoTime();
+            log.info("Sweep complete: {} listings checked, {} succeeded, {} failed, {}ms", listings.size(), succeeded, failed, (timeAfterLoop - timeBeforeLoop) / 1_000_000);
         }
-        long timeAfterLoop = System.nanoTime();
-        log.info("Sweep complete: {} listings checked, {} succeeded, {} failed, {}ms",listings.size(), succeeded, failed, (timeAfterLoop-timeBeforeLoop)/1_000_000);
-
     }
 }

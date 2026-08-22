@@ -31,13 +31,13 @@ rather than placeholder values.
 
 ## Stack
 
-| Layer | Choice |
-|---|---|
-| API | Spring Boot 4.1, Java 21 |
-| Persistence | PostgreSQL 16, Spring Data JPA |
-| Scraping | Jsoup |
-| Frontend | React 19, TypeScript, Vite, React Router |
-| Local infra | Docker |
+| Layer       | Choice                                   |
+| ----------- | ---------------------------------------- |
+| API         | Spring Boot 4.1, Java 21                 |
+| Persistence | PostgreSQL 16, Spring Data JPA           |
+| Scraping    | Jsoup                                    |
+| Frontend    | React 19, TypeScript, Vite, React Router |
+| Local infra | Docker                                   |
 
 ---
 
@@ -100,13 +100,13 @@ is no CORS configuration to maintain.
 
 Base path `/api`.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/tracked-products` | Track a URL. `201` when scraped and created, `200` when already tracked |
-| `GET` | `/tracked-products` | Dashboard list |
-| `GET` | `/tracked-products/{id}` | One product with its per-store listings |
-| `POST` | `/tracked-products/{id}/refresh` | Re-scrape now, append a price point |
-| `DELETE` | `/tracked-products/{id}` | Stop tracking; cascades to listings and price points |
+| Method   | Path                             | Purpose                                                                 |
+| -------- | -------------------------------- | ----------------------------------------------------------------------- |
+| `POST`   | `/tracked-products`              | Track a URL. `201` when scraped and created, `200` when already tracked |
+| `GET`    | `/tracked-products`              | Dashboard list                                                          |
+| `GET`    | `/tracked-products/{id}`         | One product with its per-store listings                                 |
+| `POST`   | `/tracked-products/{id}/refresh` | Re-scrape now, append a price point                                     |
+| `DELETE` | `/tracked-products/{id}`         | Stop tracking; cascades to listings and price points                    |
 
 ---
 
@@ -123,10 +123,10 @@ scrapes them one at a time on a single thread. A deliberate 2s pause sits betwee
 requests — the interval alone is not politeness if the sweep fires N requests back to
 back.
 
-| Date | Listings swept | Wall clock | Notes |
-|---|---|---|---|
-| 2026-08-06 | 2 | 6s | 2 scrapes + one 2s inter-request pause |
-| 2026-08-07 | 18 | 73s | 8 priced, 10 with no offer at this location; 17 x 2s pause |
+| Date       | Listings swept | Wall clock | Notes                                                      |
+| ---------- | -------------- | ---------- | ---------------------------------------------------------- |
+| 2026-08-06 | 2              | 6s         | 2 scrapes + one 2s inter-request pause                     |
+| 2026-08-07 | 18             | 73s        | 8 priced, 10 with no offer at this location; 17 x 2s pause |
 
 Sequential cost is roughly `N × (scrape latency + pause)`, so it grows linearly with
 listings and is bounded by the slowest store in the set. This table is the baseline the
@@ -195,7 +195,7 @@ with `.a-text-price`, so excluding that class makes document order irrelevant.
 
 The screen-reader span inside the real price is normally the cleanest source. On a
 discounted item it is empty, and the price exists only as separate symbol, whole and
-fraction elements - while the crossed-out RRP *does* populate its span. So a parser that
+fraction elements - while the crossed-out RRP _does_ populate its span. So a parser that
 reads only `.a-offscreen` silently records the RRP as the current price. The reader now
 falls back to assembling the parts.
 
@@ -221,6 +221,14 @@ running it - otherwise the same listing yields different history on a laptop, on
 colleague's laptop, and in production. That is why a listing records its marketplace and
 why egress is configurable per marketplace: results should not move when the operator
 does.
+
+## Signed-out scraping sees the request's IP, not a delivery address
+
+Prices and availability here reflect whatever location Amazon infers from the request's
+IP. A signed-in shopper with a saved delivery address sees prices for _that_ address
+regardless of where they're physically browsing from — this scraper has no account and
+no saved address, so it cannot reproduce that view. The two can disagree, especially for
+international products or addresses that differ from the browsing location.
 
 ### Amazon's own API is not a way out
 

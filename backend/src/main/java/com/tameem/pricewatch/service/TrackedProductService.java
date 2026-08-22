@@ -163,7 +163,9 @@ public class TrackedProductService {
             try {
                 refreshListing(listing);
             } catch (ScrapeException e) {
-                log.warn("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.getMessage());
+                log.warn("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.toString());
+            } catch (Exception e) {
+                log.error("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.toString());
             }
         }
         return this.toDetailResponse(product);
