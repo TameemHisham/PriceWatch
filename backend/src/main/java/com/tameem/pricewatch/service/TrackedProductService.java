@@ -15,6 +15,7 @@ import com.tameem.pricewatch.config.MarketplaceRegistry;
 import com.tameem.pricewatch.scraper.ProductData;
 import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
+import com.tameem.pricewatch.scraper.AmazonScraper;
 //import jakarta.transaction.Transactional;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 @Service
 public class TrackedProductService {
-
+    private final AmazonScraper amazonScraper;
     private final TrackedProductRepository trackedProductRepository;
     private final ProductListingRepository productListingRepository;
     private final PricePointRepository pricePointRepository;
@@ -39,11 +40,12 @@ public class TrackedProductService {
     private final MarketplaceRegistry marketplaces;
     private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
 
-    public TrackedProductService(TrackedProductRepository trackedProductRepository,
+    public TrackedProductService(AmazonScraper amazonScraper, TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
                                  ProductScraper productScraper,
                                  MarketplaceRegistry marketplaces) {
+        this.amazonScraper = amazonScraper;
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
         this.pricePointRepository = pricePointRepository;
@@ -51,20 +53,20 @@ public class TrackedProductService {
         this.marketplaces = marketplaces;
     }
 
-    /** Strips query string, trailing slash and host casing so the same product always yields one key. */
-    private String normalizeUrl(String url) {
+    /** Builds a canonical https://{host}/dp/{ASIN} key from a product URL, so the same
+     * product always normalizes to one string regardless of path shape or query params. */
+    private String normalizeUrl(String url) throws IllegalURLFormat {
         try {
+            Optional<String> asin = amazonScraper.productKey(url);
+            if (asin.isEmpty()) {
+                throw new IllegalURLFormat("Untrackable because ASIN wasn't scraped");
+            }
             URI uri = new URI(url);
             String host = uri.getHost() != null ? uri.getHost().toLowerCase() : "";
-            String path = uri.getPath() != null ? uri.getPath() : "";
-            if (path.endsWith("/") && path.length() > 1) {
-                path = path.substring(0, path.length() - 1);
-            }
-            return uri.getScheme() + "://" + host + path; // https + :// + pricewatch.com + :8080
+            return uri.getScheme() + "://" + host +"/dp/" + asin.get();
         } catch (URISyntaxException e) {
-            return url; //  unparseable
+            throw new IllegalURLFormat("unparseable");
         }
-
     }
 
     /** Tracks a URL: returns the existing product if already tracked, otherwise scrapes and creates one. */

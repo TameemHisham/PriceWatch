@@ -7,17 +7,17 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "product_listing", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"tracked_product_id", "store"}),
-        // URLs are normalised before saving, so this is the real duplicate guard —
-        // it closes the race window in the service's check-then-act.
-        @UniqueConstraint(name = "uk_product_listing_url", columnNames = {"url"})
+//        @UniqueConstraint(columnNames = {"tracked_product_id", "store"}),
+        @UniqueConstraint(name = "uk_product_listing_url", columnNames = {"url"}),
+        @UniqueConstraint(name="UniqueProductMarketPlace",columnNames ={"tracked_product_id", "marketplace"})
+//        this basically applies UNIQUE property on a composite key
 })
 public class ProductListing {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // many product listings to one product
     @JoinColumn(name = "tracked_product_id", nullable = false)
     private TrackedProduct trackedProduct;
     @Column(nullable = false)
@@ -25,11 +25,6 @@ public class ProductListing {
     private Store store;
     @Column(length = 2083, nullable = false)
     private String url;
-    /**
-     * Id of the configured marketplace this listing is priced for, e.g. AMAZON_UK.
-     * Text rather than an enum because marketplaces are configuration — adding a
-     * storefront should not need a rebuild. Nullable only because rows predate it.
-     */
     @Column(length = 40)
     private String marketplace;
     @Column(length = 50, nullable = false)
