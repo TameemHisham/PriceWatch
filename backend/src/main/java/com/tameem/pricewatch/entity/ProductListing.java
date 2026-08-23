@@ -25,7 +25,7 @@ public class ProductListing {
     private Store store;
     @Column(length = 2083, nullable = false)
     private String url;
-    @Column(length = 40)
+    @Column(nullable = false, length = 40)
     private String marketplace;
     @Column(length = 50, nullable = false)
     private String currency;
