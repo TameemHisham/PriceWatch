@@ -4,8 +4,6 @@ import type { TrackRequest } from "../types/TrackRequest";
 
 const BASE = "/api/tracked-products";
 
-// Shape of Spring's default error body. Every field is optional — a proxy or
-// gateway can fail before Spring is ever reached.
 type SpringError = {
     message?: string;
     errors?: { defaultMessage?: string }[];
@@ -28,7 +26,7 @@ async function errorMessage(res: Response): Promise<string> {
 async function jsonRequest<T>(url: string, options?: RequestInit): Promise<T> {
     const res = await fetch(url, options);
     if (!res.ok) {
-        // fetch does NOT throw on 4xx/5xx — we do it ourselves.
+        // fetch does NOT throw on 4xx/5xx
         throw new Error(await errorMessage(res));
     }
     return (await res.json()) as T;

@@ -6,26 +6,6 @@ import org.springframework.stereotype.Component;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Scraper configuration, keyed by marketplace id (e.g. {@code AMAZON_UK}).
- *
- * <p>A marketplace is a storefront plus the delivery country it prices for.
- * "Amazon" is not a market: amazon.co.uk shipping to GB and amazon.ae shipping to
- * AE are different catalogues, currencies, and offers for the same product, so
- * prices are only comparable within one.
- *
- * <p>Held as configuration rather than an enum because adding a storefront is a
- * deployment concern, not a code change — Phase 4 adds several, and each is only
- * a host, a locale, and an egress route.
- *
- * <pre>
- * pricewatch.scrape.marketplaces.AMAZON_UK.host=amazon.co.uk
- * pricewatch.scrape.marketplaces.AMAZON_UK.delivery-country=GB
- * pricewatch.scrape.marketplaces.AMAZON_UK.accept-language=en-GB,en;q=0.9
- * pricewatch.scrape.marketplaces.AMAZON_UK.proxy-host=uk-proxy.example.net
- * pricewatch.scrape.marketplaces.AMAZON_UK.proxy-port=8080
- * </pre>
- */
 @Component
 @ConfigurationProperties(prefix = "pricewatch.scrape")
 public class ScrapeProperties {
@@ -48,11 +28,6 @@ public class ScrapeProperties {
         private String deliveryCountry;
         /** Sent as Accept-Language so the storefront does not guess locale from IP. */
         private String acceptLanguage = "en-GB,en;q=0.9";
-        /**
-         * Optional egress proxy, located in the delivery country. Retailers price
-         * and stock by the requesting IP, so without one the observation reflects
-         * whatever country this host happens to sit in.
-         */
         private String proxyHost;
         private int proxyPort;
 

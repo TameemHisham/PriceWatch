@@ -84,7 +84,7 @@ public class TrackedProduct {
     }
 
 
-    @PrePersist
+    @PrePersist // before a new entity is added to a database this annotation runs the function
     public void onPrePersist() {
         this.setCreatedAt(Instant.now());
     }

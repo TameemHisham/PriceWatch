@@ -16,13 +16,6 @@ public class MarketplaceRegistry {
         this.properties = properties;
     }
 
-    /**
-     * The marketplace id for a URL, e.g. {@code AMAZON_UK}.
-     *
-     * <p>Throws rather than defaulting: an unconfigured storefront would otherwise
-     * be scraped and priced as if it were a different one, and the resulting rows
-     * would look valid.
-     */
     public String idFor(String url) {
         String lower = url.toLowerCase();
         for (Map.Entry<String, ScrapeProperties.MarketplaceConfig> entry
