@@ -46,8 +46,14 @@ const STORE_INFO: Record<string, { label: string; color: string }> = {
     },
 };
 
-export function storeLabel(store: string): string {
-    return STORE_INFO[store]?.label ?? store;
+const MARKETPLACE_LABELS: Record<string, string> = {
+    AMAZON_UK: "Amazon UK",
+    AMAZON_AE: "Amazon AE",
+    AMAZON_US: "Amazon US",
+};
+
+export function marketplaceLabel(marketplace: string): string {
+    return MARKETPLACE_LABELS[marketplace] ?? marketplace;
 }
 
 export function storeColor(store: string): string {

@@ -17,6 +17,7 @@ import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
 import com.tameem.pricewatch.scraper.AmazonScraper;
 //import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -39,18 +40,20 @@ public class TrackedProductService {
     private final ProductScraper productScraper;
     private final MarketplaceRegistry marketplaces;
     private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
+    private final ListableBeanFactory listableBeanFactory;
 
     public TrackedProductService(AmazonScraper amazonScraper, TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
                                  ProductScraper productScraper,
-                                 MarketplaceRegistry marketplaces) {
+                                 MarketplaceRegistry marketplaces, ListableBeanFactory listableBeanFactory) {
         this.amazonScraper = amazonScraper;
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
         this.pricePointRepository = pricePointRepository;
         this.productScraper = productScraper;
         this.marketplaces = marketplaces;
+        this.listableBeanFactory = listableBeanFactory;
     }
 
     /** Builds a canonical https://{host}/dp/{ASIN} key from a product URL, so the same
@@ -75,9 +78,9 @@ public class TrackedProductService {
         String normalized = normalizeUrl(url);
 
         // Already tracking this listing? Return it instead of scraping and inserting again.
-        Optional<ProductListing> existing = productListingRepository.findByUrl(normalized);
-        if (existing.isPresent()) {
-            return new TrackResult(this.toResponse(existing.get().getTrackedProduct()), false);
+        Optional<ProductListing> existingURL = productListingRepository.findByUrl(normalized);
+        if (existingURL.isPresent()) {
+            return new TrackResult(this.toResponse(existingURL.get().getTrackedProduct()), false);
         }
 
         ProductData productData = productScraper.scrape(url);
@@ -87,25 +90,39 @@ public class TrackedProductService {
         if (productData.title() == null || productData.title().isBlank()) {
             throw new ScrapeException("Could not locate product title for URL: " + url);
         }
-
-        TrackedProduct product = new TrackedProduct();
-        product.setName(productData.title());
-        product.setImageUrl(productData.imageUrl());
-        TrackedProduct savedProduct = trackedProductRepository.save(product);
-
         Instant now = Instant.now();
-
+        Optional<String> ASIN = amazonScraper.productKey(normalized);
+        Optional<ProductListing> existingASIN =Optional.empty();
+        if (ASIN.isPresent()) {
+            existingASIN = productListingRepository.findByUrlContaining(ASIN.get());
+        };
         ProductListing listing = new ProductListing();
-        listing.setTrackedProduct(savedProduct);
+
+        TrackedProduct savedProduct;
+
+        if (existingASIN.isPresent()) {
+            savedProduct = existingASIN.get().getTrackedProduct();
+            listing.setTrackedProduct(savedProduct);
+        } else {
+            TrackedProduct product = new TrackedProduct();
+            product.setName(productData.title());
+            product.setImageUrl(productData.imageUrl());
+            savedProduct = trackedProductRepository.save(product);
+        }
         listing.setStore(Store.AMAZON);
         listing.setUrl(normalized);
         listing.setMarketplace(marketplaces.idFor(normalized));
-        // currency is NOT NULL on the listing, and an unavailable product has no
-        // observed currency yet. The sentinel heals on the first sweep that finds
-        // a real offer.
         listing.setCurrency(productData.currency() == null ? "UNKNOWN" : productData.currency());
         listing.setLastChecked(now);
         ProductListing savedListing = productListingRepository.save(listing);
+
+
+        // check if the product exists but in a different marketplace url
+
+        // currency is NOT NULL on the listing, and an unavailable product has no
+        // observed currency yet. The sentinel heals on the first sweep that finds
+        // a real offer.
+
 
         // Track it even with no offer today — the product is real and a later
         // sweep may find a price. Recording a null price point is not an option:
@@ -201,7 +218,8 @@ public class TrackedProductService {
                             listing.getStore(),
                             listing.getUrl(),
                             listing.getCurrency(),
-                    latest != null ? latest.getPrice() : null
+                    latest != null ? latest.getPrice() : null,
+                            listing.getMarketplace()
                     ));
             if (latest == null) continue;
             if (lowestPrice == null || latest.getPrice().compareTo(lowestPrice) < 0) {

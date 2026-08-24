@@ -16,4 +16,6 @@ public interface ProductListingRepository extends JpaRepository<ProductListing, 
 
 
     List<ProductListing> findByLastCheckedBeforeOrLastCheckedIsNull(Instant lastChecked);
+
+    Optional<ProductListing> findByUrlContaining(String url);
 }

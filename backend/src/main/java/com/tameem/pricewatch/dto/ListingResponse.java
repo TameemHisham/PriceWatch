@@ -4,7 +4,7 @@ import com.tameem.pricewatch.entity.Store;
 
 import java.math.BigDecimal;
 
-public record ListingResponse (Store store, String url, String currency, BigDecimal currentPrice)
+public record ListingResponse (Store store, String url, String currency, BigDecimal currentPrice, String marketplace)
 {
 }
 

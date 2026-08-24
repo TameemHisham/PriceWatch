@@ -5,6 +5,7 @@ export interface ListingResponse {
     url: string;
     currency: string | null;
     currentPrice: number | null;
+    marketplace: string;
 }
 
 export interface TrackedProductDetailResponse extends TrackedProductResponse {

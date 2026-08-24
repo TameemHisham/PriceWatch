@@ -6,7 +6,7 @@ import {
     getTrackedProduct,
     refreshProduct,
 } from "../api/scraperApi";
-import { formatPrice, storeColor, storeLabel } from "../utils/format";
+import { formatPrice, storeColor, marketplaceLabel } from "../utils/format";
 import Header from "../components/Header";
 
 /** Product detail for /product/:id. Redirects home when the id is missing or not a number. */
@@ -264,7 +264,10 @@ export default function ProductDetail() {
                                             />
 
                                             <span className="store-prices--store-name">
-                                                {storeLabel(row.store)}
+                                                {/* {storeLabel(row.store)} */}
+                                                {marketplaceLabel(
+                                                    row.marketplace,
+                                                )}
                                             </span>
 
                                             {i === 0 && (
