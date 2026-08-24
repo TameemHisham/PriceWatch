@@ -1,10 +1,8 @@
 package com.tameem.pricewatch.controller;
 
 
-import com.tameem.pricewatch.dto.TrackResult;
-import com.tameem.pricewatch.dto.TrackedProductDetailResponse;
-import com.tameem.pricewatch.dto.TrackedProductResponse;
-import com.tameem.pricewatch.dto.TrackRequest;
+import com.tameem.pricewatch.dto.*;
+import com.tameem.pricewatch.entity.ExchangeRate;
 import com.tameem.pricewatch.service.TrackedProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -19,6 +17,7 @@ public class ProductController {
 
 //    private final ProductScraper scraper;
     private final TrackedProductService trackedProductService;
+
     public ProductController(TrackedProductService trackedProductService) {
 
         this.trackedProductService = trackedProductService;
@@ -54,5 +53,10 @@ public class ProductController {
     public ResponseEntity<Void> deleteTrackedProducts(@PathVariable long id) {
         trackedProductService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/exchange-rates")
+    public List<CurrencyResponse>  getExchangeRate() {
+        return trackedProductService.getCurrentExchangeRate();
     }
 }

@@ -1,13 +1,8 @@
 package com.tameem.pricewatch.service;
 
-import com.tameem.pricewatch.dto.ListingResponse;
-import com.tameem.pricewatch.dto.TrackResult;
-import com.tameem.pricewatch.dto.TrackedProductDetailResponse;
-import com.tameem.pricewatch.dto.TrackedProductResponse;
-import com.tameem.pricewatch.entity.PricePoint;
-import com.tameem.pricewatch.entity.ProductListing;
-import com.tameem.pricewatch.entity.Store;
-import com.tameem.pricewatch.entity.TrackedProduct;
+import com.tameem.pricewatch.dto.*;
+import com.tameem.pricewatch.entity.*;
+import com.tameem.pricewatch.repositories.ExchangeRateRepository;
 import com.tameem.pricewatch.repositories.PricePointRepository;
 import com.tameem.pricewatch.repositories.ProductListingRepository;
 import com.tameem.pricewatch.repositories.TrackedProductRepository;
@@ -30,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 public class TrackedProductService {
@@ -40,20 +36,19 @@ public class TrackedProductService {
     private final ProductScraper productScraper;
     private final MarketplaceRegistry marketplaces;
     private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
-    private final ListableBeanFactory listableBeanFactory;
-
+    private final ExchangeRateRepository exchangeRateRepository;
     public TrackedProductService(AmazonScraper amazonScraper, TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
                                  ProductScraper productScraper,
-                                 MarketplaceRegistry marketplaces, ListableBeanFactory listableBeanFactory) {
+                                 MarketplaceRegistry marketplaces,ExchangeRateRepository exchangeRateRepository) {
         this.amazonScraper = amazonScraper;
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
         this.pricePointRepository = pricePointRepository;
         this.productScraper = productScraper;
         this.marketplaces = marketplaces;
-        this.listableBeanFactory = listableBeanFactory;
+        this.exchangeRateRepository = exchangeRateRepository;
     }
 
     /** Builds a canonical https://{host}/dp/{ASIN} key from a product URL, so the same
@@ -277,6 +272,10 @@ public class TrackedProductService {
 
     }
 
+    public List<CurrencyResponse> getCurrentExchangeRate() {
+        List<ExchangeRate> currencies =  this.exchangeRateRepository.findAll();
+        return currencies.stream().map(c -> new CurrencyResponse(c.getCurrency(), c.getExchangeRate())).toList() ;
+    }
 
 
 
