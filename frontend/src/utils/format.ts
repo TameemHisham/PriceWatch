@@ -1,3 +1,5 @@
+import type { CurrencyResponse } from "../types/CurrencyResponse";
+
 /** Formats a price for display, degrading to `amount CODE` when the currency is not valid ISO 4217. */
 export function formatPrice(
     price: number | null,
@@ -58,4 +60,18 @@ export function marketplaceLabel(marketplace: string): string {
 
 export function storeColor(store: string): string {
     return STORE_INFO[store]?.color ?? "var(--text-3)";
+}
+
+export function convertToUsd(
+    price: number | null,
+    currency: string | null,
+    rates: CurrencyResponse[],
+): number | null {
+    if (!price) return null;
+    if (!currency) return null;
+    const exchangeRate: CurrencyResponse | undefined = rates.find(
+        (el) => el.quote === currency,
+    );
+    if (!exchangeRate) return null;
+    return price / exchangeRate.rate;
 }

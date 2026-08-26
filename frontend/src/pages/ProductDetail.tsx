@@ -6,11 +6,19 @@ import {
     getTrackedProduct,
     refreshProduct,
 } from "../api/scraperApi";
-import { formatPrice, storeColor, marketplaceLabel } from "../utils/format";
+import {
+    formatPrice,
+    storeColor,
+    marketplaceLabel,
+    convertToUsd,
+} from "../utils/format";
 import Header from "../components/Header";
+import { useExchangeRates } from "../context/ExchangeRateContext";
+import type { CurrencyResponse } from "../types/CurrencyResponse";
 
 /** Product detail for /product/:id. Redirects home when the id is missing or not a number. */
 export default function ProductDetail() {
+    const rates: CurrencyResponse[] | null = useExchangeRates();
     const { id } = useParams();
     const productId = Number(id);
     const validId = id !== undefined && !Number.isNaN(productId);
@@ -54,7 +62,7 @@ export default function ProductDetail() {
 
     // `replace` swaps the history entry so Back doesn't return to the broken URL.
     if (!validId) return <Navigate to="/" replace />;
-
+    console.log("rates:", rates);
     async function handleRefresh() {
         try {
             setRefreshing(true);
@@ -244,14 +252,25 @@ export default function ProductDetail() {
 
                             {[...product.listings]
                                 .sort((a, b) => {
-                                    if (a.currentPrice === null) return 1;
-                                    if (b.currentPrice === null) return -1;
-                                    return a.currentPrice - b.currentPrice;
+                                    if (rates === null) return 0; // no rates, just don't sort
+                                    const priceA = convertToUsd(
+                                        a.currentPrice,
+                                        a.currency,
+                                        rates,
+                                    );
+                                    const priceB = convertToUsd(
+                                        b.currentPrice,
+                                        b.currency,
+                                        rates,
+                                    );
+                                    if (priceA === null) return 1;
+                                    if (priceB === null) return -1;
+                                    return priceA - priceB;
                                 })
                                 .map((row, i) => (
                                     <div
                                         className="store-prices--row"
-                                        key={row.store}
+                                        key={row.marketplace}
                                     >
                                         <div className="store-prices--store">
                                             <span
@@ -270,7 +289,7 @@ export default function ProductDetail() {
                                                 )}
                                             </span>
 
-                                            {i === 0 && (
+                                            {rates !== null && i === 0 && (
                                                 <span className="store-prices--lowest">
                                                     LOWEST
                                                 </span>

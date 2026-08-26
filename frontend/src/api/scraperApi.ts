@@ -1,3 +1,4 @@
+import type { CurrencyResponse } from "../types/CurrencyResponse";
 import type { TrackedProductDetailResponse } from "../types/TrackedProductDetailResponse";
 import type { TrackedProductResponse } from "../types/TrackedProductResponse";
 import type { TrackRequest } from "../types/TrackRequest";
@@ -73,4 +74,15 @@ export async function deleteProduct(id: number): Promise<void> {
     if (!res.ok) {
         throw new Error(await errorMessage(res));
     }
+}
+// Doesn't work because calling .json would cause an error to be thrown
+// export async function deleteProduct(id: number): Promise<void> {
+//     jsonRequest(`${BASE}/${id}`, { method: "DELETE" });
+// }
+
+/** Get current exchange rates */
+export function getExchangeRates(
+    options: RequestInit,
+): Promise<CurrencyResponse[]> {
+    return jsonRequest<CurrencyResponse[]>("/api/exchange-rates", options);
 }
