@@ -20,9 +20,9 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,7 +66,31 @@ public class TrackedProductService {
             throw new IllegalURLFormat("unparseable");
         }
     }
+//    Jaccard similarity
+    private static final double TITLE_SIMILARITY_THRESHOLD = 0.4;
 
+    private double titleSimilarity(String a, String b) {
+        if (a == null || b == null) return 0.0;
+
+        Set<String> tokensA = tokenize(a);
+        Set<String> tokensB = tokenize(b);
+
+        Set<String> intersection = new HashSet<>(tokensA);
+        intersection.retainAll(tokensB);
+
+        Set<String> union = new HashSet<>(tokensA);
+        union.addAll(tokensB);
+
+        if (union.isEmpty()) return 0.0;
+
+        return (double) intersection.size() / union.size();
+    }
+
+    private Set<String> tokenize(String title) {
+        return Arrays.stream(title.toLowerCase().split("[^a-z0-9]+"))
+                .filter(token -> !token.isBlank())
+                .collect(Collectors.toSet());
+    }
     /** Tracks a URL: returns the existing product if already tracked, otherwise scrapes and creates one. */
     @Transactional
     public TrackResult trackProduct(String url) {
@@ -94,16 +118,34 @@ public class TrackedProductService {
         ProductListing listing = new ProductListing();
 
         TrackedProduct savedProduct;
+        boolean matched = false;
+        // check if the product exists but in a different marketplace url
 
         if (existingASIN.isPresent()) {
-            savedProduct = existingASIN.get().getTrackedProduct();
-            listing.setTrackedProduct(savedProduct);
+            TrackedProduct candidate = existingASIN.get().getTrackedProduct();
+            double similarity = titleSimilarity(productData.title(), candidate.getName());
+
+            if (similarity >= TITLE_SIMILARITY_THRESHOLD) {
+                savedProduct = candidate;
+                matched = true;
+            } else {
+                log.warn("ASIN match rejected (similarity {}) for '{}' vs existing '{}'",
+                        similarity, productData.title(), candidate.getName());
+                savedProduct = null;
+            }
         } else {
+            savedProduct = null;
+        }
+
+        if (!matched) {
             TrackedProduct product = new TrackedProduct();
             product.setName(productData.title());
             product.setImageUrl(productData.imageUrl());
             savedProduct = trackedProductRepository.save(product);
         }
+
+        listing.setTrackedProduct(savedProduct);
+
         listing.setStore(Store.AMAZON);
         listing.setUrl(normalized);
         listing.setMarketplace(marketplaces.idFor(normalized));
@@ -111,13 +153,9 @@ public class TrackedProductService {
         listing.setLastChecked(now);
         ProductListing savedListing = productListingRepository.save(listing);
 
-
-        // check if the product exists but in a different marketplace url
-
         // currency is NOT NULL on the listing, and an unavailable product has no
         // observed currency yet. The sentinel heals on the first sweep that finds
         // a real offer.
-
 
         // Track it even with no offer today — the product is real and a later
         // sweep may find a price. Recording a null price point is not an option:

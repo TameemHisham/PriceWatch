@@ -326,7 +326,7 @@ public class AmazonScraper implements ProductScraper {
     /** Parses a displayed price, resolving whether comma or dot is the decimal separator. */
     private BigDecimal parsePrice(String raw) {
         if (raw == null || raw.isBlank()) return null;
-        // Strip everything except digits, dot, comma - then normalise
+        // Strip everything except digits, dot, comma - then normalize
         String cleaned = raw.replaceAll("[^0-9.,]", "");
 
         // Handle "1,234.56" vs "1.234,56" formats
