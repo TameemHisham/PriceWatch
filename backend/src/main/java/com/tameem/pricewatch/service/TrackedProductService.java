@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -96,35 +97,27 @@ public class TrackedProductService {
     public TrackResult trackProduct(String url) {
         String normalized = normalizeUrl(url);
 
-        // Already tracking this listing? Return it instead of scraping and inserting again.
         Optional<ProductListing> existingURL = productListingRepository.findByUrl(normalized);
         if (existingURL.isPresent()) {
             return new TrackResult(this.toResponse(existingURL.get().getTrackedProduct()), false);
         }
 
         ProductData productData = productScraper.scrape(url);
-
-        // name is NOT NULL in the schema — a missing title means the selectors rotted,
-        // which is a scrape failure, not a database problem.
         if (productData.title() == null || productData.title().isBlank()) {
             throw new ScrapeException("Could not locate product title for URL: " + url);
         }
-        Instant now = Instant.now();
+
         Optional<String> ASIN = amazonScraper.productKey(normalized);
-        Optional<ProductListing> existingASIN =Optional.empty();
-        if (ASIN.isPresent()) {
-            existingASIN = productListingRepository.findByUrlContaining(ASIN.get());
-        };
-        ProductListing listing = new ProductListing();
+        Optional<ProductListing> existingASIN = ASIN.isPresent()
+                ? productListingRepository.findByUrlContaining(ASIN.get())
+                : Optional.empty();
 
         TrackedProduct savedProduct;
         boolean matched = false;
-        // check if the product exists but in a different marketplace url
 
         if (existingASIN.isPresent()) {
             TrackedProduct candidate = existingASIN.get().getTrackedProduct();
             double similarity = titleSimilarity(productData.title(), candidate.getName());
-
             if (similarity >= TITLE_SIMILARITY_THRESHOLD) {
                 savedProduct = candidate;
                 matched = true;
@@ -144,37 +137,59 @@ public class TrackedProductService {
             savedProduct = trackedProductRepository.save(product);
         }
 
-        listing.setTrackedProduct(savedProduct);
+        // Save the originally-requested listing first, using data already scraped.
+        saveListing(savedProduct, normalized, productData, marketplaces.idFor(normalized));
 
+        // Fan out to sibling marketplaces of the same store, using the same ASIN.
+        if (ASIN.isPresent()) {
+            String originalMarketplace = marketplaces.idFor(normalized);
+            for (String marketplaceId : marketplaces.allMarketplaceIds()) {
+                if (marketplaceId.equals(originalMarketplace)) continue;
+
+                String siblingUrl = "https://" + marketplaces.configFor(marketplaceId).getHost()
+                        + "/dp/" + ASIN.get();
+
+                try {
+                    Thread.sleep(2000);
+                    ProductData siblingData = productScraper.scrape(siblingUrl);
+                    if (siblingData.title() == null || siblingData.title().isBlank()) {
+                        throw new ScrapeException("Could not locate product title for URL: " + siblingUrl);
+                    }
+                    saveListing(savedProduct, siblingUrl, siblingData, marketplaceId);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (ScrapeException e) {
+                    log.warn("Sibling scrape failed for {} ({}): {}", marketplaceId, siblingUrl, e.toString());
+                } catch (Exception e) {
+                    log.error("Sibling scrape failed for {} ({}): {}", marketplaceId, siblingUrl, e.toString());
+                }
+            }
+        }
+
+        return new TrackResult(this.toResponse(savedProduct), true);
+    }
+
+    /** Saves one listing + its initial price point (if any) for an already-scraped marketplace. */
+    private void saveListing(TrackedProduct product, String url, ProductData productData, String marketplaceId) {
+        ProductListing listing = new ProductListing();
+        listing.setTrackedProduct(product);
         listing.setStore(Store.AMAZON);
-        listing.setUrl(normalized);
-        listing.setMarketplace(marketplaces.idFor(normalized));
+        listing.setUrl(url);
+        listing.setMarketplace(marketplaceId);
         listing.setCurrency(productData.currency() == null ? "UNKNOWN" : productData.currency());
-        listing.setLastChecked(now);
+        listing.setLastChecked(Instant.now());
         ProductListing savedListing = productListingRepository.save(listing);
 
-        // currency is NOT NULL on the listing, and an unavailable product has no
-        // observed currency yet. The sentinel heals on the first sweep that finds
-        // a real offer.
-
-        // Track it even with no offer today — the product is real and a later
-        // sweep may find a price. Recording a null price point is not an option:
-        // a price point means "this cost this much at this time".
         if (productData.hasPrice()) {
             PricePoint pricePoint = new PricePoint();
             pricePoint.setProductListing(savedListing);
             pricePoint.setPrice(productData.price());
-            // Recorded as observed, even when UNKNOWN: an amount whose currency we
-            // cannot name is still a fact about this moment, and mislabelling it
-            // with the listing's last-known currency would be worse.
             pricePoint.setCurrency(productData.currency());
-            pricePoint.setCheckedAt(now);
+            pricePoint.setCheckedAt(Instant.now());
             pricePointRepository.save(pricePoint);
         } else {
-            log.info("Tracking {} with no current offer — no initial price point", normalized);
+            log.info("Tracking {} with no current offer — no initial price point", url);
         }
-
-        return new TrackResult(this.toResponse(savedProduct), true);
     }
     /** Every tracked product as a dashboard card. Runs one query per product per listing (N+1, cached in Phase 6). */
     @Transactional(readOnly = true)
@@ -222,15 +237,37 @@ public class TrackedProductService {
         }
         return this.toDetailResponse(product);
     }
+    private BigDecimal convertToUsd(BigDecimal price, String currency, Map<String, BigDecimal> rates) {
+        if (price == null || currency == null) return null;
+        BigDecimal exchangeRate = rates.get(currency);
+        if (exchangeRate == null) return null;
+        return price.divide(exchangeRate, 2, RoundingMode.HALF_UP);
+    }
+
+    /** Builds the ASIN → USD rate lookup once per call, so the comparison loop below doesn't hit the DB per listing. */
+    private Map<String, BigDecimal> currentRatesByCurrency() {
+        return exchangeRateRepository.findAll().stream()
+                .collect(Collectors.toMap(ExchangeRate::getCurrency, ExchangeRate::getExchangeRate));
+    }
+
     /** Builds the card DTO, deriving the lowest current price and its currency across the product's listings. */
     private TrackedProductResponse toResponse(TrackedProduct product) {
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
+        Map<String, BigDecimal> rates = currentRatesByCurrency();
+
         String currency = null;
         BigDecimal lowestPrice = null;
+        BigDecimal lowestPriceUsd = null;
+
         for (ProductListing listing : listings) {
             PricePoint latest = pricePointRepository.findTopByProductListingOrderByCheckedAtDesc(listing);
             if (latest == null) continue;
-            if (lowestPrice == null || latest.getPrice().compareTo(lowestPrice) < 0) {
+
+            BigDecimal priceUsd = convertToUsd(latest.getPrice(), listing.getCurrency(), rates);
+            if (priceUsd == null) continue; // can't compare fairly without a known rate
+
+            if (lowestPriceUsd == null || priceUsd.compareTo(lowestPriceUsd) < 0) {
+                lowestPriceUsd = priceUsd;
                 lowestPrice = latest.getPrice();
                 currency = listing.getCurrency();
             }
@@ -240,33 +277,41 @@ public class TrackedProductService {
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
                 currency, lowestPrice, listings.size());
     }
+
     public TrackedProductDetailResponse toDetailResponse(TrackedProduct product) {
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
+        Map<String, BigDecimal> rates = currentRatesByCurrency();
+
         String currency = null;
         BigDecimal lowestPrice = null;
+        BigDecimal lowestPriceUsd = null;
         List<ListingResponse> listingResponse = new ArrayList<>();
+
         for (ProductListing listing : listings) {
             PricePoint latest = pricePointRepository.findTopByProductListingOrderByCheckedAtDesc(listing);
             listingResponse.add(new ListingResponse(
-                            listing.getStore(),
-                            listing.getUrl(),
-                            listing.getCurrency(),
+                    listing.getStore(),
+                    listing.getUrl(),
+                    listing.getCurrency(),
                     latest != null ? latest.getPrice() : null,
-                            listing.getMarketplace()
-                    ));
+                    listing.getMarketplace()
+            ));
             if (latest == null) continue;
-            if (lowestPrice == null || latest.getPrice().compareTo(lowestPrice) < 0) {
+
+            BigDecimal priceUsd = convertToUsd(latest.getPrice(), listing.getCurrency(), rates);
+            if (priceUsd == null) continue;
+
+            if (lowestPriceUsd == null || priceUsd.compareTo(lowestPriceUsd) < 0) {
+                lowestPriceUsd = priceUsd;
                 lowestPrice = latest.getPrice();
                 currency = listing.getCurrency();
             }
-
-            }
+        }
         return new TrackedProductDetailResponse(
                 product.getId(), product.getName(), product.getBrand(), product.getCategory(),
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
-                currency, lowestPrice, listings.size(),listingResponse);
-
-        }
+                currency, lowestPrice, listings.size(), listingResponse);
+    }
 
     @Transactional
     public void refreshListing(ProductListing listing) {
@@ -314,8 +359,6 @@ public class TrackedProductService {
         List<ExchangeRate> currencies =  this.exchangeRateRepository.findAll();
         return currencies.stream().map(c -> new CurrencyResponse(c.getCurrency(), c.getExchangeRate())).toList() ;
     }
-
-
 
 
 }

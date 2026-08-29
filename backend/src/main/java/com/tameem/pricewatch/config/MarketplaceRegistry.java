@@ -5,6 +5,7 @@ import com.tameem.pricewatch.scraper.UnsupportedMarketplaceException;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Set;
 
 /** Resolves which configured marketplace a product URL belongs to. */
 @Component
@@ -38,6 +39,9 @@ public class MarketplaceRegistry {
         } catch (IllegalArgumentException e) {
             return url;
         }
+    }
+    public Set<String> allMarketplaceIds() {
+        return properties.getMarketplaces().keySet();
     }
 
     /** Config for a marketplace id, or throws if it is no longer configured. */
