@@ -257,10 +257,11 @@ public class TrackedProductService {
                 currency = listing.getCurrency();
             }
         }
+        boolean targetReached = product.getTargetPrice() != null && lowestPrice != null && lowestPrice.compareTo(product.getTargetPrice()) <= 0;
         return new TrackedProductResponse(
                 product.getId(), product.getName(), product.getBrand(), product.getCategory(),
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
-                currency, lowestPrice, listings.size());
+                currency, lowestPrice, listings.size(),targetReached);
     }
 
     public TrackedProductDetailResponse toDetailResponse(TrackedProduct product) {
@@ -292,10 +293,12 @@ public class TrackedProductService {
                 currency = listing.getCurrency();
             }
         }
+        boolean targetReached = product.getTargetPrice() != null && lowestPrice != null && lowestPrice.compareTo(product.getTargetPrice()) <= 0;
+
         return new TrackedProductDetailResponse(
                 product.getId(), product.getName(), product.getBrand(), product.getCategory(),
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
-                currency, lowestPrice, listings.size(), listingResponse);
+                currency, lowestPrice, listings.size(), listingResponse,targetReached);
     }
 
     @Transactional
@@ -339,7 +342,11 @@ public class TrackedProductService {
         pricePointRepository.save(pricePoint);
 
     }
-
+    public void setTargetPrice(long id, BigDecimal targetPrice) {
+        TrackedProduct product = getEntity(id);
+        product.setTargetPrice(targetPrice);
+        trackedProductRepository.save(product);
+    }
 
 
 }

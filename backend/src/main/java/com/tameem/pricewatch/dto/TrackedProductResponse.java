@@ -6,5 +6,5 @@ import java.time.Instant;
 public record TrackedProductResponse(
     Long id, String name, String brand, String category,
     BigDecimal targetPrice, Instant createdAt, String imageUrl,
-    String currency, BigDecimal currentPrice, int storeCount
+    String currency, BigDecimal currentPrice, int storeCount, boolean targetPriceReached
 ) {}

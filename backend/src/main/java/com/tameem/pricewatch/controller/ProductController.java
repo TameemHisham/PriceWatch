@@ -2,7 +2,6 @@ package com.tameem.pricewatch.controller;
 
 
 import com.tameem.pricewatch.dto.*;
-import com.tameem.pricewatch.entity.ExchangeRate;
 import com.tameem.pricewatch.entity.TrackedProduct;
 import com.tameem.pricewatch.service.ExchangeRateService;
 import com.tameem.pricewatch.service.PriceHistoryService;
@@ -70,9 +69,15 @@ public class ProductController {
 
     @GetMapping("/{id}/history")
     public ResponseEntity<LinkedHashMap<String, List<PricePointResponse>>> getProductHistory(@PathVariable long id) {
-        TrackedProduct product = trackedProductService.getEntity(id);;
+        TrackedProduct product = trackedProductService.getEntity(id);
         return ResponseEntity.ok(
                 priceHistoryService.getProductHistory(product)
         );
+    }
+
+    @PutMapping("/tracked-products/{id}/target")
+    public ResponseEntity<Void> setTargetPrice(@PathVariable long id, @RequestBody @Valid TargetPriceRequest request) {
+        trackedProductService.setTargetPrice(id, request.targetPrice());
+        return ResponseEntity.noContent().build();
     }
 }
