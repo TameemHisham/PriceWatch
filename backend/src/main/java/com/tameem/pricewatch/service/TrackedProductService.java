@@ -2,7 +2,6 @@ package com.tameem.pricewatch.service;
 
 import com.tameem.pricewatch.dto.*;
 import com.tameem.pricewatch.entity.*;
-import com.tameem.pricewatch.repositories.ExchangeRateRepository;
 import com.tameem.pricewatch.repositories.PricePointRepository;
 import com.tameem.pricewatch.repositories.ProductListingRepository;
 import com.tameem.pricewatch.repositories.TrackedProductRepository;
@@ -12,12 +11,9 @@ import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
 import com.tameem.pricewatch.scraper.AmazonScraper;
 //import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -26,30 +22,29 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 public class TrackedProductService {
     private final AmazonScraper amazonScraper;
     private final TrackedProductRepository trackedProductRepository;
     private final ProductListingRepository productListingRepository;
+    private final ExchangeRateService exchangeRateService;
     private final PricePointRepository pricePointRepository;
     private final ProductScraper productScraper;
     private final MarketplaceRegistry marketplaces;
     private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
-    private final ExchangeRateRepository exchangeRateRepository;
     public TrackedProductService(AmazonScraper amazonScraper, TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
                                  ProductScraper productScraper,
-                                 MarketplaceRegistry marketplaces,ExchangeRateRepository exchangeRateRepository) {
+                                 MarketplaceRegistry marketplaces,ExchangeRateService exchangeRateService) {
         this.amazonScraper = amazonScraper;
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
         this.pricePointRepository = pricePointRepository;
         this.productScraper = productScraper;
         this.marketplaces = marketplaces;
-        this.exchangeRateRepository = exchangeRateRepository;
+        this.exchangeRateService = exchangeRateService;
     }
 
     /** Builds a canonical https://{host}/dp/{ASIN} key from a product URL, so the same
@@ -206,7 +201,7 @@ public class TrackedProductService {
         return this.toDetailResponse(this.getEntity(id));
     }
     /** Loads the entity by id or throws ResourceNotFoundException (mapped to 404). */
-    private TrackedProduct getEntity(long id) {
+    public TrackedProduct getEntity(long id) {
         return trackedProductRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No product with id: " + id));
     }
     /** Deletes a product and everything under it: price points first, then listings, then the product. */
@@ -237,23 +232,13 @@ public class TrackedProductService {
         }
         return this.toDetailResponse(product);
     }
-    private BigDecimal convertToUsd(BigDecimal price, String currency, Map<String, BigDecimal> rates) {
-        if (price == null || currency == null) return null;
-        BigDecimal exchangeRate = rates.get(currency);
-        if (exchangeRate == null) return null;
-        return price.divide(exchangeRate, 2, RoundingMode.HALF_UP);
-    }
 
-    /** Builds the ASIN → USD rate lookup once per call, so the comparison loop below doesn't hit the DB per listing. */
-    private Map<String, BigDecimal> currentRatesByCurrency() {
-        return exchangeRateRepository.findAll().stream()
-                .collect(Collectors.toMap(ExchangeRate::getCurrency, ExchangeRate::getExchangeRate));
-    }
+
 
     /** Builds the card DTO, deriving the lowest current price and its currency across the product's listings. */
     private TrackedProductResponse toResponse(TrackedProduct product) {
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
-        Map<String, BigDecimal> rates = currentRatesByCurrency();
+        Map<String, BigDecimal> rates = exchangeRateService.currentRatesByCurrency();
 
         String currency = null;
         BigDecimal lowestPrice = null;
@@ -263,7 +248,7 @@ public class TrackedProductService {
             PricePoint latest = pricePointRepository.findTopByProductListingOrderByCheckedAtDesc(listing);
             if (latest == null) continue;
 
-            BigDecimal priceUsd = convertToUsd(latest.getPrice(), listing.getCurrency(), rates);
+            BigDecimal priceUsd = exchangeRateService.convertToUsd(latest.getPrice(), listing.getCurrency(), rates);
             if (priceUsd == null) continue; // can't compare fairly without a known rate
 
             if (lowestPriceUsd == null || priceUsd.compareTo(lowestPriceUsd) < 0) {
@@ -280,7 +265,7 @@ public class TrackedProductService {
 
     public TrackedProductDetailResponse toDetailResponse(TrackedProduct product) {
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
-        Map<String, BigDecimal> rates = currentRatesByCurrency();
+        Map<String, BigDecimal> rates = exchangeRateService.currentRatesByCurrency();
 
         String currency = null;
         BigDecimal lowestPrice = null;
@@ -298,7 +283,7 @@ public class TrackedProductService {
             ));
             if (latest == null) continue;
 
-            BigDecimal priceUsd = convertToUsd(latest.getPrice(), listing.getCurrency(), rates);
+            BigDecimal priceUsd = exchangeRateService.convertToUsd(latest.getPrice(), listing.getCurrency(), rates);
             if (priceUsd == null) continue;
 
             if (lowestPriceUsd == null || priceUsd.compareTo(lowestPriceUsd) < 0) {
@@ -355,10 +340,6 @@ public class TrackedProductService {
 
     }
 
-    public List<CurrencyResponse> getCurrentExchangeRate() {
-        List<ExchangeRate> currencies =  this.exchangeRateRepository.findAll();
-        return currencies.stream().map(c -> new CurrencyResponse(c.getCurrency(), c.getExchangeRate())).toList() ;
-    }
 
 
 }

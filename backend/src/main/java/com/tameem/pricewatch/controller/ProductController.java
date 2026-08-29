@@ -3,12 +3,16 @@ package com.tameem.pricewatch.controller;
 
 import com.tameem.pricewatch.dto.*;
 import com.tameem.pricewatch.entity.ExchangeRate;
+import com.tameem.pricewatch.entity.TrackedProduct;
+import com.tameem.pricewatch.service.ExchangeRateService;
+import com.tameem.pricewatch.service.PriceHistoryService;
 import com.tameem.pricewatch.service.TrackedProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @RestController
@@ -17,10 +21,14 @@ public class ProductController {
 
 //    private final ProductScraper scraper;
     private final TrackedProductService trackedProductService;
+    private final ExchangeRateService exchangeRateService;
+    private final PriceHistoryService priceHistoryService;
 
-    public ProductController(TrackedProductService trackedProductService) {
+    public ProductController(TrackedProductService trackedProductService, ExchangeRateService exchangeRateService, PriceHistoryService priceHistoryService) {
 
         this.trackedProductService = trackedProductService;
+        this.exchangeRateService = exchangeRateService;
+        this.priceHistoryService = priceHistoryService;
     }
 
 
@@ -56,7 +64,15 @@ public class ProductController {
     }
 
     @GetMapping("/exchange-rates")
-    public List<CurrencyResponse>  getExchangeRate() {
-        return trackedProductService.getCurrentExchangeRate();
+    public ResponseEntity<List<CurrencyResponse>>  getExchangeRate() {
+        return ResponseEntity.ok(exchangeRateService.getCurrentExchangeRate());
+    }
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<LinkedHashMap<String, List<PricePointResponse>>> getProductHistory(@PathVariable long id) {
+        TrackedProduct product = trackedProductService.getEntity(id);;
+        return ResponseEntity.ok(
+                priceHistoryService.getProductHistory(product)
+        );
     }
 }
