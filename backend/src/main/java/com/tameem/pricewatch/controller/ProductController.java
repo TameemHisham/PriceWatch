@@ -3,6 +3,7 @@ package com.tameem.pricewatch.controller;
 
 import com.tameem.pricewatch.dto.*;
 import com.tameem.pricewatch.entity.TrackedProduct;
+import com.tameem.pricewatch.service.DashboardService;
 import com.tameem.pricewatch.service.ExchangeRateService;
 import com.tameem.pricewatch.service.PriceHistoryService;
 import com.tameem.pricewatch.service.TrackedProductService;
@@ -22,12 +23,14 @@ public class ProductController {
     private final TrackedProductService trackedProductService;
     private final ExchangeRateService exchangeRateService;
     private final PriceHistoryService priceHistoryService;
+    private final DashboardService dashboardService;
 
-    public ProductController(TrackedProductService trackedProductService, ExchangeRateService exchangeRateService, PriceHistoryService priceHistoryService) {
+    public ProductController(TrackedProductService trackedProductService, ExchangeRateService exchangeRateService, PriceHistoryService priceHistoryService, DashboardService dashboardService) {
 
         this.trackedProductService = trackedProductService;
         this.exchangeRateService = exchangeRateService;
         this.priceHistoryService = priceHistoryService;
+        this.dashboardService = dashboardService;
     }
 
 
@@ -79,5 +82,11 @@ public class ProductController {
     public ResponseEntity<Void> setTargetPrice(@PathVariable long id, @RequestBody @Valid TargetPriceRequest request) {
         trackedProductService.setTargetPrice(id, request.targetPrice());
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/dashboard/summary")
+    public ResponseEntity<DashboardSummaryResponse> getDashboardSummery() {
+        return ResponseEntity.ok(
+                dashboardService.getDashboardSummary()
+        );
     }
 }
