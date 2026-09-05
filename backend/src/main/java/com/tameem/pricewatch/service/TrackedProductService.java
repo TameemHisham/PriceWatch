@@ -10,7 +10,6 @@ import com.tameem.pricewatch.scraper.ProductData;
 import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
 import com.tameem.pricewatch.scraper.AmazonScraper;
-//import jakarta.transaction.Transactional;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -33,11 +32,12 @@ public class TrackedProductService {
     private final ProductScraper productScraper;
     private final MarketplaceRegistry marketplaces;
     private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
+
     public TrackedProductService(AmazonScraper amazonScraper, TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
                                  ProductScraper productScraper,
-                                 MarketplaceRegistry marketplaces,ExchangeRateService exchangeRateService) {
+                                 MarketplaceRegistry marketplaces, ExchangeRateService exchangeRateService) {
         this.amazonScraper = amazonScraper;
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
@@ -294,11 +294,10 @@ public class TrackedProductService {
             }
         }
         boolean targetReached = product.getTargetPrice() != null && lowestPrice != null && lowestPrice.compareTo(product.getTargetPrice()) <= 0;
-
         return new TrackedProductDetailResponse(
                 product.getId(), product.getName(), product.getBrand(), product.getCategory(),
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
-                currency, lowestPrice, listings.size(), listingResponse,targetReached);
+                currency, lowestPrice, listings.size(), listingResponse,targetReached,this.getAllTimeLow(product, rates));
     }
 
     @Transactional
@@ -347,7 +346,26 @@ public class TrackedProductService {
         product.setTargetPrice(targetPrice);
         trackedProductRepository.save(product);
     }
+    /** Lowest price ever recorded for this product, across all listings and all history ,
+     * compared in USD like the current-lowest logic, but returned in its original currency. */
+    private BigDecimal getAllTimeLow(TrackedProduct product, Map<String, BigDecimal> rates) {
+        List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
+        BigDecimal allTimeLowUsd = null;
+        BigDecimal allTimeLowOriginal = null;
 
+        for (ProductListing listing : listings) {
+            for (PricePoint point : pricePointRepository.findByProductListingOrderByCheckedAtAsc(listing)) {
+                BigDecimal priceUsd = exchangeRateService.convertToUsd(point.getPrice(), point.getCurrency(), rates);
+                if (priceUsd == null) continue;
+
+                if (allTimeLowUsd == null || priceUsd.compareTo(allTimeLowUsd) < 0) {
+                    allTimeLowUsd = priceUsd;
+                    allTimeLowOriginal = point.getPrice();
+                }
+            }
+        }
+        return allTimeLowOriginal;
+    }
 
 }
 
