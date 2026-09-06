@@ -15,6 +15,8 @@ import {
 import Header from "../components/Header";
 import { useExchangeRates } from "../context/ExchangeRateContext";
 import type { CurrencyResponse } from "../types/CurrencyResponse";
+import TargetPriceCard from "../components/TargetPriceCard";
+import PriceHistoryChart from "../components/PriceHistoryChart";
 
 /** Product detail for /product/:id. Redirects home when the id is missing or not a number. */
 export default function ProductDetail() {
@@ -238,100 +240,117 @@ export default function ProductDetail() {
                             </div>
                         </div>
                     </div>
-                    <div className="store-prices">
-                        <div className="store-prices--table">
-                            <div className="store-prices--header">
-                                Current price by store
-                            </div>
+                    <PriceHistoryChart
+                        productId={product.id}
+                        targetPrice={product.targetPrice}
+                    />
 
-                            <div className="store-prices--headings">
-                                <span>Store</span>
-                                <span>Price</span>
-                                <span></span>
-                            </div>
+                    <div className="detail-grid">
+                        <div className="store-prices">
+                            <div className="store-prices--table">
+                                <div className="store-prices--header">
+                                    Current price by store
+                                </div>
 
-                            {[...product.listings]
-                                .sort((a, b) => {
-                                    if (rates === null) return 0; // no rates, just don't sort
-                                    const priceA = convertToUsd(
-                                        a.currentPrice,
-                                        a.currency,
-                                        rates,
-                                    );
-                                    const priceB = convertToUsd(
-                                        b.currentPrice,
-                                        b.currency,
-                                        rates,
-                                    );
-                                    if (priceA === null) return 1;
-                                    if (priceB === null) return -1;
-                                    return priceA - priceB;
-                                })
-                                .map((row, i) => (
-                                    <div
-                                        className="store-prices--row"
-                                        key={row.marketplace}
-                                    >
-                                        <div className="store-prices--store">
-                                            <span
-                                                className="store-prices--store-color"
-                                                style={{
-                                                    background: storeColor(
-                                                        row.store,
-                                                    ),
-                                                }}
-                                            />
+                                <div className="store-prices--headings">
+                                    <span>Store</span>
+                                    <span>Price</span>
+                                    <span></span>
+                                </div>
 
-                                            <span className="store-prices--store-name">
-                                                {/* {storeLabel(row.store)} */}
-                                                {marketplaceLabel(
-                                                    row.marketplace,
+                                {[...product.listings]
+                                    .sort((a, b) => {
+                                        if (rates === null) return 0; // no rates, just don't sort
+                                        const priceA = convertToUsd(
+                                            a.currentPrice,
+                                            a.currency,
+                                            rates,
+                                        );
+                                        const priceB = convertToUsd(
+                                            b.currentPrice,
+                                            b.currency,
+                                            rates,
+                                        );
+                                        if (priceA === null) return 1;
+                                        if (priceB === null) return -1;
+                                        return priceA - priceB;
+                                    })
+                                    .map((row, i) => (
+                                        <div
+                                            className="store-prices--row"
+                                            key={row.marketplace}
+                                        >
+                                            <div className="store-prices--store">
+                                                <span
+                                                    className="store-prices--store-color"
+                                                    style={{
+                                                        background: storeColor(
+                                                            row.store,
+                                                        ),
+                                                    }}
+                                                />
+
+                                                <span className="store-prices--store-name">
+                                                    {/* {storeLabel(row.store)} */}
+                                                    {marketplaceLabel(
+                                                        row.marketplace,
+                                                    )}
+                                                </span>
+
+                                                {rates !== null && i === 0 && (
+                                                    <span className="store-prices--lowest">
+                                                        LOWEST
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <span className="store-prices--price">
+                                                {formatPrice(
+                                                    row.currentPrice,
+                                                    row.currency,
                                                 )}
                                             </span>
 
-                                            {rates !== null && i === 0 && (
-                                                <span className="store-prices--lowest">
-                                                    LOWEST
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <span className="store-prices--price">
-                                            {formatPrice(
-                                                row.currentPrice,
-                                                row.currency,
-                                            )}
-                                        </span>
-
-                                        <a
-                                            href={row.url}
-                                            className="store-prices--link"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            <span>Visit</span>
-                                            <svg
-                                                width="13"
-                                                height="13"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
+                                            <a
+                                                href={row.url}
+                                                className="store-prices--link"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                             >
-                                                <line
-                                                    x1="7"
-                                                    y1="17"
-                                                    x2="17"
-                                                    y2="7"
-                                                />
-                                                <polyline points="7 7 17 7 17 17" />
-                                            </svg>
-                                        </a>
-                                    </div>
-                                ))}
+                                                <span>Visit</span>
+                                                <svg
+                                                    width="13"
+                                                    height="13"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                >
+                                                    <line
+                                                        x1="7"
+                                                        y1="17"
+                                                        x2="17"
+                                                        y2="7"
+                                                    />
+                                                    <polyline points="7 7 17 7 17 17" />
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    ))}
+                            </div>
                         </div>
+                        <TargetPriceCard
+                            productId={product.id}
+                            currentTarget={product.targetPrice}
+                            onSaved={(newTarget) =>
+                                setProduct({
+                                    ...product,
+                                    targetPrice: newTarget,
+                                })
+                            }
+                        />
                     </div>
                 </div>
             )}
