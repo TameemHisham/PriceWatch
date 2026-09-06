@@ -13,6 +13,7 @@ import com.tameem.pricewatch.scraper.AmazonScraper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -258,10 +259,12 @@ public class TrackedProductService {
             }
         }
         boolean targetReached = product.getTargetPrice() != null && lowestPrice != null && lowestPrice.compareTo(product.getTargetPrice()) <= 0;
+        List<BigDecimal> recentPrices = getRecentPricesUsd(product, rates);
+        BigDecimal trendPercent = getTrendPercent(recentPrices);
         return new TrackedProductResponse(
                 product.getId(), product.getName(), product.getBrand(), product.getCategory(),
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
-                currency, lowestPrice, listings.size(),targetReached);
+                currency, lowestPrice, listings.size(),targetReached,recentPrices, trendPercent);
     }
 
     public TrackedProductDetailResponse toDetailResponse(TrackedProduct product) {
@@ -365,6 +368,43 @@ public class TrackedProductService {
             }
         }
         return allTimeLowOriginal;
+    }
+    /** Last N USD-converted price points across all listings, in chronological order,
+     * plus the % change from the first to the last of those points — powers dashboard
+     * sparklines and trend pills without a separate history call per card. */
+    private static final int RECENT_POINTS_WINDOW = 10;
+
+    private List<BigDecimal> getRecentPricesUsd(TrackedProduct product, Map<String, BigDecimal> rates) {
+        List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
+
+        List<Map.Entry<Instant, BigDecimal>> allPoints = new ArrayList<>();
+        for (ProductListing listing : listings) {
+            for (PricePoint point : pricePointRepository.findByProductListingOrderByCheckedAtAsc(listing)) {
+                BigDecimal priceUsd = exchangeRateService.convertToUsd(point.getPrice(), point.getCurrency(), rates);
+                if (priceUsd == null) continue;
+                allPoints.add(Map.entry(point.getCheckedAt(), priceUsd));
+            }
+        }
+
+        allPoints.sort(Map.Entry.comparingByKey());
+
+        int fromIndex = Math.max(0, allPoints.size() - RECENT_POINTS_WINDOW);
+        return allPoints.subList(fromIndex, allPoints.size()).stream()
+                .map(Map.Entry::getValue)
+                .toList();
+    }
+
+    private BigDecimal getTrendPercent(List<BigDecimal> recentPricesUsd) {
+        if (recentPricesUsd.size() < 2) return null;
+
+        BigDecimal first = recentPricesUsd.get(0);
+        BigDecimal last = recentPricesUsd.get(recentPricesUsd.size() - 1);
+        if (first.compareTo(BigDecimal.ZERO) == 0) return null;
+
+        return last.subtract(first)
+                .divide(first, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
 }
