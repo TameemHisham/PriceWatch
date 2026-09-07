@@ -26,6 +26,7 @@ re-applying one is safe if you are unsure whether it has already run.
 | File | Applied to local dev | Notes |
 |---|---|---|
 | `2026-09-08-001-product-listing-constraints.sql` | 2026-09-08 | Needed before any non-Amazon storefront can be tracked |
+| `2026-09-08-002-store-check-add-currys.sql` | 2026-09-08 | Adds CURRYS to the store whitelist |
 
 ## If a migration tool is adopted later
 
