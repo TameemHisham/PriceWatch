@@ -70,7 +70,7 @@ public class ProductController {
         return ResponseEntity.ok(exchangeRateService.getCurrentExchangeRate());
     }
 
-    @GetMapping("/{id}/history")
+    @GetMapping("/tracked-products/{id}/history")
     public ResponseEntity<LinkedHashMap<String, List<PricePointResponse>>> getProductHistory(@PathVariable long id) {
         TrackedProduct product = trackedProductService.getEntity(id);
         return ResponseEntity.ok(

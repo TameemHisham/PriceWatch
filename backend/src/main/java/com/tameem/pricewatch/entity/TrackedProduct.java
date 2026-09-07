@@ -23,6 +23,9 @@ public class TrackedProduct {
     private Instant createdAt;
     @Column(length = 2083, nullable = true, name = "image_url")
     private String imageUrl;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public TrackedProduct() {}
 
@@ -89,4 +92,11 @@ public class TrackedProduct {
         this.setCreatedAt(Instant.now());
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

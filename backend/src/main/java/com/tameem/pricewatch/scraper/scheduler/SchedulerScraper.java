@@ -76,9 +76,9 @@ public class SchedulerScraper {
                 failed++;
                 log.error("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.toString());
             }
-            long timeAfterLoop = System.nanoTime();
-            log.info("Sweep complete: {} listings checked, {} succeeded, {} failed, {}ms", listings.size(), succeeded, failed, (timeAfterLoop - timeBeforeLoop) / 1_000_000);
         }
+        long timeAfterLoop = System.nanoTime();
+        log.info("Sweep complete: {} listings checked, {} succeeded, {} failed, {}ms", listings.size(), succeeded, failed, (timeAfterLoop - timeBeforeLoop) / 1_000_000);
     }
 
     @Scheduled(cron = "@weekly")

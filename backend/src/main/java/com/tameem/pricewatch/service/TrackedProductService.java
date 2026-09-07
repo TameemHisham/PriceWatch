@@ -6,10 +6,12 @@ import com.tameem.pricewatch.repositories.PricePointRepository;
 import com.tameem.pricewatch.repositories.ProductListingRepository;
 import com.tameem.pricewatch.repositories.TrackedProductRepository;
 import com.tameem.pricewatch.config.MarketplaceRegistry;
+import com.tameem.pricewatch.repositories.UserRepository;
 import com.tameem.pricewatch.scraper.ProductData;
 import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
 import com.tameem.pricewatch.scraper.AmazonScraper;
+import com.tameem.pricewatch.security.CurrentUserProvider;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -33,12 +35,15 @@ public class TrackedProductService {
     private final ProductScraper productScraper;
     private final MarketplaceRegistry marketplaces;
     private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
+    private final CurrentUserProvider currentUserProvider;
+    private final UserRepository userRepository;
+
 
     public TrackedProductService(AmazonScraper amazonScraper, TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
                                  ProductScraper productScraper,
-                                 MarketplaceRegistry marketplaces, ExchangeRateService exchangeRateService) {
+                                 MarketplaceRegistry marketplaces, ExchangeRateService exchangeRateService,CurrentUserProvider currentUserProvider,UserRepository userRepository) {
         this.amazonScraper = amazonScraper;
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
@@ -46,6 +51,8 @@ public class TrackedProductService {
         this.productScraper = productScraper;
         this.marketplaces = marketplaces;
         this.exchangeRateService = exchangeRateService;
+        this.currentUserProvider=currentUserProvider;
+        this.userRepository = userRepository;
     }
 
     /** Builds a canonical https://{host}/dp/{ASIN} key from a product URL, so the same
@@ -130,6 +137,9 @@ public class TrackedProductService {
             TrackedProduct product = new TrackedProduct();
             product.setName(productData.title());
             product.setImageUrl(productData.imageUrl());
+            User currentUser = userRepository.findById(currentUserProvider.getCurrentUserId())
+                    .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+            product.setUser(currentUser); // Assign to user
             savedProduct = trackedProductRepository.save(product);
         }
 
@@ -190,8 +200,9 @@ public class TrackedProductService {
     /** Every tracked product as a dashboard card. Runs one query per product per listing (N+1, cached in Phase 6). */
     @Transactional(readOnly = true)
     public List<TrackedProductResponse> getAllProducts() {
-        List<TrackedProductResponse> products  = new ArrayList<>();
-        for (TrackedProduct product : trackedProductRepository.findAll()) {
+        Long userId = currentUserProvider.getCurrentUserId();
+        List<TrackedProductResponse> products = new ArrayList<>();
+        for (TrackedProduct product : trackedProductRepository.findByUserId(userId)) {
             products.add(this.toResponse(product));
         }
         return products;
@@ -203,7 +214,15 @@ public class TrackedProductService {
     }
     /** Loads the entity by id or throws ResourceNotFoundException (mapped to 404). */
     public TrackedProduct getEntity(long id) {
-        return trackedProductRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No product with id: " + id));
+        TrackedProduct product = trackedProductRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No product with id: " + id));
+
+        Long currentUserId = currentUserProvider.getCurrentUserId();
+        if (product.getUser() == null || !currentUserId.equals(product.getUser().getId())) {
+            throw new ResourceNotFoundException("No product with id: " + id);
+        }
+
+        return product;
     }
     /** Deletes a product and everything under it: price points first, then listings, then the product. */
     @Transactional
