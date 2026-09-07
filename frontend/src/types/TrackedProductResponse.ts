@@ -9,4 +9,5 @@ export interface TrackedProductResponse {
     currency: string | null;
     currentPrice: number | null;
     storeCount: number;
+    stores: string[];
 }

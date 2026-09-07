@@ -281,10 +281,18 @@ public class TrackedProductService {
         boolean targetReached = product.getTargetPrice() != null && lowestPrice != null && lowestPrice.compareTo(product.getTargetPrice()) <= 0;
         List<BigDecimal> recentPrices = getRecentPricesUsd(product, rates);
         BigDecimal trendPercent = getTrendPercent(recentPrices);
+        // Distinct retailers behind this product, so a card can name its store instead of
+        // assuming Amazon. Order is stable so the label does not reshuffle between loads.
+        List<String> stores = listings.stream()
+                .map(listing -> listing.getStore().name())
+                .distinct()
+                .sorted()
+                .toList();
         return new TrackedProductResponse(
                 product.getId(), product.getName(), product.getBrand(), product.getCategory(),
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
-                currency, lowestPrice, listings.size(),targetReached,recentPrices, trendPercent);
+                currency, lowestPrice, listings.size(),targetReached,recentPrices, trendPercent,
+                stores);
     }
 
     public TrackedProductDetailResponse toDetailResponse(TrackedProduct product) {

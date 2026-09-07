@@ -30,6 +30,10 @@ const STORE_INFO: Record<string, { label: string; color: string }> = {
         label: "Newegg",
         color: "oklch(0.76 0.13 195)",
     },
+    BH_PHOTO: {
+        label: "B&H Photo",
+        color: "oklch(0.68 0.17 20)",
+    },
     ALIEXPRESS: {
         label: "AliExpress",
         color: "oklch(0.78 0.14 30)",
@@ -48,18 +52,31 @@ const STORE_INFO: Record<string, { label: string; color: string }> = {
     },
 };
 
-const MARKETPLACE_LABELS: Record<string, string> = {
-    AMAZON_UK: "Amazon UK",
-    AMAZON_AE: "Amazon AE",
-    AMAZON_US: "Amazon US",
+const MARKETPLACE_INFO: Record<string, { label: string; color: string }> = {
+    AMAZON_UK: { label: "Amazon UK", color: "oklch(0.76 0.15 55)" },
+    AMAZON_AE: { label: "Amazon AE", color: "oklch(0.70 0.14 85)" },
+    AMAZON_US: { label: "Amazon US", color: "oklch(0.80 0.13 30)" },
+    NEWEGG: { label: "Newegg", color: "oklch(0.76 0.13 195)" },
+    BH_PHOTO: { label: "B&H Photo", color: "oklch(0.68 0.17 20)" },
 };
 
 export function marketplaceLabel(marketplace: string): string {
-    return MARKETPLACE_LABELS[marketplace] ?? marketplace;
+    return MARKETPLACE_INFO[marketplace]?.label ?? marketplace;
+}
+
+/** Colour for one marketplace line/dot. Distinct per storefront, not per retailer,
+ *  so the three Amazon marketplaces stay tellable apart on the chart. */
+export function marketplaceColor(marketplace: string): string {
+    return MARKETPLACE_INFO[marketplace]?.color ?? "var(--text-3)";
 }
 
 export function storeColor(store: string): string {
     return STORE_INFO[store]?.color ?? "var(--text-3)";
+}
+
+/** Display name for a retailer, e.g. "BH_PHOTO" -> "B&H Photo". */
+export function storeLabel(store: string): string {
+    return STORE_INFO[store]?.label ?? store;
 }
 
 export function convertToUsd(

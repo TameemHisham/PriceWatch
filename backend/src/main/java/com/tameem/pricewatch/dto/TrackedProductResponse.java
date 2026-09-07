@@ -8,5 +8,6 @@ public record TrackedProductResponse(
         Long id, String name, String brand, String category,
         BigDecimal targetPrice, Instant createdAt, String imageUrl,
         String currency, BigDecimal currentPrice, int storeCount, boolean targetPriceReached,
-        List<BigDecimal> recentPrices , BigDecimal trendPercent
+        List<BigDecimal> recentPrices , BigDecimal trendPercent,
+        List<String> stores
 ) {}

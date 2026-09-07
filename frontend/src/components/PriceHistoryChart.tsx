@@ -10,7 +10,7 @@ import {
     ReferenceLine,
     ResponsiveContainer,
 } from "recharts";
-import { marketplaceLabel, storeColor } from "../utils/format";
+import { marketplaceColor, marketplaceLabel } from "../utils/format";
 import { getHistory } from "../api/scraperApi";
 import type { HistoryResponse } from "../types/HistoryResponse";
 import type { ChartPoint } from "../types/ChartPoint";
@@ -164,7 +164,7 @@ export default function PriceHistoryChart({
                             <span key={m} className="legend-item">
                                 <span
                                     className="legend-dot"
-                                    style={{ background: storeColor(m) }}
+                                    style={{ background: marketplaceColor(m) }}
                                 />
                                 {marketplaceLabel(m)}
                                 {price != null && (
@@ -214,7 +214,7 @@ export default function PriceHistoryChart({
                                 key={marketplace}
                                 type="linear"
                                 dataKey={marketplace}
-                                stroke={storeColor(marketplace)}
+                                stroke={marketplaceColor(marketplace)}
                                 dot={false}
                                 connectNulls={false}
                                 name={marketplaceLabel(marketplace)}

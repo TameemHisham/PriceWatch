@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { TrackedProductResponse } from "../types/TrackedProductResponse";
-import { formatPrice } from "../utils/format";
+import { formatPrice, storeLabel } from "../utils/format";
 
 /** One product as a grid card or a list row, chosen by the `layout` prop. */
 export default function ProductCard({
@@ -86,7 +86,11 @@ export default function ProductCard({
                 <span className="product-row--price-indicator"></span>
             </div>
 
-            <span className="product-row--store">Amazon</span>
+            <span className="product-row--store">
+                {product.stores.length === 0
+                    ? "——"
+                    : product.stores.map(storeLabel).join(", ")}
+            </span>
 
             <div className="product-row--trend">--</div>
         </div>

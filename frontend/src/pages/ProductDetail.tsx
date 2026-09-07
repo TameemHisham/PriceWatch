@@ -8,7 +8,7 @@ import {
 } from "../api/scraperApi";
 import {
     formatPrice,
-    storeColor,
+    marketplaceColor,
     marketplaceLabel,
     convertToUsd,
 } from "../utils/format";
@@ -283,8 +283,8 @@ export default function ProductDetail() {
                                                 <span
                                                     className="store-prices--store-color"
                                                     style={{
-                                                        background: storeColor(
-                                                            row.store,
+                                                        background: marketplaceColor(
+                                                            row.marketplace,
                                                         ),
                                                     }}
                                                 />
