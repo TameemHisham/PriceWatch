@@ -8,7 +8,9 @@ import java.time.Instant;
 @Entity
 @Table(name = "product_listing", uniqueConstraints = {
 //        @UniqueConstraint(columnNames = {"tracked_product_id", "store"}),
-        @UniqueConstraint(name = "uk_product_listing_url", columnNames = {"url"}),
+        // Per product, not global: two users tracking the same URL each own a listing row.
+        @UniqueConstraint(name = "uk_product_listing_product_url",
+                columnNames = {"tracked_product_id", "url"}),
         @UniqueConstraint(name="UniqueProductMarketPlace",columnNames ={"tracked_product_id", "marketplace"})
 //        this basically applies UNIQUE property on a composite key
 })

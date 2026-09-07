@@ -11,11 +11,14 @@ import java.util.Optional;
 public interface ProductListingRepository extends JpaRepository<ProductListing, Long> {
     /** All store listings belonging to one tracked product. */
     List<ProductListing> findByTrackedProduct(TrackedProduct trackedProduct);
-    /** Finds a listing by its normalised URL — the duplicate check on track. */
-    Optional<ProductListing> findByUrl(String url);
+    /** Finds one caller's listing by normalised URL — the duplicate check on track.
+     *  Scoped to the owner: an unscoped lookup returned other users' products. */
+    Optional<ProductListing> findByUrlAndTrackedProduct_User_Id(String url, Long userId);
 
 
     List<ProductListing> findByLastCheckedBeforeOrLastCheckedIsNull(Instant lastChecked);
 
-    Optional<ProductListing> findByUrlContaining(String url);
+    /** Finds one caller's listing whose URL carries this product id, for cross-marketplace
+     *  matching. Scoped to the owner for the same reason as above. */
+    Optional<ProductListing> findByUrlContainingAndTrackedProduct_User_Id(String url, Long userId);
 }

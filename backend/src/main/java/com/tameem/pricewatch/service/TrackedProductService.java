@@ -96,8 +96,14 @@ public class TrackedProductService {
     @Transactional
     public TrackResult trackProduct(String url) {
         String normalized = normalizeUrl(url);
+        Long userId = currentUserProvider.getCurrentUserId();
 
-        Optional<ProductListing> existingURL = productListingRepository.findByUrl(normalized);
+        // Both dedupe lookups are scoped to the caller. Unscoped, they matched any user's
+        // listing: the URL check handed back another user's product (which the owner check
+        // on the detail endpoint then refused), and the id check could attach this listing
+        // to their TrackedProduct, feeding our price points into their history.
+        Optional<ProductListing> existingURL =
+                productListingRepository.findByUrlAndTrackedProduct_User_Id(normalized, userId);
         if (existingURL.isPresent()) {
             return new TrackResult(this.toResponse(existingURL.get().getTrackedProduct()), false);
         }
@@ -109,7 +115,8 @@ public class TrackedProductService {
 
         Optional<String> ASIN = scrapers.forUrl(normalized).productKey(normalized);
         Optional<ProductListing> existingASIN = ASIN.isPresent()
-                ? productListingRepository.findByUrlContaining(ASIN.get())
+                ? productListingRepository.findByUrlContainingAndTrackedProduct_User_Id(
+                        ASIN.get(), userId)
                 : Optional.empty();
 
         TrackedProduct savedProduct;
@@ -134,7 +141,7 @@ public class TrackedProductService {
             TrackedProduct product = new TrackedProduct();
             product.setName(productData.title());
             product.setImageUrl(productData.imageUrl());
-            User currentUser = userRepository.findById(currentUserProvider.getCurrentUserId())
+            User currentUser = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
             product.setUser(currentUser); // Assign to user
             savedProduct = trackedProductRepository.save(product);

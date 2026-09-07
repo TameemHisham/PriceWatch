@@ -27,6 +27,7 @@ re-applying one is safe if you are unsure whether it has already run.
 |---|---|---|
 | `2026-09-08-001-product-listing-constraints.sql` | 2026-09-08 | Needed before any non-Amazon storefront can be tracked |
 | `2026-09-08-002-store-check-add-currys.sql` | 2026-09-08 | Adds CURRYS to the store whitelist |
+| `2026-09-08-003-product-listing-url-unique-per-product.sql` | 2026-09-08 | URL unique per product, not globally — lets two users track the same URL |
 
 ## If a migration tool is adopted later
 
