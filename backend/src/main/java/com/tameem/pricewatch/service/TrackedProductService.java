@@ -6,11 +6,11 @@ import com.tameem.pricewatch.repositories.PricePointRepository;
 import com.tameem.pricewatch.repositories.ProductListingRepository;
 import com.tameem.pricewatch.repositories.TrackedProductRepository;
 import com.tameem.pricewatch.config.MarketplaceRegistry;
+import com.tameem.pricewatch.config.ScraperRegistry;
 import com.tameem.pricewatch.repositories.UserRepository;
 import com.tameem.pricewatch.scraper.ProductData;
 import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
-import com.tameem.pricewatch.scraper.AmazonScraper;
 import com.tameem.pricewatch.security.CurrentUserProvider;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
@@ -27,46 +27,43 @@ import org.slf4j.LoggerFactory;
 
 @Service
 public class TrackedProductService {
-    private final AmazonScraper amazonScraper;
     private final TrackedProductRepository trackedProductRepository;
     private final ProductListingRepository productListingRepository;
     private final ExchangeRateService exchangeRateService;
     private final PricePointRepository pricePointRepository;
-    private final ProductScraper productScraper;
+    private final ScraperRegistry scrapers;
     private final MarketplaceRegistry marketplaces;
     private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
     private final CurrentUserProvider currentUserProvider;
     private final UserRepository userRepository;
 
 
-    public TrackedProductService(AmazonScraper amazonScraper, TrackedProductRepository trackedProductRepository,
+    public TrackedProductService(TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
-                                 ProductScraper productScraper,
+                                 ScraperRegistry scrapers,
                                  MarketplaceRegistry marketplaces, ExchangeRateService exchangeRateService,CurrentUserProvider currentUserProvider,UserRepository userRepository) {
-        this.amazonScraper = amazonScraper;
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
         this.pricePointRepository = pricePointRepository;
-        this.productScraper = productScraper;
+        this.scrapers = scrapers;
         this.marketplaces = marketplaces;
         this.exchangeRateService = exchangeRateService;
         this.currentUserProvider=currentUserProvider;
         this.userRepository = userRepository;
     }
 
-    /** Builds a canonical https://{host}/dp/{ASIN} key from a product URL, so the same
-     * product always normalizes to one string regardless of path shape or query params. */
+    /** Asks the storefront's own scraper for a canonical key, so the same product always
+     * normalizes to one string regardless of path shape or query params. Amazon still yields
+     * https://{host}/dp/{ASIN}; each other store defines its own equivalent. */
     private String normalizeUrl(String url) throws IllegalURLFormat {
+        ProductScraper scraper = scrapers.forUrl(url);
+        if (scraper.productKey(url).isEmpty()) {
+            throw new IllegalURLFormat("Untrackable because no product id was found in the URL");
+        }
         try {
-            Optional<String> asin = amazonScraper.productKey(url);
-            if (asin.isEmpty()) {
-                throw new IllegalURLFormat("Untrackable because ASIN wasn't scraped");
-            }
-            URI uri = new URI(url);
-            String host = uri.getHost() != null ? uri.getHost().toLowerCase() : "";
-            return uri.getScheme() + "://" + host +"/dp/" + asin.get();
-        } catch (URISyntaxException e) {
+            return scraper.canonicalUrl(url);
+        } catch (ScrapeException e) {
             throw new IllegalURLFormat("unparseable");
         }
     }
@@ -105,12 +102,12 @@ public class TrackedProductService {
             return new TrackResult(this.toResponse(existingURL.get().getTrackedProduct()), false);
         }
 
-        ProductData productData = productScraper.scrape(url);
+        ProductData productData = scrapers.forUrl(url).scrape(url);
         if (productData.title() == null || productData.title().isBlank()) {
             throw new ScrapeException("Could not locate product title for URL: " + url);
         }
 
-        Optional<String> ASIN = amazonScraper.productKey(normalized);
+        Optional<String> ASIN = scrapers.forUrl(normalized).productKey(normalized);
         Optional<ProductListing> existingASIN = ASIN.isPresent()
                 ? productListingRepository.findByUrlContaining(ASIN.get())
                 : Optional.empty();
@@ -151,13 +148,17 @@ public class TrackedProductService {
             String originalMarketplace = marketplaces.idFor(normalized);
             for (String marketplaceId : marketplaces.allMarketplaceIds()) {
                 if (marketplaceId.equals(originalMarketplace)) continue;
+                // A product id only carries across storefronts of one retailer: an ASIN means
+                // something on amazon.co.uk/.ae/.com and nothing on any other store, so fanning
+                // out to every configured marketplace would build junk URLs.
+                if (!scrapers.sameRetailer(originalMarketplace, marketplaceId)) continue;
 
                 String siblingUrl = "https://" + marketplaces.configFor(marketplaceId).getHost()
                         + "/dp/" + ASIN.get();
 
                 try {
                     Thread.sleep(2000);
-                    ProductData siblingData = productScraper.scrape(siblingUrl);
+                    ProductData siblingData = scrapers.forUrl(siblingUrl).scrape(siblingUrl);
                     if (siblingData.title() == null || siblingData.title().isBlank()) {
                         throw new ScrapeException("Could not locate product title for URL: " + siblingUrl);
                     }
@@ -179,7 +180,7 @@ public class TrackedProductService {
     private void saveListing(TrackedProduct product, String url, ProductData productData, String marketplaceId) {
         ProductListing listing = new ProductListing();
         listing.setTrackedProduct(product);
-        listing.setStore(Store.AMAZON);
+        listing.setStore(scrapers.forMarketplace(marketplaceId).store());
         listing.setUrl(url);
         listing.setMarketplace(marketplaceId);
         listing.setCurrency(productData.currency() == null ? "UNKNOWN" : productData.currency());
@@ -324,7 +325,7 @@ public class TrackedProductService {
 
     @Transactional
     public void refreshListing(ProductListing listing) {
-        ProductData productData = productScraper.scrape(listing.getUrl());
+        ProductData productData = scrapers.forUrl(listing.getUrl()).scrape(listing.getUrl());
         if (productData.title() == null || productData.title().isBlank()) {
             throw new ScrapeException("Could not locate product title for URL: " + listing.getUrl());
         }

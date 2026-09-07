@@ -17,6 +17,7 @@ import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,15 +25,20 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+/**
+ * Newegg storefront scraper, following AmazonScraper's shape: fetch, verify the page is
+ * really the product that was asked for, then extract.
+ * <p>
+ * Dispatch is by marketplace id via ScraperRegistry, so this is a normal bean.
+ */
 @Component
-public class AmazonScraper implements ProductScraper {
+public class NeweggScraper implements ProductScraper {
 
-    private static final Logger log = LoggerFactory.getLogger(AmazonScraper.class); // manages logs
-    private final MarketplaceRegistry marketplaces; // manging the marketplace
-     private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>(); // deals with cookies
+    private static final Logger log = LoggerFactory.getLogger(NeweggScraper.class);
+    private final MarketplaceRegistry marketplaces;
+    private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>();
 
-    public AmazonScraper(MarketplaceRegistry marketplaces) {
+    public NeweggScraper(MarketplaceRegistry marketplaces) {
         this.marketplaces = marketplaces;
     }
 
@@ -42,142 +48,128 @@ public class AmazonScraper implements ProductScraper {
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
     );
 
-    /** Optional currency code or symbol, then a number: "£7.73", "AED 1,724.76". */
-    private static final Pattern PRICE_TOKEN =
-            Pattern.compile("(?:[A-Z]{2,3}|[^\\w\\s])\\s?\\d[\\d.,]*");
+    /**
+     * Newegg's stable per-product id is the item number, e.g. "N82E16819113877". Marketplace
+     * listings use a different prefix ("9SIC0X3KG23952"), so match on shape, not on "N82E".
+     */
+    private static final Pattern ITEM_PATH_TOKEN = Pattern.compile("/p/([A-Z0-9]{10,})");
 
-    private static final Pattern ASIN_TOKEN =
-            Pattern.compile("/(?:dp|gp/product|gp/aw/d)/([A-Z0-9]{10})");
+    /** Seller-specific links carry the item number as a query parameter instead. */
+    private static final Pattern ITEM_QUERY_TOKEN = Pattern.compile("[?&]Item=([A-Z0-9]{10,})");
 
-    private static final String[] PRICE_LABEL_SELECTORS = {
-            "#apex-pricetopay-accessibility-label",
-            "#corePriceDisplay_desktop_feature_div .aok-offscreen"
-    };
-
+    /**
+     * The live buy box stamps a campaign suffix onto the price class ("price-current_2026"
+     * sits next to a "is-product-blackfriday-first" box), so the unsuffixed class is kept as
+     * a fallback rather than assumed gone.
+     */
     private static final String[] PRICE_ELEMENT_SELECTORS = {
-            "#corePriceDisplay_desktop_feature_div .apex-pricetopay-value",
-            ".priceToPay",
-            ".apex-pricetopay-value",
-            "#corePriceDisplay_desktop_feature_div .a-price:not(.a-text-price)",
-            "#corePrice_feature_div .a-price:not(.a-text-price)",
-            "#apex_desktop .a-price:not(.a-text-price)",
-            "#buybox .a-price:not(.a-text-price)",
-            "#centerCol .a-price:not(.a-text-price)",
-            "#ppd .a-price:not(.a-text-price)"
-    };
-
-    private static final String[] PRICE_SELECTORS = {
-            "#corePriceDisplay_desktop_feature_div .apex-pricetopay-value .a-offscreen",
-            ".priceToPay .a-offscreen",
-            ".apex-pricetopay-value .a-offscreen",
-            "#corePriceDisplay_desktop_feature_div .a-price:not(.a-text-price) .a-offscreen",
-            "#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen",
-            "#apex_desktop .a-price:not(.a-text-price) .a-offscreen",
-            "#buybox .a-price:not(.a-text-price) .a-offscreen",
-            "#priceblock_ourprice",
-            "#priceblock_dealprice",
-            "#centerCol .a-price:not(.a-text-price) .a-offscreen",
-            "#ppd .a-price:not(.a-text-price) .a-offscreen"
+            ".product-buy-box .product-price .price-current_2026",
+            ".product-buy-box .product-price .price-current",
+            ".product-buy-box .price-current_2026",
+            ".product-buy-box .price-current",
+            ".product-price .price-current_2026",
+            ".product-price .price-current"
     };
 
     private static final String[] TITLE_SELECTORS = {
-            "#productTitle"
+            "h1.product-title"
     };
 
-    private static final String[] UNAVAILABLE_SELECTORS = {
-            "#outOfStock",
-            "#exports_desktop_outOfStock_buybox"
-    };
-
-    /** A live offer always renders one of these. */
+    /** A live offer renders this; an out-of-stock page renders a notify button instead. */
     private static final String[] PURCHASABLE_SELECTORS = {
-            "#add-to-cart-button",
-            "#buy-now-button"
+            "#ProductBuy .btn-primary",
+            ".product-buy button.btn-primary"
     };
 
-    private static final String[] PAGE_ASIN_SELECTORS = {
-            "input#ASIN",
-            "#ppd[data-csa-c-asin]"
+    private static final String[] PAGE_ITEM_SELECTORS = {
+            ".breadcrumbs li.is-active em"
     };
 
     private static final String[] IMAGE_SELECTORS = {
-            "#landingImage",
-            "#imgTagWrapperId img"
+            "meta[property=og:image]",
+            ".product-view-img-original"
     };
 
-//    public static void main(String[] args) {
-//        AmazonScraper myScraper = new AmazonScraper();
-//        ProductData data = myScraper.scrape("https://www.amazon.co.uk/dp/B0925CM4BB");
-//        System.out.println(data);
-//    }
+    private static final String MARKETPLACE_ID = "NEWEGG";
+
     @Override
     public Store store() {
-        return Store.AMAZON;
+        return Store.NEWEGG;
     }
 
     @Override
     public boolean supports(String marketplaceId) {
-        return marketplaceId != null && marketplaceId.startsWith("AMAZON");
+        return MARKETPLACE_ID.equals(marketplaceId);
     }
 
     /**
-     * {@code https://host/dp/ASIN} — the form listings were stored with before scraper
-     * dispatch existed, kept byte-identical so existing rows still resolve.
+     * {@code https://host/p/ITEM} — Newegg resolves this without the slug and redirects to
+     * the full path, so the stored URL stays fetchable for later refreshes.
      */
     @Override
     public String canonicalUrl(String url) {
-        Optional<String> asin = productKey(url);
-        if (asin.isEmpty()) {
-            throw new ScrapeException("No ASIN in URL: " + url);
+        Optional<String> item = productKey(url);
+        if (item.isEmpty()) {
+            throw new ScrapeException("No Newegg item number in URL: " + url);
         }
-        try {
-            java.net.URI uri = new java.net.URI(url);
-            String host = uri.getHost() != null ? uri.getHost().toLowerCase() : "";
-            return uri.getScheme() + "://" + host + "/dp/" + asin.get();
-        } catch (java.net.URISyntaxException e) {
-            throw new ScrapeException("Unparseable URL: " + url, e);
+        String host = marketplaces.configFor(MARKETPLACE_ID).getHost();
+        if (host == null || host.isBlank()) {
+            throw new ScrapeException("Marketplace NEWEGG has no configured host");
         }
+        String qualified = host.startsWith("www.") ? host : "www." + host;
+        return "https://" + qualified + "/p/" + item.get();
     }
 
     @Override
     public Optional<String> productKey(String url) {
-        Matcher matcher = ASIN_TOKEN.matcher(url);
-
-        if (matcher.find()) {
-            return Optional.of(matcher.group(1));
+        Matcher path = ITEM_PATH_TOKEN.matcher(url);
+        if (path.find()) {
+            return Optional.of(path.group(1));
         }
-
+        Matcher query = ITEM_QUERY_TOKEN.matcher(url);
+        if (query.find()) {
+            return Optional.of(query.group(1));
+        }
         return Optional.empty();
     }
+
     /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
     private String randomUserAgent() {
         return USER_AGENTS.get(ThreadLocalRandom.current().nextInt(USER_AGENTS.size()));
     }
 
-    /** Fetches an Amazon product page and extracts title, price, currency and image. */
+    /** Fetches a Newegg product page and extracts title, price, currency and image. */
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
         Fetched fetched = fetch(url, marketplaceId, marketplace);
-        Document document = fetched.document();
+        return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+    }
 
-        if (document.html().contains("validateCaptcha")) {
-            throw new ScrapeException("Amazon blocked request with CAPTCHA");
+    /**
+     * Everything after the fetch, split out so tests can run the real extraction against a
+     * saved fixture instead of a live request.
+     */
+    ProductData parse(Document document, URL finalUrl, String requestedUrl,
+                      ScrapeProperties.MarketplaceConfig marketplace) {
+
+        if (isBotChallenge(document)) {
+            throw new ScrapeException("Newegg blocked request with a bot challenge");
         }
 
-        requireExpectedHost(fetched.finalUrl(), marketplace, url);
+        requireExpectedHost(finalUrl, marketplace, requestedUrl);
 
-        String title = findFirstMatch(document, TITLE_SELECTORS, false);
+        String title = findFirstMatch(document, TITLE_SELECTORS);
         if (title != null) {
             title = title.trim();
         }
         if (title == null || title.isBlank()) {
-            throw new ScrapeException("No product title on page — not a product page: " + url);
+            throw new ScrapeException("No product title on page — not a product page: " + requestedUrl);
         }
 
-        requireExpectedAsin(document, url);
+        requireExpectedItem(document, requestedUrl);
 
-        String imageUrl = findFirstMatch(document, IMAGE_SELECTORS, true);
+        String imageUrl = findImage(document);
 
         if (isExplicitlyUnavailable(document)) {
             return new ProductData(title, null, null, imageUrl, Availability.UNAVAILABLE);
@@ -187,12 +179,12 @@ public class AmazonScraper implements ProductScraper {
         if (rawPrice == null) {
             if (hasBuyButton(document)) {
                 // Buyable but unreadable: the page shape changed. A real failure.
-                throw new ScrapeException("Offer present but no price element matched for URL: " + url);
+                throw new ScrapeException("Offer present but no price element matched for URL: " + requestedUrl);
             }
             if (hasAnyPriceElement(document)) {
-                throw new ScrapeException("No buy option and no readable product price for URL: " + url);
+                throw new ScrapeException("No buy option and no readable product price for URL: " + requestedUrl);
             }
-            log.debug("No offer markers and no price elements at all — treating as unavailable: {}", url);
+            log.debug("No offer markers and no price elements at all — treating as unavailable: {}", requestedUrl);
             return new ProductData(title, null, null, imageUrl, Availability.UNAVAILABLE);
         }
 
@@ -221,6 +213,7 @@ public class AmazonScraper implements ProductScraper {
                     .header("Sec-Fetch-Mode", "navigate")
                     .header("Sec-Fetch-Site", "none")
                     .cookieStore(cookies) // get cookies
+                    .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
                     .timeout(10000);
             if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
                 connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
@@ -236,6 +229,16 @@ public class AmazonScraper implements ProductScraper {
         }
     }
 
+    /**
+     * Newegg fronts its edge with a bot challenge that answers 200 with an interstitial
+     * rather than an error status. Not yet observed live from this codebase — the markers
+     * are the generic Akamai container and Newegg's own challenge path.
+     */
+    private boolean isBotChallenge(Document doc) {
+        if (doc.selectFirst("#sec-if-cpt-container") != null) return true;
+        return doc.html().contains("areyouahuman");
+    }
+
     private void requireExpectedHost(URL finalUrl, ScrapeProperties.MarketplaceConfig marketplace,
                                      String requestedUrl) {
         String configured = marketplace.getHost();
@@ -249,43 +252,39 @@ public class AmazonScraper implements ProductScraper {
                 + ", not " + expected + " — redirected off the requested marketplace");
     }
 
-    private void requireExpectedAsin(Document doc, String requestedUrl) {
+    private void requireExpectedItem(Document doc, String requestedUrl) {
         Optional<String> requested = productKey(requestedUrl);
         if (requested.isEmpty()) return;
 
-        String onPage = pageAsin(doc);
+        String onPage = pageItemNumber(doc);
         if (onPage == null) {
-            log.debug("No ASIN element on page for {} — identity check skipped", requestedUrl);
+            log.debug("No item number element on page for {} — identity check skipped", requestedUrl);
             return;
         }
         if (!onPage.equalsIgnoreCase(requested.get())) {
-            throw new ScrapeException("Page for ASIN " + onPage + " was returned for requested ASIN "
+            throw new ScrapeException("Page for item " + onPage + " was returned for requested item "
                     + requested.get() + " (" + requestedUrl + ")");
         }
     }
 
-    /** The ASIN the page claims to be for, or null when it does not say. */
-    private String pageAsin(Document doc) {
-        for (String selector : PAGE_ASIN_SELECTORS) {
+    /** The item number the page claims to be for, or null when it does not say. */
+    private String pageItemNumber(Document doc) {
+        for (String selector : PAGE_ITEM_SELECTORS) {
             Element element = doc.selectFirst(selector);
             if (element == null) continue;
-            // input#ASIN carries it as a form value, #ppd as a data attribute.
-            String value = element.hasAttr("value")
-                    ? element.attr("value")
-                    : element.attr("data-csa-c-asin");
+            String value = element.text();
             if (!value.isBlank()) return value.trim();
+        }
+        // The canonical URL carries it too, and survives breadcrumb markup changes.
+        Element canonical = doc.selectFirst("meta[property=og:url]");
+        if (canonical != null) {
+            Optional<String> fromCanonical = productKey(canonical.attr("content"));
+            if (fromCanonical.isPresent()) return fromCanonical.get();
         }
         return null;
     }
 
     private String findPrice(Document doc) {
-        String label = findFirstMatch(doc, PRICE_LABEL_SELECTORS, false);
-        if (label != null) {
-            String token = firstPriceToken(label);
-            if (token != null) {
-                return token;
-            }
-        }
         for (String selector : PRICE_ELEMENT_SELECTORS) {
             for (Element el : doc.select(selector)) {
                 String value = priceTextFrom(el);
@@ -294,58 +293,84 @@ public class AmazonScraper implements ProductScraper {
                 }
             }
         }
-        // Legacy id-based blocks, which hold the price as their own text.
-        return findFirstMatch(doc, PRICE_SELECTORS, false);
+        return null;
     }
 
-    private String firstPriceToken(String text) {
-        Matcher matcher = PRICE_TOKEN.matcher(text);
-        return matcher.find() ? matcher.group().trim() : null;
-    }
-
+    /**
+     * The buy-box price is a bare currency symbol text node followed by
+     * {@code <strong>469</strong><sup>.00</sup>}, so the element's own text already reads
+     * "$469.00". Empty price shells also match the selectors, hence the digit check.
+     */
     private String priceTextFrom(Element priceElement) {
-        Element offscreen = priceElement.selectFirst(".a-offscreen");
-        if (offscreen != null && !offscreen.text().isBlank()) {
-            return offscreen.text();
+        String text = priceElement.text();
+        if (hasDigit(text)) {
+            return text;
         }
 
-        Element symbol = priceElement.selectFirst(".a-price-symbol");
-        Element whole = priceElement.selectFirst(".a-price-whole");
-        Element fraction = priceElement.selectFirst(".a-price-fraction");
+        Element whole = priceElement.selectFirst("strong");
         if (whole == null) {
             return null;
         }
-        // .a-price-whole contains its own decimal separator, e.g. "7."
-        String assembled = (symbol == null ? "" : symbol.text())
+        Element fraction = priceElement.selectFirst("sup");
+        String assembled = priceElement.ownText()
                 + whole.text()
                 + (fraction == null ? "" : fraction.text());
-        return assembled.isBlank() ? null : assembled;
+        return hasDigit(assembled) ? assembled : null;
     }
 
-/** The retailer says outright that this cannot be bought here. */
-    private boolean isExplicitlyUnavailable(Document doc) {
-        for (String selector : UNAVAILABLE_SELECTORS) {
-            if (doc.selectFirst(selector) != null) return true;
+    private boolean hasDigit(String text) {
+        if (text == null) return false;
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isDigit(text.charAt(i))) return true;
         }
         return false;
     }
 
-    /** A live offer renders one of these. */
+    /**
+     * The retailer says outright that this cannot be bought here. Newegg spells this out in
+     * the buy box rather than with a dedicated element id, so this reads the box's text.
+     * Not yet verified against a live out-of-stock page.
+     */
+    private boolean isExplicitlyUnavailable(Document doc) {
+        Element buyBox = doc.selectFirst(".product-buy-box");
+        if (buyBox == null) return false;
+        String text = buyBox.text().toUpperCase(Locale.ROOT);
+        return text.contains("OUT OF STOCK") || text.contains("SOLD OUT");
+    }
+
+    /**
+     * A live offer renders an add-to-cart button. Presence alone is not enough: an
+     * out-of-stock page renders an equally primary "Auto Notify" button in the same slot.
+     */
     private boolean hasBuyButton(Document doc) {
         for (String selector : PURCHASABLE_SELECTORS) {
-            if (doc.selectFirst(selector) != null) return true;
+            for (Element el : doc.select(selector)) {
+                if (el.text().toUpperCase(Locale.ROOT).contains("ADD TO CART")) return true;
+            }
         }
         return false;
     }
 
     private boolean hasAnyPriceElement(Document doc) {
-        return doc.selectFirst(".a-price") != null;
+        return doc.selectFirst(".price-current, .price-current_2026") != null;
     }
 
-    private String findFirstMatch(Document doc, String[] selectors, boolean wantAttribute) {
+    private String findImage(Document doc) {
+        for (String selector : IMAGE_SELECTORS) {
+            for (Element el : doc.select(selector)) {
+                String value = el.tagName().equals("meta") ? el.attr("content") : el.attr("src");
+                if (!value.isBlank()) {
+                    return value;
+                }
+            }
+        }
+        return null;
+    }
+
+    private String findFirstMatch(Document doc, String[] selectors) {
         for (String selector : selectors) {
             for (Element el : doc.select(selector)) {
-                String value = wantAttribute ? el.attr("src") : el.text();
+                String value = el.text();
                 if (!value.isBlank()) {
                     return value;
                 }
@@ -389,14 +414,11 @@ public class AmazonScraper implements ProductScraper {
     private String parseCurrency(String raw) {
         if (raw == null) return null;
 
-        if (raw.contains("AED") || raw.contains("د.إ")) return "AED";
-
         if (raw.contains("£")) return "GBP";
         if (raw.contains("€")) return "EUR";
-        if (raw.contains("¥")) return "JPY";
+        if (raw.contains("C$")) return "CAD";
         if (raw.contains("$")) return "USD";
 
         return "UNKNOWN"; // unknown symbol
     }
-
 }
