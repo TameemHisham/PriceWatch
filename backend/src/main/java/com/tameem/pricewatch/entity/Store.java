@@ -6,6 +6,7 @@ public enum Store {
     NEWEGG,
     BH_PHOTO,
     CURRYS,
+    JARIR,
     ALIEXPRESS,
     WALMART,
     NOON,

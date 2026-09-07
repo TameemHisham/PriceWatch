@@ -85,7 +85,7 @@ public class SchedulerScraper {
 //    @Scheduled(fixedRate = 10000)
     public void scrapeCurrency() {
             try {
-                currencyDTO[] currencies = restClient.get().uri("?base=USD&quotes=USD,GBP,AED").retrieve().body(currencyDTO[].class);
+                currencyDTO[] currencies = restClient.get().uri("?base=USD&quotes=USD,GBP,AED,SAR").retrieve().body(currencyDTO[].class);
                 assert currencies != null;
                 log.info("Currencies: " + Arrays.toString(currencies));
                 for (currencyDTO currency : currencies) {
