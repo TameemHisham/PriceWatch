@@ -11,21 +11,10 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import { marketplaceLabel, storeColor } from "../utils/format";
-
-type HistoryPoint = { checkedAt: string; price: number; currency: string };
-type HistoryResponse = Record<string, HistoryPoint[]>;
-
-type ChartPoint = {
-    date: string;
-    runningMin: number | null;
-    [marketplace: string]: number | string | null;
-};
-
-type TooltipPayloadItem = {
-    dataKey?: string | number;
-    value?: number | string;
-    color?: string;
-};
+import { getHistory } from "../api/scraperApi";
+import type { HistoryResponse } from "../types/HistoryResponse";
+import type { ChartPoint } from "../types/ChartPoint";
+import type { TooltipPayloadItem } from "../types/TooltipPayloadItem";
 
 function mergeHistory(history: HistoryResponse): {
     points: ChartPoint[];
@@ -130,10 +119,7 @@ export default function PriceHistoryChart({
 
     useEffect(() => {
         const controller = new AbortController();
-        fetch(`/api/tracked-products/${productId}/history`, {
-            signal: controller.signal,
-        })
-            .then((res) => res.json())
+        getHistory(productId, { signal: controller.signal })
             .then((data: HistoryResponse) => {
                 const { points, marketplaces } = mergeHistory(data);
                 setPoints(points);

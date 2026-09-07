@@ -294,3 +294,26 @@
         display: none;
     }
 }
+
+.sidebar--logout-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 10px 14px;
+    color: var(--text-2);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.sidebar--logout-button:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+}

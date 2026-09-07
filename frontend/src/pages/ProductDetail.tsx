@@ -64,7 +64,6 @@ export default function ProductDetail() {
 
     // `replace` swaps the history entry so Back doesn't return to the broken URL.
     if (!validId) return <Navigate to="/" replace />;
-    console.log("rates:", rates);
     async function handleRefresh() {
         try {
             setRefreshing(true);

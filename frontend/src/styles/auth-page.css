@@ -1,0 +1,132 @@
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 24px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: var(--shadow);
+}
+
+.auth-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 8px;
+}
+
+.auth-subtitle {
+    color: var(--text-3);
+    margin: 0 0 28px;
+    font-size: 14px;
+}
+
+.auth-error {
+    background: var(--danger-soft);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.auth-label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-2);
+    font-size: 14px;
+    margin: 20px 0 8px;
+}
+
+.auth-label:first-of-type {
+    margin-top: 0;
+}
+
+.auth-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+}
+
+.auth-input:hover {
+    background: var(--hover);
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface-2);
+}
+
+.auth-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 24px;
+    color: var(--text-2);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.auth-checkbox-row input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.auth-submit {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    color: var(--hero-text, #faf9f5);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    margin-top: 24px;
+}
+
+.auth-submit:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.auth-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auth-switch {
+    text-align: center;
+    color: var(--text-3);
+    font-size: 14px;
+    margin-top: 24px;
+}
+
+.auth-switch a {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}

@@ -6,9 +6,12 @@ import ProductDetail from "./pages/ProductDetail";
 import AddProduct from "./pages/AddProduct";
 import Alerts from "./pages/Alerts";
 import NotFound from "./pages/NotFound";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import ExchangeRateProvider from "./context/ExchangeRateContext";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./pages/ProtectedRoute";
 
-/** App shell: owns the theme, renders the sidebar, and maps URLs to pages. */
 function App() {
     const [theme, setTheme] = useState<string>(
         window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -20,32 +23,64 @@ function App() {
         [theme],
     );
 
-    // The mobile mockup shows the PriceWatch bar on the home screen only;
-    // every other screen owns its full height. CSS cannot see the route, so
-    // the shell carries it as a class.
     const isHome = useLocation().pathname === "/";
 
     function onThemeChange() {
         setTheme(theme === "dark" ? "light" : "dark");
     }
+
     return (
-        <div className={`app--container ${isHome ? "is-home" : ""}`}>
-            <Sidebar theme={theme} onThemeChange={onThemeChange} />
-            <main className="">
-                <ExchangeRateProvider>
-                    <Routes>
-                        <Route path="/" element={<Dashboard />} />
-                        <Route
-                            path="/product/:id"
-                            element={<ProductDetail />}
-                        />
-                        <Route path="/add" element={<AddProduct />} />
-                        <Route path="/alerts" element={<Alerts />} />
-                        <Route path="*" element={<NotFound />} />
-                    </Routes>
-                </ExchangeRateProvider>
-            </main>
-        </div>
+        <AuthProvider>
+            <ExchangeRateProvider>
+                <div className={`app--container ${isHome ? "is-home" : ""}`}>
+                    <Sidebar theme={theme} onThemeChange={onThemeChange} />
+                    <main className="">
+                        <Routes>
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route
+                                path="/register"
+                                element={<RegisterPage />}
+                            />
+
+                            <Route
+                                path="/"
+                                element={
+                                    <ProtectedRoute>
+                                        <Dashboard />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/product/:id"
+                                element={
+                                    <ProtectedRoute>
+                                        <ProductDetail />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/add"
+                                element={
+                                    <ProtectedRoute>
+                                        <AddProduct />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/alerts"
+                                element={
+                                    <ProtectedRoute>
+                                        <Alerts />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                            <Route path="*" element={<NotFound />} />
+                        </Routes>
+                    </main>
+                </div>
+            </ExchangeRateProvider>
+        </AuthProvider>
     );
 }
 

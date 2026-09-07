@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { setTargetPrice } from "../api/scraperApi";
 
 export default function TargetPriceCard({
     productId,
@@ -17,11 +18,7 @@ export default function TargetPriceCard({
         if (Number.isNaN(targetPrice)) return;
         setSaving(true);
         try {
-            await fetch(`/api/tracked-products/${productId}/target`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ targetPrice }),
-            });
+            await setTargetPrice(productId, targetPrice);
             onSaved(targetPrice);
         } finally {
             setSaving(false);

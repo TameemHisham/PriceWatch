@@ -2,7 +2,8 @@ import type { CurrencyResponse } from "../types/CurrencyResponse";
 import type { TrackedProductDetailResponse } from "../types/TrackedProductDetailResponse";
 import type { TrackedProductResponse } from "../types/TrackedProductResponse";
 import type { TrackRequest } from "../types/TrackRequest";
-
+import type { HistoryResponse } from "../types/HistoryResponse";
+import type { AuthRequest, AuthResponse } from "../types/AuthResponse";
 const BASE = "/api/tracked-products";
 
 type SpringError = {
@@ -15,17 +16,40 @@ async function errorMessage(res: Response): Promise<string> {
     const status = `Request failed: ${res.status} ${res.statusText}`;
     try {
         const body: SpringError = await res.json();
-        // Validation failures land in errors[]; everything else in message.
         const detail = body.errors?.[0]?.defaultMessage ?? body.message;
-        return detail ? `${status} — ${detail}` : status;
+        if (detail) return detail;
     } catch {
         return status;
     }
+    return `Request failed: ${res.status} ${res.statusText}`;
 }
 
-/** Fetches JSON and throws on any non-2xx — fetch itself does not reject on 4xx/5xx. */
+/** Reads the stored token, checking localStorage (persisted) then sessionStorage (this tab only). */
+function getToken(): string | null {
+    return localStorage.getItem("token") ?? sessionStorage.getItem("token");
+}
+
+/** Clears the token from both storages and sends the user back to login — used on 401. */
+function forceLogout() {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    window.location.href = "/login";
+}
+
+/** Fetches JSON and throws on any non-2xx — fetch itself does not reject on 4xx/5xx.
+ *  Attaches the auth token if one exists, and forces logout on 401. */
 async function jsonRequest<T>(url: string, options?: RequestInit): Promise<T> {
-    const res = await fetch(url, options);
+    const token = getToken();
+    const res = await fetch(url, {
+        ...options,
+        headers: {
+            ...options?.headers,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+    });
+    if (res.status === 401) {
+        forceLogout();
+    }
     if (!res.ok) {
         // fetch does NOT throw on 4xx/5xx
         throw new Error(await errorMessage(res));
@@ -70,7 +94,14 @@ export function refreshProduct(
 
 /** DELETE a tracked product. Returns 204 with an empty body, so no JSON parsing. */
 export async function deleteProduct(id: number): Promise<void> {
-    const res = await fetch(`${BASE}/${id}`, { method: "DELETE" });
+    const token = getToken();
+    const res = await fetch(`${BASE}/${id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.status === 401) {
+        forceLogout();
+    }
     if (!res.ok) {
         throw new Error(await errorMessage(res));
     }
@@ -85,4 +116,53 @@ export function getExchangeRates(
     options: RequestInit,
 ): Promise<CurrencyResponse[]> {
     return jsonRequest<CurrencyResponse[]>("/api/exchange-rates", options);
+}
+
+/** Like jsonRequest, but never force-logs-out on 401 — a failed login attempt
+ *  isn't an expired session, it's just wrong credentials, and should just
+ *  surface the error without navigating anywhere. */
+async function authRequest<T>(url: string, options: RequestInit): Promise<T> {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+        throw new Error(await errorMessage(res));
+    }
+    return (await res.json()) as T;
+}
+
+export function register(
+    email: string,
+    password: string,
+): Promise<AuthResponse> {
+    const payload: AuthRequest = { email, password };
+    return authRequest<AuthResponse>("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+}
+
+export function login(email: string, password: string): Promise<AuthResponse> {
+    const payload: AuthRequest = { email, password };
+    return authRequest<AuthResponse>("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+}
+export async function setTargetPrice(
+    id: number,
+    targetPrice: number,
+): Promise<void> {
+    await jsonRequest<void>(`${BASE}/${id}/target`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetPrice }),
+    });
+}
+
+export function getHistory(
+    id: number,
+    options?: RequestInit,
+): Promise<HistoryResponse> {
+    return jsonRequest<HistoryResponse>(`${BASE}/${id}/history`, options);
 }

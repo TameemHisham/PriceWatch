@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { CurrencyResponse } from "../types/CurrencyResponse";
 import { getExchangeRates } from "../api/scraperApi";
+import { useAuth } from "./AuthContext";
 
 const CurrencyExchangeContext = createContext<CurrencyResponse[] | null>(null);
 export function useExchangeRates(): CurrencyResponse[] | null {
@@ -16,8 +17,13 @@ export default function ExchangeRateProvider({
         null,
     );
     const [error, setError] = useState<string | null>(null);
+    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
+        // Nothing to fetch if nobody's logged in — and firing this pre-login
+        // is exactly what was hitting the backend's 403 wall.
+        if (!isAuthenticated) return;
+
         const controller = new AbortController();
         const fetchData = async () => {
             try {
@@ -27,7 +33,6 @@ export default function ExchangeRateProvider({
                 });
                 setExchangeRate(response);
             } catch (err) {
-                // Only update error state if the request wasn't intentionally aborted
                 if (err instanceof Error && err.name !== "AbortError") {
                     setError(err.message);
                 }
@@ -37,7 +42,8 @@ export default function ExchangeRateProvider({
         return () => {
             controller.abort();
         };
-    }, []);
+    }, [isAuthenticated]);
+
     return (
         <CurrencyExchangeContext.Provider value={exchangeRate}>
             {children}
