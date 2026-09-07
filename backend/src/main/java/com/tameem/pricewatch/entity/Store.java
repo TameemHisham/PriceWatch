@@ -4,6 +4,7 @@ public enum Store {
     AMAZON,
     EBAY,
     NEWEGG,
+    BH_PHOTO,
     ALIEXPRESS,
     WALMART,
     NOON,
