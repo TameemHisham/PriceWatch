@@ -276,7 +276,7 @@ public class TrackedProductService {
             PricePoint latest = pricePointRepository.findTopByProductListingOrderByCheckedAtDesc(listing);
             if (latest == null) continue;
 
-            BigDecimal priceUsd = exchangeRateService.convertToUsd(latest.getPrice(), listing.getCurrency(), rates);
+            BigDecimal priceUsd = exchangeRateService.convertToUsd(latest.getPrice(), listing.getCurrency(), rates, listing.getId());
             if (priceUsd == null) continue; // can't compare fairly without a known rate
 
             if (lowestPriceUsd == null || priceUsd.compareTo(lowestPriceUsd) < 0) {
@@ -322,7 +322,7 @@ public class TrackedProductService {
             ));
             if (latest == null) continue;
 
-            BigDecimal priceUsd = exchangeRateService.convertToUsd(latest.getPrice(), listing.getCurrency(), rates);
+            BigDecimal priceUsd = exchangeRateService.convertToUsd(latest.getPrice(), listing.getCurrency(), rates, listing.getId());
             if (priceUsd == null) continue;
 
             if (lowestPriceUsd == null || priceUsd.compareTo(lowestPriceUsd) < 0) {
