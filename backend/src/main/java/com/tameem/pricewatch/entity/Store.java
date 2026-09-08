@@ -8,6 +8,7 @@ public enum Store {
     CURRYS,
     JARIR,
     IKEA,
+    FLIPKART,
     ALIEXPRESS,
     WALMART,
     NOON,
