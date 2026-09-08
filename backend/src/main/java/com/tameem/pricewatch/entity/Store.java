@@ -7,6 +7,7 @@ public enum Store {
     BH_PHOTO,
     CURRYS,
     JARIR,
+    IKEA,
     ALIEXPRESS,
     WALMART,
     NOON,

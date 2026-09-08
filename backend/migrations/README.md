@@ -29,6 +29,7 @@ re-applying one is safe if you are unsure whether it has already run.
 | `2026-09-08-002-store-check-add-currys.sql` | 2026-09-08 | Adds CURRYS to the store whitelist |
 | `2026-09-08-003-product-listing-url-unique-per-product.sql` | 2026-09-08 | URL unique per product, not globally — lets two users track the same URL |
 | `2026-09-08-004-store-check-add-jarir.sql` | 2026-09-08 | Adds JARIR to the store whitelist |
+| `2026-09-08-005-store-check-add-ikea.sql` | 2026-09-08 | Adds IKEA to the store whitelist |
 
 ## If a migration tool is adopted later
 
