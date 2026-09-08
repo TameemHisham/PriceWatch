@@ -31,6 +31,7 @@ re-applying one is safe if you are unsure whether it has already run.
 | `2026-09-08-004-store-check-add-jarir.sql` | 2026-09-08 | Adds JARIR to the store whitelist |
 | `2026-09-08-005-store-check-add-ikea.sql` | 2026-09-08 | Adds IKEA to the store whitelist |
 | `2026-09-08-006-store-check-add-flipkart.sql` | 2026-09-08 | Adds FLIPKART to the store whitelist |
+| `2026-09-08-007-store-check-remove-namshi.sql` | 2026-09-08 | Removes NAMSHI, left behind by an abandoned scraper build. No-op on databases that never had it |
 
 ## If a migration tool is adopted later
 
