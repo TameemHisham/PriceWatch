@@ -9,6 +9,7 @@ public enum Store {
     JARIR,
     IKEA,
     FLIPKART,
+    EXTRA,
     ALIEXPRESS,
     WALMART,
     NOON,
