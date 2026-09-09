@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -114,6 +115,71 @@ class FlipkartScraperTest {
         assertTrue(doc.html().contains("Access Denied"),
                 "fixture should still carry the error-dictionary string");
         assertDoesNotThrow(() -> parse(doc));
+    }
+
+    // ---- search ----
+
+    private static Document searchFixture() throws IOException {
+        try (InputStream in = FlipkartScraperTest.class.getResourceAsStream("/scraper/flipkart/search.html")) {
+            assertNotNull(in, "Missing search fixture on the test classpath");
+            return Jsoup.parse(in, "UTF-8", "https://www.flipkart.com/search?q=samsung%20ssd");
+        }
+    }
+
+    @Test
+    void parsesSearchResultsFromFixture() throws IOException {
+        List<SearchResult> results = scraper().parseSearchResults(searchFixture());
+        assertFalse(results.isEmpty(), "expected hits from the saved results page");
+        SearchResult first = results.get(0);
+        assertTrue(first.title().startsWith("Samsung T7 Shield 1TB"), "unexpected: " + first.title());
+        assertTrue(scraper().productKey(first.url()).isPresent(), "not a product URL: " + first.url());
+    }
+
+    /**
+     * The whole reason the title attribute is read instead of the anchor text: Flipkart
+     * renders the name truncated with an ellipsis, and a truncated title would be fed
+     * straight into attribute extraction, which is what decides whether a match is real.
+     */
+    @Test
+    void takesTheFullTitleAttributeNotTheTruncatedVisibleText() throws IOException {
+        List<SearchResult> results = scraper().parseSearchResults(searchFixture());
+        for (SearchResult r : results) {
+            assertFalse(r.title().endsWith("..."), "truncated title leaked through: " + r.title());
+        }
+        assertTrue(results.get(0).title().contains("External Solid State Drive"),
+                "expected the full name, got: " + results.get(0).title());
+    }
+
+    /** Each tile links its product several times; one entry per item id. */
+    @Test
+    void deduplicatesRepeatedTileLinks() throws IOException {
+        List<SearchResult> results = scraper().parseSearchResults(searchFixture());
+        long distinct = results.stream().map(SearchResult::url).distinct().count();
+        assertEquals(results.size(), distinct, "duplicate product URLs in results");
+    }
+
+    /** Results are linked with tracking query strings; the stored URL is canonical. */
+    @Test
+    void searchResultsCarryCanonicalUrls() throws IOException {
+        for (SearchResult r : scraper().parseSearchResults(searchFixture())) {
+            assertEquals(scraper().canonicalUrl(r.url()), r.url(),
+                    "result should already be canonical: " + r.url());
+        }
+    }
+
+    @Test
+    void searchResultsAreCappedForQuota() throws IOException {
+        assertTrue(scraper().parseSearchResults(searchFixture()).size() <= 3);
+    }
+
+    @Test
+    void searchIgnoresABlankQueryWithoutFetching() {
+        assertEquals(List.of(), scraper().search("   "));
+    }
+
+    @Test
+    void isDiscoverableAsASearchableScraper() {
+        assertInstanceOf(SearchableScraper.class, scraper());
     }
 
     @Test

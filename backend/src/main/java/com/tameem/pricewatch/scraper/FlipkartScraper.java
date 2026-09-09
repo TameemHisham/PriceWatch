@@ -17,7 +17,12 @@ import java.net.CookieStore;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +42,7 @@ import java.util.regex.Pattern;
  * amount as the product price. A missing offer throws instead.
  */
 @Component
-public class FlipkartScraper implements ProductScraper {
+public class FlipkartScraper implements SearchableScraper {
 
     private static final Logger log = LoggerFactory.getLogger(FlipkartScraper.class);
     private final MarketplaceRegistry marketplaces;
@@ -121,6 +126,63 @@ public class FlipkartScraper implements ProductScraper {
         } catch (URISyntaxException e) {
             throw new ScrapeException("Unparseable URL: " + url, e);
         }
+    }
+
+    /**
+     * Results tile anchors that carry a title attribute.
+     * <p>
+     * The attribute is used rather than the anchor's text on purpose: Flipkart truncates
+     * the rendered name with an ellipsis ("Samsung T7 Shield 1TB USB 3.2 Gen 2(10
+     * Gbps),IP65 Rated..."), while the attribute holds it in full. Matching runs entirely
+     * on titles, so feeding it a truncated one attacks the step that decides correctness.
+     * Class names are no use here — they are build-hashed, as on the product pages.
+     */
+    private static final String SEARCH_RESULT_SELECTOR = "a[href*=/p/itm][title]";
+
+    /**
+     * Caps how many hits are returned. Matching spends an LLM call per candidate title, so
+     * one track costs 1 + MAX_RESULTS calls per searchable store — a Gemini free-tier
+     * constraint, not a relevance one. See TASKS.md.
+     */
+    private static final int MAX_RESULTS = 3;
+
+    @Override
+    public List<SearchResult> search(String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(MARKETPLACE_ID);
+        String host = marketplace.getHost();
+        String qualified = host.startsWith("www.") ? host : "www." + host;
+        String url = "https://" + qualified + "/search?q="
+                + URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
+        Fetched fetched = fetch(url, MARKETPLACE_ID, marketplace);
+        if (isBotChallenge(fetched.document())) {
+            throw new ScrapeException("Flipkart blocked search with a bot challenge");
+        }
+        return parseSearchResults(fetched.document());
+    }
+
+    /** Split out so tests can run the real parsing against a saved results page. */
+    List<SearchResult> parseSearchResults(Document document) {
+        Map<String, SearchResult> byItem = new LinkedHashMap<>();
+        for (Element link : document.select(SEARCH_RESULT_SELECTOR)) {
+            String title = link.attr("title").trim();
+            String href = link.absUrl("href");
+            if (href.isBlank()) {
+                href = link.attr("href");
+            }
+            Optional<String> item = productKey(href);
+            if (title.isBlank() || item.isEmpty() || byItem.containsKey(item.get())) {
+                continue;
+            }
+            // Canonical form drops the tracking query string results are linked with.
+            byItem.put(item.get(), new SearchResult(title, canonicalUrl(href)));
+            if (byItem.size() >= MAX_RESULTS) {
+                break;
+            }
+        }
+        return new ArrayList<>(byItem.values());
     }
 
     /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
