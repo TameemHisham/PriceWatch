@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -176,6 +177,61 @@ class CurrysScraperTest {
         doc.select("script[type=application/ld+json]").remove();
         ScrapeException thrown = assertThrows(ScrapeException.class, () -> parse(doc));
         assertTrue(thrown.getMessage().contains("not a product page"), thrown.getMessage());
+    }
+
+    // ---- search ----
+
+    private static Document searchFixture() throws IOException {
+        try (InputStream in = CurrysScraperTest.class.getResourceAsStream("/scraper/currys/search.html")) {
+            assertNotNull(in, "Missing search fixture on the test classpath");
+            return Jsoup.parse(in, "UTF-8", "https://www.currys.co.uk/search?q=samsung%20ssd");
+        }
+    }
+
+    @Test
+    void parsesSearchResultsFromFixture() throws IOException {
+        List<SearchResult> results = scraper().parseSearchResults(searchFixture());
+        assertFalse(results.isEmpty(), "expected hits from the saved results page");
+        SearchResult first = results.get(0);
+        assertEquals("SAMSUNG T7 Portable External SSD - 2 TB, Grey", first.title());
+        assertEquals("https://www.currys.co.uk/products/10217289.html", first.url());
+    }
+
+    /**
+     * Currys renders each tile three times for its responsive breakpoints and links the
+     * same product again from its rating and price, so the raw anchor list repeats. One
+     * entry per product keeps matching from paying for the same title several times.
+     */
+    @Test
+    void deduplicatesTheRepeatedTileMarkup() throws IOException {
+        List<SearchResult> results = scraper().parseSearchResults(searchFixture());
+        long distinct = results.stream().map(SearchResult::url).distinct().count();
+        assertEquals(results.size(), distinct, "duplicate product URLs in results");
+    }
+
+    /** Results link with the marketing slug; storing the canonical form survives a rename. */
+    @Test
+    void searchResultsCarryCanonicalUrls() throws IOException {
+        for (SearchResult r : scraper().parseSearchResults(searchFixture())) {
+            assertFalse(r.title().isBlank(), "blank title in results");
+            assertEquals(scraper().canonicalUrl(r.url()), r.url(),
+                    "result should already be canonical: " + r.url());
+        }
+    }
+
+    @Test
+    void searchResultsAreCappedForQuota() throws IOException {
+        assertTrue(scraper().parseSearchResults(searchFixture()).size() <= 3);
+    }
+
+    @Test
+    void searchIgnoresABlankQueryWithoutFetching() {
+        assertEquals(List.of(), scraper().search("   "));
+    }
+
+    @Test
+    void isDiscoverableAsASearchableScraper() {
+        assertInstanceOf(SearchableScraper.class, scraper());
     }
 
     @Test

@@ -15,7 +15,12 @@ import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +40,7 @@ import java.util.regex.Pattern;
  * real is worse than a scrape that fails loudly.
  */
 @Component
-public class CurrysScraper implements ProductScraper {
+public class CurrysScraper implements SearchableScraper {
 
     private static final Logger log = LoggerFactory.getLogger(CurrysScraper.class);
     private final MarketplaceRegistry marketplaces;
@@ -106,6 +111,60 @@ public class CurrysScraper implements ProductScraper {
         }
         String qualified = host.startsWith("www.") ? host : "www." + host;
         return "https://" + qualified + "/products/" + sku.get() + ".html";
+    }
+
+    /**
+     * Title anchor on a results tile. Currys renders each tile three times for its
+     * responsive breakpoints, and links the same product again from its rating and price,
+     * so hits are de-duplicated by SKU rather than trusted to be one per product.
+     */
+    private static final String SEARCH_RESULT_SELECTOR = "a.pdpLink";
+
+    /**
+     * Caps how many hits are returned. Matching spends an LLM call per candidate title, so
+     * one track costs 1 + MAX_RESULTS calls — a Gemini free-tier constraint, not a
+     * relevance one. See TASKS.md.
+     */
+    private static final int MAX_RESULTS = 3;
+
+    @Override
+    public List<SearchResult> search(String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(MARKETPLACE_ID);
+        String host = marketplace.getHost();
+        String qualified = host.startsWith("www.") ? host : "www." + host;
+        String url = "https://" + qualified + "/search?q="
+                + URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
+        Fetched fetched = fetch(url, MARKETPLACE_ID, marketplace);
+        if (isBotChallenge(fetched.document())) {
+            throw new ScrapeException("Currys blocked search with a bot challenge");
+        }
+        return parseSearchResults(fetched.document());
+    }
+
+    /** Split out so tests can run the real parsing against a saved results page. */
+    List<SearchResult> parseSearchResults(Document document) {
+        Map<String, SearchResult> bySku = new LinkedHashMap<>();
+        for (Element link : document.select(SEARCH_RESULT_SELECTOR)) {
+            String title = link.text().trim();
+            String href = link.absUrl("href");
+            if (href.isBlank()) {
+                href = link.attr("href");
+            }
+            Optional<String> sku = productKey(href);
+            if (title.isBlank() || sku.isEmpty() || bySku.containsKey(sku.get())) {
+                continue;
+            }
+            // Store the canonical form: results link with the marketing slug, and a rename
+            // upstream would otherwise leave a stale URL behind.
+            bySku.put(sku.get(), new SearchResult(title, canonicalUrl(href)));
+            if (bySku.size() >= MAX_RESULTS) {
+                break;
+            }
+        }
+        return new ArrayList<>(bySku.values());
     }
 
     /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
