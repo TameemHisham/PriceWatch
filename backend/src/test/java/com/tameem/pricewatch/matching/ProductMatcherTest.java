@@ -53,6 +53,40 @@ class ProductMatcherTest {
         assertEquals(Decision.MATCH, outcome.decision());
     }
 
+    /**
+     * The exact pair that regressed in live verification: B&H states "2TB" where the query
+     * title said "2 TB", and the gate rejected a genuinely identical product. Retailers
+     * format quantities differently, which is the normal case for cross-store matching.
+     */
+    @Test
+    void treatsCapacityAsEqualAcrossRetailerSpacing() {
+        ProductMatcher.Outcome outcome = matcher.match(
+                attrs("Samsung", "T7", "2 TB"),
+                attrs("Samsung", "T7", "2TB"),
+                "SAMSUNG T7 Portable External SSD - 2 TB, Grey",
+                "Samsung 2TB T7 Portable SSD (Titan Gray)");
+        assertEquals(Decision.MATCH, outcome.decision(), outcome.reason());
+    }
+
+    /** Spacing must not mask a real difference either. */
+    @Test
+    void stillRejectsWhenSpacingDiffersAndSoDoesTheQuantity() {
+        assertEquals(Decision.REJECT, matcher.match(
+                attrs("Samsung", "T7", "1TB"),
+                attrs("Samsung", "T7", "2 TB"),
+                "a", "b").decision());
+    }
+
+    /** A rejection still reports what each retailer actually wrote, not the normalised form. */
+    @Test
+    void rejectionMessageKeepsTheOriginalFormatting() {
+        ProductMatcher.Outcome outcome = matcher.match(
+                attrs("Samsung", "T7", "1TB"),
+                attrs("Samsung", "T7", "2 TB"),
+                "a", "b");
+        assertTrue(outcome.reason().contains("'2 TB'"), outcome.reason());
+    }
+
     /** Capacity still rejects even when everything else agrees. */
     @Test
     void capacityStillRejectsWhenModelAgrees() {

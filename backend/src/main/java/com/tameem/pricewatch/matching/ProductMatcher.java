@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -82,7 +83,7 @@ public class ProductMatcher {
         for (String field : HARD_FIELDS) {
             String va = valueOf(a, field);
             String vb = valueOf(b, field);
-            if (va != null && vb != null && !va.equalsIgnoreCase(vb)) {
+            if (va != null && vb != null && !sameValue(va, vb)) {
                 return new Outcome(Decision.REJECT,
                         "%s differs: '%s' vs '%s'".formatted(field, va, vb));
             }
@@ -94,7 +95,7 @@ public class ProductMatcher {
         for (String field : ADVISORY_FIELDS) {
             String va = valueOf(a, field);
             String vb = valueOf(b, field);
-            if (va != null && vb != null && !va.equalsIgnoreCase(vb)) {
+            if (va != null && vb != null && !sameValue(va, vb)) {
                 advisory = " (note: %s differs, '%s' vs '%s' — advisory only)"
                         .formatted(field, va, vb);
                 log.info("Matched despite {} difference: '{}' vs '{}'", field, va, vb);
@@ -113,6 +114,22 @@ public class ProductMatcher {
         }
         return new Outcome(Decision.UNCERTAIN,
                 "no attributes on either title; titles only %.2f similar".formatted(similarity));
+    }
+
+    /**
+     * Whether two stated values mean the same thing, ignoring case and all whitespace.
+     * <p>
+     * Retailers write the same quantity differently — B&H lists "2TB" where Currys lists
+     * "2 TB" — and with capacity the only hard field, treating those as a disagreement
+     * silently threw away correct matches. Cross-store formatting differences are the
+     * normal case for this feature, not an edge one.
+     * <p>
+     * Comparison only: the original strings are what a rejection message reports, so it
+     * still shows what each retailer actually wrote.
+     */
+    private static boolean sameValue(String a, String b) {
+        return a.replaceAll("\\s+", "").toLowerCase(Locale.ROOT)
+                .equals(b.replaceAll("\\s+", "").toLowerCase(Locale.ROOT));
     }
 
     private static String valueOf(ProductAttributes attributes, String field) {
