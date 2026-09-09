@@ -301,6 +301,21 @@ export default function ProductDetail() {
                                                         LOWEST
                                                     </span>
                                                 )}
+
+                                                {/* Only cross-store matches are badged. A
+                                                    sibling marketplace is the same product
+                                                    by construction; this one was inferred,
+                                                    so it is the one worth being able to
+                                                    see and question. */}
+                                                {row.origin ===
+                                                    "CROSS_STORE_DISCOVERY" && (
+                                                    <span
+                                                        className="store-prices--found"
+                                                        title="We found this listing by searching other stores and matching it to this product"
+                                                    >
+                                                        FOUND FOR YOU
+                                                    </span>
+                                                )}
                                             </div>
 
                                             <span className="store-prices--price">

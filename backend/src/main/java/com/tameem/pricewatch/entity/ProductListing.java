@@ -35,6 +35,10 @@ public class ProductListing {
     private Instant lastChecked;
     @Column(nullable = false, name = "created_at")
     private Instant createdAt;
+    /** How this listing was attached — see ListingOrigin. */
+    @Column(nullable = false, length = 32)
+    @Enumerated(EnumType.STRING)
+    private ListingOrigin origin = ListingOrigin.USER_SUBMITTED;
 
     public ProductListing() {}
 
@@ -60,6 +64,14 @@ public class ProductListing {
 
     public void setMarketplace(String marketplace) {
         this.marketplace = marketplace;
+    }
+
+    public ListingOrigin getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(ListingOrigin origin) {
+        this.origin = origin;
     }
 
     public Store getStore() {

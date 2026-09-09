@@ -221,6 +221,22 @@
     font-weight: 600;
 }
 
+/* Same pill as LOWEST, deliberately not the same colour: --down is the price-drop green,
+   so reusing it would make provenance read as a price signal. This says where a listing
+   came from, not whether it is a good deal. */
+.store-prices--found {
+    padding: 2px 7px;
+
+    border-radius: 999px;
+
+    background: var(--surface-2);
+    color: var(--text-3);
+
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+}
+
 .store-prices--price {
     font-family: "JetBrains Mono", monospace;
     font-size: 15px;

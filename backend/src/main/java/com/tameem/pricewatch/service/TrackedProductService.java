@@ -153,7 +153,8 @@ public class TrackedProductService {
         }
 
         // Save the originally-requested listing first, using data already scraped.
-        saveListing(savedProduct, normalized, productData, marketplaces.idFor(normalized));
+        saveListing(savedProduct, normalized, productData, marketplaces.idFor(normalized),
+                ListingOrigin.USER_SUBMITTED);
 
         // Fan out to sibling marketplaces of the same store, using the same ASIN.
         if (ASIN.isPresent()) {
@@ -174,7 +175,8 @@ public class TrackedProductService {
                     if (siblingData.title() == null || siblingData.title().isBlank()) {
                         throw new ScrapeException("Could not locate product title for URL: " + siblingUrl);
                     }
-                    saveListing(savedProduct, siblingUrl, siblingData, marketplaceId);
+                    saveListing(savedProduct, siblingUrl, siblingData, marketplaceId,
+                            ListingOrigin.SIBLING_MARKETPLACE);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (ScrapeException e) {
@@ -221,7 +223,8 @@ public class TrackedProductService {
                             .orElseThrow(() -> new IllegalStateException("Authenticated user not found")));
                     product = trackedProductRepository.save(fresh);
                 }
-                saveListing(product, scraper.canonicalUrl(hit.url()), data, entry.getKey());
+                saveListing(product, scraper.canonicalUrl(hit.url()), data, entry.getKey(),
+                        ListingOrigin.CROSS_STORE_DISCOVERY);
             } catch (RuntimeException e) {
                 log.warn("Discovered listing failed to scrape for {} ({}): {}",
                         entry.getKey(), hit.url(), e.toString());
@@ -251,7 +254,8 @@ public class TrackedProductService {
                 ProductScraper scraper = scrapers.forUrl(hit.url());
                 ProductData data = scraper.scrape(hit.url());
                 if (data.title() == null || data.title().isBlank()) continue;
-                saveListing(product, scraper.canonicalUrl(hit.url()), data, entry.getKey());
+                saveListing(product, scraper.canonicalUrl(hit.url()), data, entry.getKey(),
+                        ListingOrigin.CROSS_STORE_DISCOVERY);
                 log.info("Attached discovered listing on {} to product {}",
                         entry.getKey(), product.getId());
             } catch (RuntimeException e) {
@@ -262,9 +266,11 @@ public class TrackedProductService {
     }
 
     /** Saves one listing + its initial price point (if any) for an already-scraped marketplace. */
-    private void saveListing(TrackedProduct product, String url, ProductData productData, String marketplaceId) {
+    private void saveListing(TrackedProduct product, String url, ProductData productData,
+                             String marketplaceId, ListingOrigin origin) {
         ProductListing listing = new ProductListing();
         listing.setTrackedProduct(product);
+        listing.setOrigin(origin);
         listing.setStore(scrapers.forMarketplace(marketplaceId).store());
         listing.setUrl(url);
         listing.setMarketplace(marketplaceId);
@@ -396,7 +402,8 @@ public class TrackedProductService {
                     listing.getUrl(),
                     listing.getCurrency(),
                     latest != null ? latest.getPrice() : null,
-                    listing.getMarketplace()
+                    listing.getMarketplace(),
+                    listing.getOrigin()
             ));
             if (latest == null) continue;
 

@@ -33,6 +33,7 @@ re-applying one is safe if you are unsure whether it has already run.
 | `2026-09-08-006-store-check-add-flipkart.sql` | 2026-09-08 | Adds FLIPKART to the store whitelist |
 | `2026-09-08-007-store-check-remove-namshi.sql` | 2026-09-08 | Removes NAMSHI, left behind by an abandoned scraper build. No-op on databases that never had it |
 | `2026-09-08-008-store-check-add-extra.sql` | 2026-09-08 | Adds EXTRA to the store whitelist |
+| `2026-09-09-009-product-listing-origin.sql` | 2026-09-09 | Adds `origin` — how a listing was attached. Run before deploying the matching code |
 
 ## If a migration tool is adopted later
 
