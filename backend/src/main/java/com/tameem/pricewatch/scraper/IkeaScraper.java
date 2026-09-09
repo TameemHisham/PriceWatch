@@ -57,8 +57,17 @@ public class IkeaScraper implements ProductScraper {
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
     );
 
-    /** IKEA's article number trails the slug: {@code /us/en/p/aengslilja-…-40585226/}. */
-    private static final Pattern ARTICLE_TOKEN = Pattern.compile("/p/(?:[^/?#]*-)?(\\d{8})(?:[/?#]|$)");
+    /**
+     * IKEA's article number trails the slug: {@code /us/en/p/aengslilja-…-40585226/}.
+     * <p>
+     * Series and combination products carry an "s" in front of it
+     * ({@code /ae/en/p/mittzon-…-s99513930/}), which is decorative in the URL — both
+     * {@code /p/-99513930/} and {@code /p/-s99513930/} resolve to the same product. Only
+     * the digits are captured, because that is the form the page itself states in
+     * data-product-no and (dotted) in its ld+json sku, and the identity check compares
+     * against those.
+     */
+    private static final Pattern ARTICLE_TOKEN = Pattern.compile("/p/(?:[^/?#]*-)?s?(\\d{8})(?:[/?#]|$)");
 
     /** Locale lives in the path, e.g. "/us/en" in "/us/en/p/…". */
     private static final Pattern LOCALE_TOKEN = Pattern.compile("^(/[a-z]{2}/[a-z]{2})/");

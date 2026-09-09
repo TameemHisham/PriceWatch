@@ -122,6 +122,31 @@ class IkeaScraperTest {
                 scraper().productKey("https://www.ikea.com/us/en/p/-40585226/"));
     }
 
+    /**
+     * Series/combination products prefix the article number with "s". Capturing the digits
+     * only, because the page states them undotted in data-product-no and the identity check
+     * compares against that — capturing "s99513930" would trade a parse failure for a
+     * spurious "wrong article" rejection.
+     */
+    @Test
+    void productKeyReadsAnSPrefixedSeriesArticleNumber() {
+        assertEquals(Optional.of("99513930"), scraper().productKey(
+                "https://www.ikea.com/ae/en/p/mittzon-conference-table-round-birch-veneer-white-s99513930/"));
+    }
+
+    @Test
+    void productKeyReadsAnSPrefixedArticleFromASluglessUrl() {
+        assertEquals(Optional.of("99513930"),
+                scraper().productKey("https://www.ikea.com/ae/en/p/-s99513930/"));
+    }
+
+    /** Both /-99513930/ and /-s99513930/ resolve upstream, so the canonical form drops it. */
+    @Test
+    void canonicalUrlOfAnSPrefixedArticleKeepsItsLocaleAndDropsThePrefix() {
+        assertEquals("https://www.ikea.com/ae/en/p/-99513930/", scraper().canonicalUrl(
+                "https://www.ikea.com/ae/en/p/mittzon-conference-table-round-birch-veneer-white-s99513930/"));
+    }
+
     @Test
     void productKeyIsEmptyForNonProductUrl() {
         assertEquals(Optional.empty(),
