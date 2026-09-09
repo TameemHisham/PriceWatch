@@ -243,6 +243,19 @@
     font-weight: 600;
 }
 
+/* A store we are watching that has no offer right now. Muted rather than hidden: the row
+   records a real observation, and removing it would both lose that and desync the table
+   from the "N stores" count, which is derived from the listing rows. */
+.store-prices--row--unavailable {
+    opacity: 0.62;
+}
+
+.store-prices--unavailable {
+    color: var(--text-3);
+    font-size: 13px;
+    font-style: italic;
+}
+
 .store-prices--link {
     display: inline-flex;
     align-items: center;

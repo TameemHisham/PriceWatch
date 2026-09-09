@@ -276,7 +276,11 @@ export default function ProductDetail() {
                                     })
                                     .map((row, i) => (
                                         <div
-                                            className="store-prices--row"
+                                            className={
+                                                row.currentPrice === null
+                                                    ? "store-prices--row store-prices--row--unavailable"
+                                                    : "store-prices--row"
+                                            }
                                             key={row.marketplace}
                                         >
                                             <div className="store-prices--store">
@@ -296,11 +300,18 @@ export default function ProductDetail() {
                                                     )}
                                                 </span>
 
-                                                {rates !== null && i === 0 && (
-                                                    <span className="store-prices--lowest">
-                                                        LOWEST
-                                                    </span>
-                                                )}
+                                                {/* Guarded on the row's own price too:
+                                                    when every listing is out of stock the
+                                                    comparator has nothing to order by, and
+                                                    row 0 would otherwise be badged LOWEST
+                                                    with no price at all. */}
+                                                {rates !== null &&
+                                                    i === 0 &&
+                                                    row.currentPrice !== null && (
+                                                        <span className="store-prices--lowest">
+                                                            LOWEST
+                                                        </span>
+                                                    )}
 
                                                 {/* Only cross-store matches are badged. A
                                                     sibling marketplace is the same product
@@ -318,12 +329,24 @@ export default function ProductDetail() {
                                                 )}
                                             </div>
 
-                                            <span className="store-prices--price">
-                                                {formatPrice(
-                                                    row.currentPrice,
-                                                    row.currency,
-                                                )}
-                                            </span>
+                                            {/* The listing is kept deliberately: we are
+                                                watching this store and it has no offer
+                                                right now, which is an observation rather
+                                                than an absence. A bare dash did not say
+                                                that; hiding the row would have said the
+                                                opposite. */}
+                                            {row.currentPrice === null ? (
+                                                <span className="store-prices--unavailable">
+                                                    Not available
+                                                </span>
+                                            ) : (
+                                                <span className="store-prices--price">
+                                                    {formatPrice(
+                                                        row.currentPrice,
+                                                        row.currency,
+                                                    )}
+                                                </span>
+                                            )}
 
                                             <a
                                                 href={row.url}
