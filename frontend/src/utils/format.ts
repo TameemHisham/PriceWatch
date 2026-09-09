@@ -34,6 +34,26 @@ const STORE_INFO: Record<string, { label: string; color: string }> = {
         label: "B&H Photo",
         color: "oklch(0.68 0.17 20)",
     },
+    CURRYS: {
+        label: "Currys",
+        color: "oklch(0.64 0.18 328)",
+    },
+    JARIR: {
+        label: "Jarir",
+        color: "oklch(0.70 0.13 158)",
+    },
+    IKEA: {
+        label: "IKEA",
+        color: "oklch(0.83 0.16 92)",
+    },
+    FLIPKART: {
+        label: "Flipkart",
+        color: "oklch(0.62 0.17 268)",
+    },
+    EXTRA: {
+        label: "eXtra",
+        color: "oklch(0.58 0.15 350)",
+    },
     ALIEXPRESS: {
         label: "AliExpress",
         color: "oklch(0.78 0.14 30)",
@@ -58,6 +78,11 @@ const MARKETPLACE_INFO: Record<string, { label: string; color: string }> = {
     AMAZON_US: { label: "Amazon US", color: "oklch(0.80 0.13 30)" },
     NEWEGG: { label: "Newegg", color: "oklch(0.76 0.13 195)" },
     BH_PHOTO: { label: "B&H Photo", color: "oklch(0.68 0.17 20)" },
+    CURRYS: { label: "Currys", color: "oklch(0.64 0.18 328)" },
+    JARIR: { label: "Jarir", color: "oklch(0.70 0.13 158)" },
+    IKEA: { label: "IKEA", color: "oklch(0.83 0.16 92)" },
+    FLIPKART: { label: "Flipkart", color: "oklch(0.62 0.17 268)" },
+    EXTRA: { label: "eXtra", color: "oklch(0.58 0.15 350)" },
 };
 
 export function marketplaceLabel(marketplace: string): string {

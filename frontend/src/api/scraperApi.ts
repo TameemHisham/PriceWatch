@@ -2,6 +2,8 @@ import type { CurrencyResponse } from "../types/CurrencyResponse";
 import type { TrackedProductDetailResponse } from "../types/TrackedProductDetailResponse";
 import type { TrackedProductResponse } from "../types/TrackedProductResponse";
 import type { TrackRequest } from "../types/TrackRequest";
+import type { TrackByNameRequest } from "../types/TrackByNameRequest";
+import { ApiError } from "./ApiError";
 import type { HistoryResponse } from "../types/HistoryResponse";
 import type { AuthRequest, AuthResponse } from "../types/AuthResponse";
 const BASE = "/api/tracked-products";
@@ -51,8 +53,9 @@ async function jsonRequest<T>(url: string, options?: RequestInit): Promise<T> {
         forceLogout();
     }
     if (!res.ok) {
-        // fetch does NOT throw on 4xx/5xx
-        throw new Error(await errorMessage(res));
+        // fetch does NOT throw on 4xx/5xx. Carry the status: callers need to tell an
+        // ordinary "nothing matched" 404 apart from an actual failure.
+        throw new ApiError(await errorMessage(res), res.status);
     }
     return (await res.json()) as T;
 }
@@ -77,6 +80,22 @@ export function getTrackedProduct(
 export function trackProduct(url: string): Promise<TrackedProductResponse> {
     const payload: TrackRequest = { url };
     return jsonRequest<TrackedProductResponse>(BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+}
+
+/**
+ * POST a product NAME to start tracking. Slower than trackProduct: the backend searches
+ * every searchable store, then runs an LLM attribute gate over each candidate. Answers 404
+ * when nothing matched, which is an ordinary outcome rather than a failure.
+ */
+export function trackProductByName(
+    name: string,
+): Promise<TrackedProductResponse> {
+    const payload: TrackByNameRequest = { name };
+    return jsonRequest<TrackedProductResponse>(`${BASE}/by-name`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -23,6 +23,14 @@
     font-weight: 600;
 }
 
+/* Status line shown while a track is in flight. Searching by name is genuinely slower —
+   it searches each store and matches every candidate — so the wait needs saying out loud. */
+.add-product--status {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-3);
+}
+
 .add-product--input-container {
     display: flex;
     gap: 9px;
