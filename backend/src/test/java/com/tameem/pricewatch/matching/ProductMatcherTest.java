@@ -27,14 +27,39 @@ class ProductMatcherTest {
         assertTrue(outcome.reason().contains("capacity"), outcome.reason());
     }
 
+    /**
+     * model is advisory, not a gate. The extractor phrases it inconsistently across
+     * near-identical titles, so a difference is as likely to be wording as a real one.
+     */
     @Test
-    void rejectsOnModelDisagreement() {
+    void doesNotRejectOnModelDisagreementAlone() {
         ProductMatcher.Outcome outcome = matcher.match(
                 attrs("Apple", "iPhone 17 Pro Max", "512 GB"),
                 attrs("Apple", "iPhone 17 Pro", "512 GB"),
                 "Apple iPhone 17 Pro Max 512 GB", "Apple iPhone 17 Pro 512 GB");
-        assertEquals(Decision.REJECT, outcome.decision());
-        assertTrue(outcome.reason().contains("model"), outcome.reason());
+        assertEquals(Decision.MATCH, outcome.decision());
+        assertTrue(outcome.reason().contains("advisory"), outcome.reason());
+        assertTrue(outcome.reason().contains("model differs"), outcome.reason());
+    }
+
+    /** The exact pair that regressed: same product, model phrased two different ways. */
+    @Test
+    void matchesTheHeatsinkPairRegardlessOfHowModelIsPhrased() {
+        ProductMatcher.Outcome outcome = matcher.match(
+                attrs("Samsung", "990 PRO PCIe 4.0 x4 M.2", "1TB"),
+                attrs("Samsung", "990 PRO", "1TB"),
+                "Samsung 1TB 990 PRO PCIe 4.0 x4 M.2 Internal SSD",
+                "Samsung 1TB 990 PRO PCIe 4.0 x4 M.2 Internal SSD with Heatsink");
+        assertEquals(Decision.MATCH, outcome.decision());
+    }
+
+    /** Capacity still rejects even when everything else agrees. */
+    @Test
+    void capacityStillRejectsWhenModelAgrees() {
+        assertEquals(Decision.REJECT, matcher.match(
+                attrs("Samsung", "990 PRO", "1TB"),
+                attrs("Samsung", "990 PRO", "2TB"),
+                "a", "b").decision());
     }
 
     /** Retailers write titles differently; a field only one side states proves nothing. */

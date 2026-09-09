@@ -1,5 +1,7 @@
 package com.tameem.pricewatch.matching;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -24,8 +26,25 @@ import java.util.stream.Collectors;
 @Component
 public class ProductMatcher {
 
-    /** Fields where a stated disagreement means a different product, full stop. */
-    private static final String[] HARD_FIELDS = {"capacity", "model"};
+    private static final Logger log = LoggerFactory.getLogger(ProductMatcher.class);
+
+    /**
+     * Fields where a stated disagreement means a different product, full stop.
+     * <p>
+     * Only capacity. It is a clean numeric-plus-unit spec, so two titles either state the
+     * same quantity or genuinely describe different products.
+     * <p>
+     * "model" used to sit here and was demoted: the extractor phrases it inconsistently
+     * across near-identical titles — the same B&amp;H pair extracted as "990 PRO" on one run
+     * and "990 PRO PCIe 4.0 x4 M.2" on the next — so a disagreement was as likely to mean
+     * "worded differently this time" as "different product". "size" is deliberately not
+     * here either: it is nominally a unit spec but the extractor puts interface strings in
+     * it, e.g. "PCIe 4.0 x16" for an SSD.
+     */
+    private static final String[] HARD_FIELDS = {"capacity"};
+
+    /** Disagreements worth recording but never worth rejecting on. */
+    private static final String[] ADVISORY_FIELDS = {"model"};
 
     /**
      * Only used when NEITHER title yielded any attribute at all — generic names with no
@@ -69,8 +88,21 @@ public class ProductMatcher {
             }
         }
 
+        // Advisory only: recorded so a surprising match can be explained later, but never
+        // enough on its own to throw a candidate away.
+        String advisory = "";
+        for (String field : ADVISORY_FIELDS) {
+            String va = valueOf(a, field);
+            String vb = valueOf(b, field);
+            if (va != null && vb != null && !va.equalsIgnoreCase(vb)) {
+                advisory = " (note: %s differs, '%s' vs '%s' — advisory only)"
+                        .formatted(field, va, vb);
+                log.info("Matched despite {} difference: '{}' vs '{}'", field, va, vb);
+            }
+        }
+
         if (!a.isEmpty() || !b.isEmpty()) {
-            return new Outcome(Decision.MATCH, "no conflicting attributes");
+            return new Outcome(Decision.MATCH, "no conflicting hard attributes" + advisory);
         }
 
         // Neither title stated anything extractable — the rare generic-name case.
@@ -87,6 +119,7 @@ public class ProductMatcher {
         String value = switch (field) {
             case "capacity" -> attributes.capacity();
             case "model" -> attributes.model();
+            case "size" -> attributes.size();
             default -> null;
         };
         return value == null || value.isBlank() ? null : value.trim();
