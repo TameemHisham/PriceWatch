@@ -14,8 +14,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Extracts structured attributes from a product title with one call to Gemini
- * 2.5 Flash-Lite.
+ * Extracts structured attributes from a product title with one call to Groq.
  * <p>
  * The prompt is the one already validated against real catalogue titles — in particular
  * its instruction never to infer a value that is not in the text, which is what makes an
@@ -27,7 +26,13 @@ public class AttributeExtractor {
     private static final Logger log = LoggerFactory.getLogger(AttributeExtractor.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private static final String MODEL = "gemini-2.5-flash-lite";
+    /**
+     * Groq rather than Gemini: the Gemini free tier allowed 20 requests per day, and one
+     * track costs 1 + 3 calls per searchable store, so three stores meant two tracks a day.
+     * Groq's free tier is ~14,400/day and 30/minute, which takes quota out of the critical
+     * path entirely.
+     */
+    private static final String MODEL = "openai/gpt-oss-120b";
 
     private static final String PROMPT_TEMPLATE = """
             Extract product attributes from this title as a JSON object.
@@ -55,10 +60,10 @@ public class AttributeExtractor {
     private final RestClient client;
     private final String apiKey;
 
-    public AttributeExtractor(@Value("${pricewatch.gemini.api-key:}") String apiKey) {
+    public AttributeExtractor(@Value("${groq.api.key:}") String apiKey) {
         this.apiKey = apiKey;
         this.client = RestClient.builder()
-                .baseUrl("https://generativelanguage.googleapis.com/v1beta/models")
+                .baseUrl("https://api.groq.com/openai/v1")
                 .build();
     }
 
@@ -79,7 +84,7 @@ public class AttributeExtractor {
             return Optional.of(ProductAttributes.empty());
         }
         if (!isConfigured()) {
-            log.warn("No pricewatch.gemini.api-key configured — title attributes cannot be "
+            log.warn("No groq.api.key configured — title attributes cannot be "
                     + "extracted, so cross-store matching will not auto-attach anything");
             return Optional.empty();
         }
@@ -89,10 +94,18 @@ public class AttributeExtractor {
         }
         try {
             String body = client.post()
-                    .uri("/{model}:generateContent?key={key}", MODEL, apiKey)
-                    .body(Map.of("contents", List.of(
-                            Map.of("parts", List.of(
-                                    Map.of("text", PROMPT_TEMPLATE.formatted(title)))))))
+                    .uri("/chat/completions")
+                    .header("Authorization", "Bearer " + apiKey)
+                    .body(Map.of(
+                            "model", MODEL,
+                            // Deterministic: the same title must not extract differently on
+                            // two runs. A model field that moves between calls is exactly
+                            // what forced it out of the hard gate.
+                            "temperature", 0,
+                            "response_format", Map.of("type", "json_object"),
+                            "messages", List.of(Map.of(
+                                    "role", "user",
+                                    "content", PROMPT_TEMPLATE.formatted(title)))))
                     .retrieve()
                     .body(String.class);
             ProductAttributes parsed = parse(body);
@@ -106,8 +119,7 @@ public class AttributeExtractor {
 
     private ProductAttributes parse(String responseBody) {
         JsonNode root = MAPPER.readTree(responseBody);
-        String text = root.path("candidates").path(0).path("content")
-                .path("parts").path(0).path("text").asString();
+        String text = root.path("choices").path(0).path("message").path("content").asString();
         JsonNode attrs = MAPPER.readTree(stripCodeFence(text));
         return new ProductAttributes(
                 field(attrs, "brand"),
@@ -117,7 +129,10 @@ public class AttributeExtractor {
                 field(attrs, "color"));
     }
 
-    /** The prompt forbids fences, but models add them anyway. */
+    /**
+     * JSON mode should make this unnecessary, but it is kept: the cost is a string check
+     * and the failure it prevents is a whole extraction returning nothing.
+     */
     static String stripCodeFence(String text) {
         String trimmed = text == null ? "" : text.trim();
         if (!trimmed.startsWith("```")) {
