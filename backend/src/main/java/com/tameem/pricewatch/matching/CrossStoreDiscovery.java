@@ -65,6 +65,13 @@ public class CrossStoreDiscovery {
         Optional<ProductAttributes> queryAttributes = extractor.extract(title);
 
         for (SearchableScraper scraper : searchable) {
+            if (servesOnlyExcluded(scraper, excludeMarketplaces)) {
+                // Every marketplace this scraper covers is already attached. Searching it
+                // would spend a request to produce hits the loop below only discards.
+                log.debug("Skipping search on {} — its marketplaces are already attached",
+                        scraper.getClass().getSimpleName());
+                continue;
+            }
             List<SearchResult> hits;
             try {
                 hits = scraper.search(title);
@@ -97,6 +104,14 @@ public class CrossStoreDiscovery {
             }
         }
         return matches;
+    }
+
+    /** True when every marketplace this scraper serves is already attached to the product. */
+    private boolean servesOnlyExcluded(SearchableScraper scraper, List<String> excluded) {
+        List<String> served = marketplaces.allMarketplaceIds().stream()
+                .filter(scraper::supports)
+                .toList();
+        return !served.isEmpty() && excluded.containsAll(served);
     }
 
     /** Convenience for the no-exclusions case. */

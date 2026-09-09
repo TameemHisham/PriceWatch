@@ -342,6 +342,16 @@ public class TrackedProductService {
                 log.error("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.toString());
             }
         }
+
+        // Also look again for stores this product does not have yet. A product tracked
+        // before a storefront became searchable never got the chance, and the searchable
+        // set grows over time.
+        //
+        // Deliberately here and not in refreshListing: the scheduled sweep calls that
+        // method directly, per listing, so discovery there would run for every listing of
+        // every product on every sweep. reTrack is only reached from the refresh button.
+        attachDiscoveredListings(product, product.getName());
+
         return this.toDetailResponse(product);
     }
 
