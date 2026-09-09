@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -175,6 +176,65 @@ class BhPhotoScraperTest {
         ScrapeException thrown = assertThrows(ScrapeException.class, () ->
                 parse(doc));
         assertTrue(thrown.getMessage().contains("not a product page"), thrown.getMessage());
+    }
+
+    // ---- search ----
+
+    private static Document searchFixture() throws IOException {
+        try (InputStream in = BhPhotoScraperTest.class.getResourceAsStream("/scraper/bhphoto/search.html")) {
+            assertNotNull(in, "Missing search fixture on the test classpath");
+            return Jsoup.parse(in, "UTF-8", "https://www.bhphotovideo.com/c/search?q=samsung+ssd");
+        }
+    }
+
+    @Test
+    void parsesSearchResultsFromFixture() throws IOException {
+        List<SearchResult> results = scraper().parseSearchResults(searchFixture());
+        assertFalse(results.isEmpty(), "expected hits from the saved results page");
+        SearchResult first = results.get(0);
+        assertEquals("Samsung 1TB 990 PRO PCIe 4.0 x4 M.2 Internal SSD", first.title());
+        assertTrue(first.url().startsWith("https://www.bhphotovideo.com/c/product/1726547-REG/"),
+                "unexpected url: " + first.url());
+    }
+
+    /** Every hit must be a real product URL, so the caller can scrape it directly. */
+    @Test
+    void everySearchResultCarriesATitleAndAProductUrl() throws IOException {
+        for (SearchResult r : scraper().parseSearchResults(searchFixture())) {
+            assertFalse(r.title().isBlank(), "blank title in results");
+            assertTrue(scraper().productKey(r.url()).isPresent(),
+                    "not a product URL: " + r.url());
+        }
+    }
+
+    /**
+     * The results page also links each product from its image and its review anchor. One
+     * entry per product keeps the downstream matching from paying for the same title twice.
+     */
+    @Test
+    void searchResultsAreNotDuplicatedPerProduct() throws IOException {
+        List<SearchResult> results = scraper().parseSearchResults(searchFixture());
+        long distinctUrls = results.stream().map(SearchResult::url).distinct().count();
+        assertEquals(results.size(), distinctUrls, "duplicate product URLs in results");
+    }
+
+    /**
+     * One track costs 1 + this many LLM calls, so the cap is what keeps a single track
+     * inside the Gemini free tier rather than a relevance judgement.
+     */
+    @Test
+    void searchResultsAreCappedForQuota() throws IOException {
+        assertTrue(scraper().parseSearchResults(searchFixture()).size() <= 3);
+    }
+
+    @Test
+    void searchIgnoresABlankQueryWithoutFetching() {
+        assertEquals(List.of(), scraper().search("   "));
+    }
+
+    @Test
+    void isDiscoverableAsASearchableScraper() {
+        assertInstanceOf(SearchableScraper.class, scraper());
     }
 
     @Test

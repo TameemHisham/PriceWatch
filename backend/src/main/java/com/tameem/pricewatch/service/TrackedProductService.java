@@ -7,6 +7,8 @@ import com.tameem.pricewatch.repositories.ProductListingRepository;
 import com.tameem.pricewatch.repositories.TrackedProductRepository;
 import com.tameem.pricewatch.config.MarketplaceRegistry;
 import com.tameem.pricewatch.config.ScraperRegistry;
+import com.tameem.pricewatch.matching.CrossStoreDiscovery;
+import com.tameem.pricewatch.scraper.SearchResult;
 import com.tameem.pricewatch.repositories.UserRepository;
 import com.tameem.pricewatch.scraper.ProductData;
 import com.tameem.pricewatch.scraper.ProductScraper;
@@ -32,6 +34,7 @@ public class TrackedProductService {
     private final ExchangeRateService exchangeRateService;
     private final PricePointRepository pricePointRepository;
     private final ScraperRegistry scrapers;
+    private final CrossStoreDiscovery discovery;
     private final MarketplaceRegistry marketplaces;
     private static final Logger log = LoggerFactory.getLogger(TrackedProductService.class);
     private final CurrentUserProvider currentUserProvider;
@@ -42,11 +45,13 @@ public class TrackedProductService {
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
                                  ScraperRegistry scrapers,
+                                 CrossStoreDiscovery discovery,
                                  MarketplaceRegistry marketplaces, ExchangeRateService exchangeRateService,CurrentUserProvider currentUserProvider,UserRepository userRepository) {
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
         this.pricePointRepository = pricePointRepository;
         this.scrapers = scrapers;
+        this.discovery = discovery;
         this.marketplaces = marketplaces;
         this.exchangeRateService = exchangeRateService;
         this.currentUserProvider=currentUserProvider;
@@ -180,7 +185,80 @@ public class TrackedProductService {
             }
         }
 
+        // Look for the same product on other storefronts. Additive: the requested URL has
+        // already been scraped and saved above, and nothing here can change that listing.
+        attachDiscoveredListings(savedProduct, productData.title());
+
         return new TrackResult(this.toResponse(savedProduct), true);
+    }
+
+    /**
+     * Tracks by product name instead of URL: searches the storefronts that can be searched,
+     * keeps only hits that clear the attribute gate, and builds a product from them.
+     */
+    @Transactional
+    public TrackResult trackProductByName(String name) {
+        Map<String, SearchResult> matches = discovery.findMatches(name);
+        if (matches.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "No matching product found on any searchable store for: " + name);
+        }
+
+        TrackedProduct product = null;
+        for (Map.Entry<String, SearchResult> entry : matches.entrySet()) {
+            SearchResult hit = entry.getValue();
+            try {
+                ProductScraper scraper = scrapers.forUrl(hit.url());
+                ProductData data = scraper.scrape(hit.url());
+                if (data.title() == null || data.title().isBlank()) continue;
+
+                if (product == null) {
+                    // The first hit that actually scrapes becomes the product itself.
+                    TrackedProduct fresh = new TrackedProduct();
+                    fresh.setName(data.title());
+                    fresh.setImageUrl(data.imageUrl());
+                    fresh.setUser(userRepository.findById(currentUserProvider.getCurrentUserId())
+                            .orElseThrow(() -> new IllegalStateException("Authenticated user not found")));
+                    product = trackedProductRepository.save(fresh);
+                }
+                saveListing(product, scraper.canonicalUrl(hit.url()), data, entry.getKey());
+            } catch (RuntimeException e) {
+                log.warn("Discovered listing failed to scrape for {} ({}): {}",
+                        entry.getKey(), hit.url(), e.toString());
+            }
+        }
+
+        if (product == null) {
+            throw new ResourceNotFoundException(
+                    "Matches were found but none could be scraped for: " + name);
+        }
+        return new TrackResult(this.toResponse(product), true);
+    }
+
+    /**
+     * Attaches listings for the same product found on other storefronts. Best effort by
+     * design — a store being unsearchable, unreachable or unmatched leaves the tracked
+     * product exactly as it already was.
+     */
+    private void attachDiscoveredListings(TrackedProduct product, String title) {
+        List<String> alreadyAttached = productListingRepository.findByTrackedProduct(product).stream()
+                .map(ProductListing::getMarketplace)
+                .toList();
+        for (Map.Entry<String, SearchResult> entry
+                : discovery.findMatches(title, alreadyAttached).entrySet()) {
+            SearchResult hit = entry.getValue();
+            try {
+                ProductScraper scraper = scrapers.forUrl(hit.url());
+                ProductData data = scraper.scrape(hit.url());
+                if (data.title() == null || data.title().isBlank()) continue;
+                saveListing(product, scraper.canonicalUrl(hit.url()), data, entry.getKey());
+                log.info("Attached discovered listing on {} to product {}",
+                        entry.getKey(), product.getId());
+            } catch (RuntimeException e) {
+                log.warn("Discovered listing failed to scrape for {} ({}): {}",
+                        entry.getKey(), hit.url(), e.toString());
+            }
+        }
     }
 
     /** Saves one listing + its initial price point (if any) for an already-scraped marketplace. */

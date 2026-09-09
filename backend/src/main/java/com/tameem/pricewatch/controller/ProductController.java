@@ -42,6 +42,19 @@ public class ProductController {
         HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status).body(result.product());
     }
+    /**
+     * POST /api/tracked-products/by-name — track by product name instead of a URL.
+     * Searches the storefronts that can be searched and attaches only hits that clear the
+     * attribute gate. 404 when nothing matches, since there is no product to create.
+     */
+    @PostMapping("/tracked-products/by-name")
+    public ResponseEntity<TrackedProductResponse> trackProductByName(
+            @RequestBody @Valid TrackByNameRequest request) {
+        TrackResult result = trackedProductService.trackProductByName(request.name());
+        HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+        return ResponseEntity.status(status).body(result.product());
+    }
+
     /** POST /api/tracked-products/{id}/refresh — re-scrape now and record a new price point. */
     @PostMapping("/tracked-products/{id}/refresh")
     public ResponseEntity<TrackedProductDetailResponse> refreshProduct(@PathVariable long id) {

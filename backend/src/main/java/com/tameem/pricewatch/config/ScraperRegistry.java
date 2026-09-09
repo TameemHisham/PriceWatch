@@ -1,6 +1,7 @@
 package com.tameem.pricewatch.config;
 
 import com.tameem.pricewatch.scraper.ProductScraper;
+import com.tameem.pricewatch.scraper.SearchableScraper;
 import com.tameem.pricewatch.scraper.UnsupportedMarketplaceException;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,18 @@ public class ScraperRegistry {
     /** The scraper serving the storefront this URL belongs to. */
     public ProductScraper forUrl(String url) {
         return forMarketplace(marketplaces.idFor(url));
+    }
+
+    /**
+     * The scrapers whose storefronts can be searched by keyword — a minority, since most
+     * either block search or render results client-side. Callers doing cross-store
+     * discovery iterate this rather than every registered scraper.
+     */
+    public List<SearchableScraper> searchable() {
+        return scrapers.stream()
+                .filter(SearchableScraper.class::isInstance)
+                .map(SearchableScraper.class::cast)
+                .toList();
     }
 
     /**

@@ -16,6 +16,9 @@ import java.math.BigDecimal;
 import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,7 +39,7 @@ import java.util.regex.Pattern;
  * {@code data-selenium} hook is kept as the fallback.
  */
 @Component
-public class BhPhotoScraper implements ProductScraper {
+public class BhPhotoScraper implements SearchableScraper {
 
     private static final Logger log = LoggerFactory.getLogger(BhPhotoScraper.class);
     private final MarketplaceRegistry marketplaces;
@@ -144,6 +147,53 @@ public class BhPhotoScraper implements ProductScraper {
             throw new ScrapeException("Marketplace BH_PHOTO has no configured host");
         }
         return configured.startsWith("www.") ? configured : "www." + configured;
+    }
+
+    /** Anchor carrying both the result title and its product link, one per hit. */
+    private static final String SEARCH_RESULT_SELECTOR = "[data-selenium=miniProductPageProductNameLink]";
+
+    /**
+     * Caps how many hits are returned. Matching spends an LLM call per candidate title, so
+     * one track costs 1 + MAX_RESULTS calls. Set to 3 to stay well inside the Gemini free
+     * tier's per-minute and per-day limits without putting throttling delays in the request
+     * path — a quota constraint, not a relevance one. Worth raising on a paid key; see
+     * TASKS.md.
+     */
+    private static final int MAX_RESULTS = 3;
+
+    @Override
+    public List<SearchResult> search(String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(MARKETPLACE_ID);
+        String url = "https://" + hostFor("https://" + marketplace.getHost())
+                + "/c/search?q=" + URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
+        Fetched fetched = fetch(url, MARKETPLACE_ID, marketplace);
+        if (isBotChallenge(fetched.document())) {
+            throw new ScrapeException("B&H blocked search with a bot challenge");
+        }
+        return parseSearchResults(fetched.document());
+    }
+
+    /** Split out so tests can run the real parsing against a saved results page. */
+    List<SearchResult> parseSearchResults(Document document) {
+        List<SearchResult> results = new ArrayList<>();
+        for (Element link : document.select(SEARCH_RESULT_SELECTOR)) {
+            String title = link.text().trim();
+            String href = link.absUrl("href");
+            if (href.isBlank()) {
+                href = link.attr("href");
+            }
+            if (title.isBlank() || href.isBlank() || productKey(href).isEmpty()) {
+                continue;
+            }
+            results.add(new SearchResult(title, href));
+            if (results.size() >= MAX_RESULTS) {
+                break;
+            }
+        }
+        return results;
     }
 
     /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
