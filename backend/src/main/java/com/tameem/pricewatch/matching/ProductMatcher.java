@@ -4,8 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -23,6 +25,13 @@ import java.util.stream.Collectors;
  * A field present on one side and absent on the other is neutral: titles are written by
  * different retailers and simply mention different things. Only a genuine
  * present-on-both-sides disagreement rejects.
+ * <p>
+ * Neutral is not enough to attach on, though. Measured against the existing catalogue,
+ * treating "nothing conflicts" as a match ran at 53% precision: every remaining error was a
+ * pair where neither title yielded a comparable field, so a tablet stand and a desk mount
+ * disagreed about nothing and were matched for it. A match now needs at least one hard
+ * field stated on both sides and agreeing; anything less is UNCERTAIN, which never
+ * attaches.
  */
 @Component
 public class ProductMatcher {
@@ -32,20 +41,24 @@ public class ProductMatcher {
     /**
      * Fields where a stated disagreement means a different product, full stop.
      * <p>
-     * Only capacity. It is a clean numeric-plus-unit spec, so two titles either state the
-     * same quantity or genuinely describe different products.
+     * capacity is a clean numeric-plus-unit spec: two titles either state the same quantity
+     * or describe different products.
      * <p>
-     * "model" used to sit here and was demoted: the extractor phrases it inconsistently
-     * across near-identical titles — the same B&amp;H pair extracted as "990 PRO" on one run
-     * and "990 PRO PCIe 4.0 x4 M.2" on the next — so a disagreement was as likely to mean
-     * "worded differently this time" as "different product". "size" is deliberately not
-     * here either: it is nominally a unit spec but the extractor puts interface strings in
-     * it, e.g. "PCIe 4.0 x16" for an SSD.
+     * model was briefly demoted to advisory because the previous extractor phrased it
+     * inconsistently — the same B&amp;H pair came back "990 PRO" on one run and
+     * "990 PRO PCIe 4.0 x4 M.2" on the next, so a disagreement meant "worded differently"
+     * as often as "different product". That was a property of the model, not of the field:
+     * the current extractor is deterministic across repeated runs, so the field is
+     * trustworthy again. It is what separates a Ryzen 9800X3D from a 9850X3D.
+     * <p>
+     * brand was never gated at all, which let a Chromebook match a trackball and a sneaker
+     * match compression gloves — both were extracted with brands, they simply were never
+     * compared.
+     * <p>
+     * "size" is still deliberately absent: nominally a unit spec, but the extractor puts
+     * interface strings in it, e.g. "PCIe 4.0 x16" for an SSD.
      */
-    private static final String[] HARD_FIELDS = {"capacity"};
-
-    /** Disagreements worth recording but never worth rejecting on. */
-    private static final String[] ADVISORY_FIELDS = {"model"};
+    private static final String[] HARD_FIELDS = {"capacity", "model", "brand"};
 
     /**
      * Only used when NEITHER title yielded any attribute at all — generic names with no
@@ -89,21 +102,27 @@ public class ProductMatcher {
             }
         }
 
-        // Advisory only: recorded so a surprising match can be explained later, but never
-        // enough on its own to throw a candidate away.
-        String advisory = "";
-        for (String field : ADVISORY_FIELDS) {
+        // Absence of conflict is not evidence of sameness. Two products that state nothing
+        // comparable — a tablet stand and a desk mount, a casserole dish and a slow cooker —
+        // conflict on nothing at all, and were being matched on that basis. At least one
+        // hard field has to actually agree.
+        List<String> agreed = new ArrayList<>();
+        for (String field : HARD_FIELDS) {
             String va = valueOf(a, field);
             String vb = valueOf(b, field);
-            if (va != null && vb != null && !sameValue(va, vb)) {
-                advisory = " (note: %s differs, '%s' vs '%s' — advisory only)"
-                        .formatted(field, va, vb);
-                log.info("Matched despite {} difference: '{}' vs '{}'", field, va, vb);
+            if (va != null && vb != null && sameValue(va, vb)) {
+                agreed.add(field);
             }
+        }
+        if (!agreed.isEmpty()) {
+            return new Outcome(Decision.MATCH, "agrees on " + String.join(", ", agreed));
         }
 
         if (!a.isEmpty() || !b.isEmpty()) {
-            return new Outcome(Decision.MATCH, "no conflicting hard attributes" + advisory);
+            // Something was extracted, but nothing the two titles both state. Not a
+            // rejection — there is no disagreement — but not enough to attach on.
+            return new Outcome(Decision.UNCERTAIN,
+                    "no hard attribute stated on both sides to compare");
         }
 
         // Neither title stated anything extractable — the rare generic-name case.
@@ -136,6 +155,7 @@ public class ProductMatcher {
         String value = switch (field) {
             case "capacity" -> attributes.capacity();
             case "model" -> attributes.model();
+            case "brand" -> attributes.brand();
             case "size" -> attributes.size();
             default -> null;
         };

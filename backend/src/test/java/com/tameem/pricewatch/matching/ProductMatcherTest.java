@@ -27,26 +27,48 @@ class ProductMatcherTest {
         assertTrue(outcome.reason().contains("capacity"), outcome.reason());
     }
 
-    /**
-     * model is advisory, not a gate. The extractor phrases it inconsistently across
-     * near-identical titles, so a difference is as likely to be wording as a real one.
-     */
+    /** model gates again: it is what separates a Ryzen 9800X3D from a 9850X3D. */
     @Test
-    void doesNotRejectOnModelDisagreementAlone() {
+    void rejectsOnModelDisagreement() {
         ProductMatcher.Outcome outcome = matcher.match(
                 attrs("Apple", "iPhone 17 Pro Max", "512 GB"),
                 attrs("Apple", "iPhone 17 Pro", "512 GB"),
                 "Apple iPhone 17 Pro Max 512 GB", "Apple iPhone 17 Pro 512 GB");
-        assertEquals(Decision.MATCH, outcome.decision());
-        assertTrue(outcome.reason().contains("advisory"), outcome.reason());
-        assertTrue(outcome.reason().contains("model differs"), outcome.reason());
+        assertEquals(Decision.REJECT, outcome.decision());
+        assertTrue(outcome.reason().contains("model"), outcome.reason());
     }
 
-    /** The exact pair that regressed: same product, model phrased two different ways. */
+    /** The real backfill false positive: same brand and no stated capacity either side. */
     @Test
-    void matchesTheHeatsinkPairRegardlessOfHowModelIsPhrased() {
+    void rejectsTwoDifferentProcessorsOfTheSameBrand() {
         ProductMatcher.Outcome outcome = matcher.match(
-                attrs("Samsung", "990 PRO PCIe 4.0 x4 M.2", "1TB"),
+                attrs("AMD", "Ryzen 7 9800X3D", null),
+                attrs("AMD", "Ryzen 7 9850X3D", null),
+                "AMD Ryzen 7 9800X3D", "AMD Ryzen 7 9850X3D Processor");
+        assertEquals(Decision.REJECT, outcome.decision());
+    }
+
+    /** brand gates too: a Chromebook and a trackball both had brands, never compared. */
+    @Test
+    void rejectsOnBrandDisagreement() {
+        ProductMatcher.Outcome outcome = matcher.match(
+                attrs("LENOVO", null, null),
+                attrs("Kensington", null, null),
+                "LENOVO IdeaPad Slim 3 14\" Chromebook",
+                "Kensington SlimBlade Pro EQ Wireless Trackball");
+        assertEquals(Decision.REJECT, outcome.decision());
+        assertTrue(outcome.reason().contains("brand"), outcome.reason());
+    }
+
+    /**
+     * The heatsink pair still matches, because the current extractor returns "990 PRO" for
+     * both titles. This is the pair that broke when model last gated, so it is pinned: if
+     * extraction ever becomes non-deterministic again, this is where it shows up.
+     */
+    @Test
+    void matchesTheHeatsinkPairWhichExtractsTheSameModelOnBothSides() {
+        ProductMatcher.Outcome outcome = matcher.match(
+                attrs("Samsung", "990 PRO", "1TB"),
                 attrs("Samsung", "990 PRO", "1TB"),
                 "Samsung 1TB 990 PRO PCIe 4.0 x4 M.2 Internal SSD",
                 "Samsung 1TB 990 PRO PCIe 4.0 x4 M.2 Internal SSD with Heatsink");
@@ -131,6 +153,33 @@ class ProductMatcherTest {
                 Optional.empty(), attrs("Samsung", "990 PRO", "1TB"), "a", "b").decision());
         assertEquals(Decision.UNCERTAIN, matcher.match(
                 attrs("Samsung", "990 PRO", "1TB"), Optional.empty(), "a", "b").decision());
+    }
+
+    /**
+     * The backfill's remaining failure mode: two unrelated products that state nothing
+     * comparable conflict on nothing, and were matched on that basis alone. A tablet stand
+     * with no extractable brand against a branded desk mount now stays uncertain.
+     */
+    @Test
+    void isUncertainWhenNoHardFieldIsStatedOnBothSides() {
+        ProductMatcher.Outcome outcome = matcher.match(
+                attrs(null, null, null),
+                attrs("CTA Digital", null, null),
+                "Adjustable iPad Stand Tablet Holder 360°Rotation",
+                "CTA Digital Triple-Enclosure Adjustable Desk Mount for 7 to 12\" Tablets");
+        assertEquals(Decision.UNCERTAIN, outcome.decision());
+        assertTrue(outcome.reason().contains("both sides"), outcome.reason());
+    }
+
+    /** One agreeing hard field is enough; the rest may be absent. */
+    @Test
+    void matchesOnASingleAgreeingHardField() {
+        ProductMatcher.Outcome outcome = matcher.match(
+                attrs("Sony", null, null),
+                attrs("Sony", null, null),
+                "Sony WH-1000XM6", "Sony WH-1000XM6 Headphones");
+        assertEquals(Decision.MATCH, outcome.decision());
+        assertTrue(outcome.reason().contains("agrees on brand"), outcome.reason());
     }
 
     /** Fallback only fires when neither title states anything at all. */

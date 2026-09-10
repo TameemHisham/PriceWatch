@@ -244,11 +244,20 @@ public class TrackedProductService {
      * product exactly as it already was.
      */
     private void attachDiscoveredListings(TrackedProduct product, String title) {
-        List<String> alreadyAttached = productListingRepository.findByTrackedProduct(product).stream()
+        attachMatches(product, discovery.findMatches(title, attachedMarketplaces(product)));
+    }
+
+    /** Marketplace ids this product already holds a listing for. */
+    private List<String> attachedMarketplaces(TrackedProduct product) {
+        return productListingRepository.findByTrackedProduct(product).stream()
                 .map(ProductListing::getMarketplace)
                 .toList();
-        for (Map.Entry<String, SearchResult> entry
-                : discovery.findMatches(title, alreadyAttached).entrySet()) {
+    }
+
+    /** Scrapes and saves each confirmed match; returns the marketplaces actually attached. */
+    private List<String> attachMatches(TrackedProduct product, Map<String, SearchResult> matches) {
+        List<String> attached = new ArrayList<>();
+        for (Map.Entry<String, SearchResult> entry : matches.entrySet()) {
             SearchResult hit = entry.getValue();
             try {
                 ProductScraper scraper = scrapers.forUrl(hit.url());
@@ -258,11 +267,37 @@ public class TrackedProductService {
                         ListingOrigin.CROSS_STORE_DISCOVERY);
                 log.info("Attached discovered listing on {} to product {}",
                         entry.getKey(), product.getId());
+                attached.add(entry.getKey());
             } catch (RuntimeException e) {
                 log.warn("Discovered listing failed to scrape for {} ({}): {}",
                         entry.getKey(), hit.url(), e.toString());
             }
         }
+        return attached;
+    }
+
+    /**
+     * One product's discovery pass, as its own transaction — the unit the one-time backfill
+     * loops over. Products tracked before a storefront became searchable never had
+     * discovery run against them, and neither entry point that runs it (initial track,
+     * manual refresh) fires retroactively.
+     * <p>
+     * Deliberately not user-scoped: this is maintenance over the whole table, invoked from
+     * a runner rather than a request, so there is no caller to scope to.
+     *
+     * @param dryRun when true, reports what would be attached and writes nothing
+     * @return the marketplaces attached, or that would be
+     */
+    @Transactional
+    public List<String> backfillDiscovery(long productId, boolean dryRun) {
+        TrackedProduct product = trackedProductRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("No product with id: " + productId));
+        Map<String, SearchResult> matches =
+                discovery.findMatches(product.getName(), attachedMarketplaces(product));
+        if (dryRun) {
+            return List.copyOf(matches.keySet());
+        }
+        return attachMatches(product, matches);
     }
 
     /** Saves one listing + its initial price point (if any) for an already-scraped marketplace. */
