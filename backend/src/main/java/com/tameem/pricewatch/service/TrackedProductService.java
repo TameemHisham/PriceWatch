@@ -152,8 +152,21 @@ public class TrackedProductService {
             savedProduct = trackedProductRepository.save(product);
         }
 
+        String requestedMarketplace = marketplaces.idFor(normalized);
+
+        // The URL check above is an exact string match, so it misses a URL that differs only
+        // in shape from one already stored — a pasted www.amazon.co.uk/... against the bare
+        // amazon.co.uk/... that sibling fan-out builds. The ASIN lookup then resolves it to
+        // the product that already holds this marketplace, and inserting would collide. It is
+        // the same outcome as the URL check finding it: already tracked, nothing created.
+        if (matched && productListingRepository
+                .findByTrackedProductAndMarketplace(savedProduct, requestedMarketplace)
+                .isPresent()) {
+            return new TrackResult(this.toResponse(savedProduct), false);
+        }
+
         // Save the originally-requested listing first, using data already scraped.
-        saveListing(savedProduct, normalized, productData, marketplaces.idFor(normalized),
+        saveListing(savedProduct, normalized, productData, requestedMarketplace,
                 ListingOrigin.USER_SUBMITTED);
 
         // Fan out to sibling marketplaces of the same store, using the same ASIN.
@@ -300,9 +313,28 @@ public class TrackedProductService {
         return attachMatches(product, matches);
     }
 
-    /** Saves one listing + its initial price point (if any) for an already-scraped marketplace. */
-    private void saveListing(TrackedProduct product, String url, ProductData productData,
-                             String marketplaceId, ListingOrigin origin) {
+    /**
+     * Saves one listing + its initial price point (if any) for an already-scraped marketplace.
+     * <p>
+     * Does nothing when this product already holds a listing on that marketplace, and returns
+     * the existing row. A product reaches the same marketplace twice by more than one route —
+     * a URL tracked directly after an earlier track already reached it through sibling
+     * fan-out, or that same fan-out re-running once a URL resolves to an existing product —
+     * and the (tracked_product_id, marketplace) unique constraint rejects the second insert.
+     * Catching that at the call site does not help: ids are IDENTITY-generated, so the INSERT
+     * fires during save() and marks the transaction rollback-only, failing the commit even
+     * when the exception itself is swallowed. The check has to happen before the insert.
+     */
+    private ProductListing saveListing(TrackedProduct product, String url, ProductData productData,
+                                       String marketplaceId, ListingOrigin origin) {
+        Optional<ProductListing> alreadyListed =
+                productListingRepository.findByTrackedProductAndMarketplace(product, marketplaceId);
+        if (alreadyListed.isPresent()) {
+            log.info("Product {} already has a {} listing — skipping duplicate insert for {}",
+                    product.getId(), marketplaceId, url);
+            return alreadyListed.get();
+        }
+
         ProductListing listing = new ProductListing();
         listing.setTrackedProduct(product);
         listing.setOrigin(origin);
@@ -323,6 +355,7 @@ public class TrackedProductService {
         } else {
             log.info("Tracking {} with no current offer — no initial price point", url);
         }
+        return savedListing;
     }
     /** Every tracked product as a dashboard card. Runs one query per product per listing (N+1, cached in Phase 6). */
     @Transactional(readOnly = true)

@@ -6,6 +6,7 @@ import com.tameem.pricewatch.service.IllegalURLFormat;
 import com.tameem.pricewatch.service.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -70,5 +71,23 @@ public class ApiExceptionHandler {
     public ResponseEntity<Map<String, String>> handleScrapeFailure(ScrapeException e) {
         log.warn("Scrape failed: {}", e.toString());
         return body(HttpStatus.BAD_GATEWAY, e, "Could not read the product page");
+    }
+
+    /**
+     * A row the database refused — in practice a unique constraint, such as a second listing
+     * for a product on a marketplace it already has. The service checks for that before
+     * inserting, so reaching here means a route that check does not cover; 409 says the
+     * request conflicts with what is already stored rather than that the server broke.
+     * <p>
+     * Deliberately not using {@link #body}: the exception's own message carries the failing
+     * SQL and the generated constraint name, which is a schema detail no client should see.
+     * The detail goes to the log instead.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
+            DataIntegrityViolationException e) {
+        log.warn("Constraint violation: {}", e.getMostSpecificCause().toString());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "That is already tracked"));
     }
 }

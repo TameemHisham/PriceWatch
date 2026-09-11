@@ -21,4 +21,11 @@ public interface ProductListingRepository extends JpaRepository<ProductListing, 
     /** Finds one caller's listing whose URL carries this product id, for cross-marketplace
      *  matching. Scoped to the owner for the same reason as above. */
     Optional<ProductListing> findByUrlContainingAndTrackedProduct_User_Id(String url, Long userId);
+
+    /** The listing this product already holds on one marketplace, if any.
+     *  Mirrors the (tracked_product_id, marketplace) unique constraint, so callers can check
+     *  before inserting rather than letting the database reject it. Needs no user scoping:
+     *  the product is already resolved, and listings never span owners. */
+    Optional<ProductListing> findByTrackedProductAndMarketplace(TrackedProduct trackedProduct,
+                                                                String marketplace);
 }
