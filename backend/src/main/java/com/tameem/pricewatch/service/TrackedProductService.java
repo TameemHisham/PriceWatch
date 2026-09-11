@@ -188,8 +188,12 @@ public class TrackedProductService {
                     if (siblingData.title() == null || siblingData.title().isBlank()) {
                         throw new ScrapeException("Could not locate product title for URL: " + siblingUrl);
                     }
-                    saveListing(savedProduct, siblingUrl, siblingData, marketplaceId,
-                            ListingOrigin.SIBLING_MARKETPLACE);
+                    // Stored canonical, like every other attach path: siblingUrl is built
+                    // from the bare configured host, and storing that raw is what let the
+                    // same page exist under two URL strings.
+                    saveListing(savedProduct,
+                            scrapers.forUrl(siblingUrl).canonicalUrl(siblingUrl),
+                            siblingData, marketplaceId, ListingOrigin.SIBLING_MARKETPLACE);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (ScrapeException e) {

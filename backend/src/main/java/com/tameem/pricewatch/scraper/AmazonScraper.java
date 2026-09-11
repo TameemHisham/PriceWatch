@@ -121,8 +121,21 @@ public class AmazonScraper implements ProductScraper {
     }
 
     /**
-     * {@code https://host/dp/ASIN} — the form listings were stored with before scraper
-     * dispatch existed, kept byte-identical so existing rows still resolve.
+     * {@code https://www.host/dp/ASIN}, with the host taken from configuration rather than
+     * from the caller's URL.
+     * <p>
+     * This used to echo back whatever host and scheme were passed in, which meant the same
+     * page had two canonical forms: a pasted browser URL kept its "www." while sibling
+     * fan-out, which builds from the configured host, produced the bare form. The dedupe on
+     * track is an exact string match, so it missed across those two, and the request then
+     * resolved by ASIN onto a product that already held the marketplace — the duplicate
+     * insert behind commit 648a477.
+     * <p>
+     * Deriving the host from config is what every other scraper already does, and the
+     * "www."-qualified form is what all of them emit, so this is Amazon joining the existing
+     * convention rather than a new one. The marketplace is resolved per call because one
+     * scraper serves AMAZON_UK, AMAZON_AE and AMAZON_US, which is why a fixed MARKETPLACE_ID
+     * constant does not work here.
      */
     @Override
     public String canonicalUrl(String url) {
@@ -130,13 +143,12 @@ public class AmazonScraper implements ProductScraper {
         if (asin.isEmpty()) {
             throw new ScrapeException("No ASIN in URL: " + url);
         }
-        try {
-            java.net.URI uri = new java.net.URI(url);
-            String host = uri.getHost() != null ? uri.getHost().toLowerCase() : "";
-            return uri.getScheme() + "://" + host + "/dp/" + asin.get();
-        } catch (java.net.URISyntaxException e) {
-            throw new ScrapeException("Unparseable URL: " + url, e);
+        String host = marketplaces.configFor(marketplaces.idFor(url)).getHost();
+        if (host == null || host.isBlank()) {
+            throw new ScrapeException("Amazon marketplace has no configured host for: " + url);
         }
+        String qualified = host.startsWith("www.") ? host : "www." + host;
+        return "https://" + qualified + "/dp/" + asin.get();
     }
 
     @Override
