@@ -19,7 +19,7 @@ export default function Sidebar({
 
     return (
         <nav className="sidebar">
-            <div className="sidebar--logo">
+            <div className="sidebar--logo" onClick={() => navigate("/")}>
                 <div className="sidebar--logo-icon">
                     <svg
                         width="15"

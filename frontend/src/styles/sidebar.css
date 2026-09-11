@@ -66,6 +66,11 @@
     align-items: center;
     gap: 10px;
     padding: 6px 8px 16px;
+    cursor: pointer;
+    filter: opacity(100%);
+    &:hover {
+        filter: opacity(50%);
+    }
 }
 
 .sidebar--logo-icon {
@@ -126,9 +131,6 @@
         padding: 0 20px;
 
         border-right: none;
-        /* Deliberately NOT backdrop-filter: it creates a containing block for
-           fixed descendants, which would trap .sidebar--nav inside this 56px
-           bar instead of pinning it to the viewport bottom. */
         background: var(--bg);
     }
 
