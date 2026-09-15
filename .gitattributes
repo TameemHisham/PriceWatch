@@ -1,1 +1,2 @@
 backend/src/test/resources/**/*.html linguist-vendored
+backend/src/test/resources/**/*.json linguist-vendored

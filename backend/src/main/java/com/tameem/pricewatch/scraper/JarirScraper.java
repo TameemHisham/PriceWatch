@@ -10,6 +10,8 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -18,9 +20,15 @@ import java.net.CookieStore;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
@@ -37,9 +45,15 @@ import java.util.regex.Pattern;
  * Jarir fronts its pages with PerimeterX. Note that its sensor script is present on
  * perfectly healthy pages, so the sensor itself is <em>not</em> a block signal; only an
  * actual challenge page is.
+ * <p>
+ * Search does not go through a results page. {@code /catalogsearch/result/?q=} is a Nuxt
+ * shell that carries no product links at all, which is why this scraper was not searchable
+ * for a long time and Jarir never appeared in cross-store discovery. Its search box is
+ * served by a hosted search provider, and that provider's endpoint — the one the storefront
+ * itself calls — answers with the product slug already resolved.
  */
 @Component
-public class JarirScraper implements ProductScraper {
+public class JarirScraper implements SearchableScraper {
 
     private static final Logger log = LoggerFactory.getLogger(JarirScraper.class);
     private final MarketplaceRegistry marketplaces;
@@ -137,6 +151,193 @@ public class JarirScraper implements ProductScraper {
     /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
     private String randomUserAgent() {
         return USER_AGENTS.get(ThreadLocalRandom.current().nextInt(USER_AGENTS.size()));
+    }
+
+    // ---- search ----
+
+    /**
+     * Host of the hosted search provider jarir.com's own search box queries. Not the
+     * storefront host: {@code /catalogsearch/result/?q=} serves a shell with no product
+     * links, so there is nothing on it for Jsoup to select.
+     */
+    private static final String SEARCH_API_HOST = "ac.cnstrc.com";
+
+    /**
+     * Client identifiers the endpoint requires but does not authenticate — they exist so the
+     * provider can attribute a session, and it rejects a request that omits them. Fixed
+     * rather than generated because this is not a browser session and inventing a per-call
+     * identity would only pollute the storefront's own analytics.
+     */
+    private static final String SEARCH_CLIENT_ID = "pricewatch";
+    private static final String SEARCH_CLIENT_VERSION = "ciojs-client-2.60.0";
+
+    /**
+     * Caps how many hits are returned, for the same reason B&amp;H does: matching spends an
+     * LLM call per candidate title, so one track costs 1 + MAX_RESULTS calls per searchable
+     * store. A quota constraint, not a relevance one — see TASKS.md.
+     */
+    private static final int MAX_RESULTS = 3;
+
+    /**
+     * How many leading words of the title to query with, widest first.
+     * <p>
+     * The provider matches tokens rather than meaning: a whole retailer title
+     * ("… Black, UAE Version - 1-Year warranty") matches nothing at all, and even five words
+     * often does. Short queries are what its index is built for — it is wired to a search
+     * box that people type into. Narrowing one rung at a time keeps the most specific query
+     * that actually returns something, rather than jumping straight to two words and
+     * matching the whole brand. At most three requests, none of which costs an LLM call.
+     */
+    private static final int[] QUERY_WORD_LIMITS = {4, 3, 2};
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    @Override
+    public List<SearchResult> search(String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(MARKETPLACE_ID);
+        String key = marketplace.getSearchKey();
+        if (key == null || key.isBlank()) {
+            // Loud rather than an empty list: "not configured" is a different fact from
+            // "searched and found nothing", and the caller logs and carries on either way.
+            throw new ScrapeException("Marketplace JARIR has no configured search key");
+        }
+
+        String previous = null;
+        for (int limit : QUERY_WORD_LIMITS) {
+            String phrase = firstWords(query, limit);
+            if (phrase.isBlank() || phrase.equals(previous)) {
+                continue; // a short title narrows to the same phrase at every rung
+            }
+            previous = phrase;
+            List<SearchResult> hits = parseSearchResults(
+                    fetchSearch(searchUrl(phrase, key), marketplace), marketplace);
+            if (!hits.isEmpty()) {
+                return hits;
+            }
+            log.debug("No Jarir hits for '{}' — narrowing the query", phrase);
+        }
+        return List.of();
+    }
+
+    /** The first {@code limit} whitespace-separated words, without any trailing separator. */
+    static String firstWords(String title, int limit) {
+        String[] words = title.trim().split("\\s+");
+        StringBuilder phrase = new StringBuilder();
+        for (int i = 0; i < Math.min(limit, words.length); i++) {
+            if (!phrase.isEmpty()) phrase.append(' ');
+            phrase.append(words[i]);
+        }
+        return phrase.toString().replaceAll("[,;:\\-]+$", "").trim();
+    }
+
+    private String searchUrl(String phrase, String key) {
+        // The query is a path segment here, not a parameter, so the form encoder's "+" for
+        // a space would be sent literally.
+        String encodedQuery = URLEncoder.encode(phrase, StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        return "https://" + SEARCH_API_HOST + "/search/" + encodedQuery
+                + "?key=" + URLEncoder.encode(key, StandardCharsets.UTF_8)
+                + "&i=" + SEARCH_CLIENT_ID
+                + "&s=1"
+                + "&c=" + SEARCH_CLIENT_VERSION
+                + "&num_results_per_page=" + MAX_RESULTS
+                + "&section=Products";
+    }
+
+    /** Split out so tests can run the real parsing against a saved response. */
+    List<SearchResult> parseSearchResults(String json, ScrapeProperties.MarketplaceConfig marketplace) {
+        JsonNode root;
+        try {
+            root = MAPPER.readTree(json);
+        } catch (RuntimeException e) {
+            throw new ScrapeException("Unparseable Jarir search response", e);
+        }
+
+        String host = marketplace.getHost();
+        if (host == null || host.isBlank()) {
+            throw new ScrapeException("Marketplace JARIR has no configured host");
+        }
+        String qualified = host.startsWith("www.") ? host : "www." + host;
+        String prefix = "https://" + qualified + "/" + searchLocale(marketplace) + "/";
+
+        List<SearchResult> results = new ArrayList<>();
+        Set<String> seen = new LinkedHashSet<>();
+        for (JsonNode hit : root.path("response").path("results")) {
+            // The provider returns the slug alone, relative to the locale segment.
+            String slug = text(hit.path("data").path("url"));
+            String title = text(hit.path("value"));
+            if (slug.isBlank() || title.isBlank()) {
+                continue;
+            }
+            String url = slug.startsWith("http") ? slug : prefix + slug.replaceFirst("^/", "");
+            if (productKey(url).isEmpty() || !seen.add(url)) {
+                continue;
+            }
+            results.add(new SearchResult(title, url));
+            if (results.size() >= MAX_RESULTS) {
+                break;
+            }
+        }
+        return results;
+    }
+
+    /**
+     * The {@code country-language} segment Jarir keys its storefront by ("sa-en"), taken
+     * from the same configuration the product fetch uses so search and scrape cannot drift
+     * to different storefronts.
+     */
+    private String searchLocale(ScrapeProperties.MarketplaceConfig marketplace) {
+        String country = marketplace.getDeliveryCountry();
+        if (country == null || country.isBlank()) {
+            throw new ScrapeException("Marketplace JARIR has no configured delivery country");
+        }
+        String acceptLanguage = marketplace.getAcceptLanguage();
+        String language = "en";
+        if (acceptLanguage != null && !acceptLanguage.isBlank()) {
+            String first = acceptLanguage.split(",")[0].trim();
+            int dash = first.indexOf('-');
+            String primary = dash > 0 ? first.substring(0, dash) : first;
+            if (primary.matches("[A-Za-z]{2}")) {
+                language = primary.toLowerCase(Locale.ROOT);
+            }
+        }
+        return country.toLowerCase(Locale.ROOT) + "-" + language;
+    }
+
+    private static String text(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) return "";
+        String value = node.isObject() || node.isArray() ? "" : node.asString();
+        return value == null ? "" : value.trim();
+    }
+
+    /**
+     * Fetches the search endpoint as JSON rather than HTML.
+     * <p>
+     * Keeps the marketplace's proxy, because the endpoint answers with the catalogue and
+     * pricing of whichever country the request appears to come from, exactly as the
+     * storefront does.
+     */
+    private String fetchSearch(String url, ScrapeProperties.MarketplaceConfig marketplace) {
+        try {
+            Connection connection = Jsoup.connect(url)
+                    .userAgent(randomUserAgent())
+                    .header("Accept", "application/json")
+                    .header("Accept-Language", marketplace.getAcceptLanguage())
+                    .header("Accept-Encoding", "gzip, deflate")
+                    .header("Referer", "https://www." + marketplace.getHost() + "/")
+                    .ignoreContentType(true) // the response is JSON, not a document
+                    .maxBodySize(0)
+                    .timeout(15000);
+            if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
+                connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
+            }
+            return connection.execute().body();
+        } catch (IOException e) {
+            throw new ScrapeException("Failed to fetch Jarir search results: " + url, e);
+        }
     }
 
     /** Fetches a Jarir product page and extracts title, price, currency and image. */

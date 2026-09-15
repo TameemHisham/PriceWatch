@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -209,5 +211,165 @@ class IkeaScraperTest {
         ScrapeException thrown = assertThrows(ScrapeException.class, () ->
                 scraper().parse(challenge, url(PRODUCT_URL), PRODUCT_URL, ikeaConfig()));
         assertTrue(thrown.getMessage().contains("bot challenge"), thrown.getMessage());
+    }
+
+    // ---- search ----
+
+    /**
+     * IKEA's results page renders client-side and carries no product links, so search goes
+     * to the JSON endpoint the storefront's own search box calls. This is a saved response
+     * from it, for the same ÄNGSLILJA range the product fixture is from.
+     */
+    /** The query the saved response was captured for. */
+    private static final String SEARCH_QUERY = "aengslilja duvet cover";
+
+    private static String searchFixture() throws IOException {
+        try (InputStream in = IkeaScraperTest.class.getResourceAsStream("/scraper/ikea/search.json")) {
+            assertNotNull(in, "Missing search fixture on the test classpath");
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    @Test
+    void parsesSearchResultsFromFixture() throws IOException {
+        List<SearchResult> results = scraper().parseSearchResults(searchFixture(), SEARCH_QUERY);
+        assertFalse(results.isEmpty(), "expected hits from the saved search response");
+        assertEquals("ÄNGSLILJA Duvet cover and pillowcase(s)", results.get(0).title());
+        assertEquals("https://www.ikea.com/us/en/p/aengslilja-duvet-cover-and-pillowcase-s-dark-blue-60636630/",
+                results.get(0).url());
+    }
+
+    /**
+     * The range name alone ("ÄNGSLILJA") names no product and the type alone names every
+     * one, so a hit is only useful to the matcher carrying both.
+     */
+    @Test
+    void searchResultTitlesCarryBothRangeNameAndProductType() throws IOException {
+        for (SearchResult r : scraper().parseSearchResults(searchFixture(), SEARCH_QUERY)) {
+            assertTrue(r.title().contains("ÄNGSLILJA"), "no range name in: " + r.title());
+            assertTrue(r.title().length() > "ÄNGSLILJA".length() + 1, "no product type in: " + r.title());
+        }
+    }
+
+    /** Every hit must be a product URL this scraper can go on to scrape. */
+    @Test
+    void everySearchResultCarriesATitleAndAProductUrl() throws IOException {
+        for (SearchResult r : scraper().parseSearchResults(searchFixture(), SEARCH_QUERY)) {
+            assertFalse(r.title().isBlank(), "blank title in results");
+            assertTrue(scraper().productKey(r.url()).isPresent(), "not a product URL: " + r.url());
+        }
+    }
+
+    @Test
+    void searchResultsAreNotDuplicatedPerProduct() throws IOException {
+        List<SearchResult> results = scraper().parseSearchResults(searchFixture(), SEARCH_QUERY);
+        assertEquals(results.size(), results.stream().map(SearchResult::url).distinct().count(),
+                "duplicate product URLs in results");
+    }
+
+    /** One track costs 1 + this many LLM calls on this store alone. */
+    @Test
+    void searchResultsAreCappedForQuota() throws IOException {
+        assertTrue(scraper().parseSearchResults(searchFixture(), SEARCH_QUERY).size() <= 3);
+    }
+
+    @Test
+    void searchIgnoresABlankQueryWithoutFetching() {
+        assertEquals(List.of(), scraper().search("   "));
+    }
+
+    @Test
+    void reportsAnUnparseableSearchResponseRatherThanNoHits() {
+        ScrapeException thrown = assertThrows(ScrapeException.class,
+                () -> scraper().parseSearchResults("not json at all", SEARCH_QUERY));
+        assertTrue(thrown.getMessage().contains("Unparseable"), thrown.getMessage());
+    }
+
+    /**
+     * The point of the whole change: cross-store discovery iterates only the searchable
+     * scrapers, so without this IKEA can be tracked from a pasted URL but never found.
+     */
+    @Test
+    void isDiscoverableAsASearchableScraper() {
+        assertInstanceOf(SearchableScraper.class, scraper());
+    }
+
+    /**
+     * The endpoint answers a phrase over 150 characters with a 400, and retailer titles run
+     * past that routinely — so a long title has to be cut rather than cost the store.
+     */
+    @Test
+    void longTitlesAreCutToAQueryTheEndpointAccepts() {
+        String longTitle = "Sony WH-1000XM5 Noise Cancelling Wireless Headphones, Hi-Res Audio, Best Phone "
+                + "Call Quality, 30 Hours Battery Life, Wearing Detection, Alexa Voice Assistant, "
+                + "Black, UAE Version - 1-Year warranty";
+        String phrase = IkeaScraper.searchPhrase(longTitle);
+        assertTrue(phrase.length() <= 150, "still too long: " + phrase.length());
+        assertFalse(phrase.endsWith(" "), "cut mid-gap: " + phrase);
+        assertTrue(longTitle.startsWith(phrase), "not a prefix of the title: " + phrase);
+        assertTrue(phrase.startsWith("Sony WH-1000XM5"), "lost the leading words: " + phrase);
+    }
+
+    @Test
+    void shortTitlesArePassedThroughUnchanged() {
+        assertEquals("MITTZON Conference table, round birch veneer/white, 120x75 cm",
+                IkeaScraper.searchPhrase("  MITTZON Conference table, round birch veneer/white, 120x75 cm  "));
+    }
+
+    // ---- relevance gate ----
+
+    /**
+     * IKEA's search has no "no match" state — it answers a query for an SSD with pie plates —
+     * and every hit handed back costs a Groq call to reject. These are real result titles it
+     * returned for these real queries.
+     */
+    @Test
+    void dropsHitsThatShareNothingWithTheQuery() throws IOException {
+        String ssd = "Samsung 990 PRO 1TB PCIe 4.0 NVMe M.2 Internal SSD MZ-V9P1T0B/AM";
+        assertEquals(List.of(), scraper().parseSearchResults(searchFixture(), ssd),
+                "an SSD query must not come back with bed linen");
+    }
+
+    /** One generic word in common is how "Foldable" headphones reach a foldable IKEA chair. */
+    @Test
+    void oneSharedWordIsNotEnough() throws IOException {
+        String headphones = "soundcore by Anker Q20i Hybrid ANC Foldable Headphones, 40H Cover";
+        assertEquals(List.of(), scraper().parseSearchResults(searchFixture(), headphones),
+                "one word in common must not be enough");
+    }
+
+    /** The range name is IKEA identity, so sharing it carries a hit on its own. */
+    @Test
+    void keepsAHitWhoseRangeNameIsInTheQuery() throws IOException {
+        List<SearchResult> results =
+                scraper().parseSearchResults(searchFixture(), "IKEA ANGSLILJA bedding set");
+        assertFalse(results.isEmpty(), "the range name alone should carry the hit");
+    }
+
+    /** Accents must not split a word: ÄNGSLILJA and the angslilja another retailer writes. */
+    @Test
+    void matchesTheRangeNameAcrossAccents() throws IOException {
+        assertFalse(scraper().parseSearchResults(searchFixture(), "ÄNGSLILJA duvet").isEmpty());
+        assertFalse(scraper().parseSearchResults(searchFixture(), "angslilja duvet").isEmpty());
+    }
+
+    /** Two descriptive words carry a hit that names the thing without naming the range. */
+    @Test
+    void keepsAHitSharingTwoDescriptiveWords() throws IOException {
+        List<SearchResult> results =
+                scraper().parseSearchResults(searchFixture(), "Dark blue duvet cover 150x200");
+        assertFalse(results.isEmpty(), "\"duvet\" plus \"cover\" should carry the hit");
+    }
+
+    /** With nothing to judge against, the attribute gate stays the decider. */
+    @Test
+    void keepsEverythingWhenTheQuerySaysNothing() throws IOException {
+        assertFalse(scraper().parseSearchResults(searchFixture(), "a of 12").isEmpty());
+    }
+
+    /** The cap is the backstop, not the thing normally deciding the count. */
+    @Test
+    void neverReturnsMoreThanTheCapEvenWhenEveryCandidateIsPlausible() throws IOException {
+        assertTrue(scraper().parseSearchResults(searchFixture(), SEARCH_QUERY).size() <= 3);
     }
 }

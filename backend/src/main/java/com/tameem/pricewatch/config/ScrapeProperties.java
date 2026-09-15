@@ -30,6 +30,14 @@ public class ScrapeProperties {
         private String acceptLanguage = "en-GB,en;q=0.9";
         private String proxyHost;
         private int proxyPort;
+        /**
+         * Public API key for the storefront's hosted search provider, where searching it
+         * means calling that provider rather than fetching a results page. Configuration
+         * rather than a constant because the key is embedded in the storefront's own
+         * front-end bundle and rotates with its deploys — a rotation should be a property
+         * change, not a code change. Blank for every storefront searched by fetching HTML.
+         */
+        private String searchKey;
 
         public String getHost() { return host; }
         public void setHost(String host) { this.host = host; }
@@ -45,5 +53,8 @@ public class ScrapeProperties {
 
         public int getProxyPort() { return proxyPort; }
         public void setProxyPort(int proxyPort) { this.proxyPort = proxyPort; }
+
+        public String getSearchKey() { return searchKey; }
+        public void setSearchKey(String searchKey) { this.searchKey = searchKey; }
     }
 }

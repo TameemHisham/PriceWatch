@@ -10,6 +10,8 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -18,7 +20,14 @@ import java.net.CookieStore;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,9 +46,15 @@ import java.util.regex.Pattern;
  * MarketplaceRegistry resolves a marketplace by host. One configured IKEA marketplace
  * therefore covers one locale, and canonicalUrl preserves whatever locale the tracked URL
  * carried rather than forcing one.
+ * <p>
+ * Search does not go through ikea.com. The storefront's own results page renders
+ * client-side and contains no product links at all in the served HTML, which is why this
+ * scraper was not searchable for a long time and IKEA never appeared in cross-store
+ * discovery. It is searched instead through the same first-party JSON endpoint the
+ * storefront's own search box calls, which returns the product URL outright.
  */
 @Component
-public class IkeaScraper implements ProductScraper {
+public class IkeaScraper implements SearchableScraper {
 
     private static final Logger log = LoggerFactory.getLogger(IkeaScraper.class);
     private final MarketplaceRegistry marketplaces;
@@ -150,6 +165,224 @@ public class IkeaScraper implements ProductScraper {
     /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
     private String randomUserAgent() {
         return USER_AGENTS.get(ThreadLocalRandom.current().nextInt(USER_AGENTS.size()));
+    }
+
+    // ---- search ----
+
+    /**
+     * Host of the JSON search endpoint ikea.com's own search box calls.
+     * <p>
+     * Deliberately not the storefront host: {@code /{locale}/search/?q=} returns a shell
+     * with zero product links, so Jsoup can read nothing out of it. This endpoint answers
+     * the same query with the product URL already resolved.
+     */
+    private static final String SEARCH_API_HOST = "sik.search.blue.cdtapps.com";
+
+    /**
+     * Ceiling on hits returned, not the thing that normally decides how many there are —
+     * {@link #isPlausible} is. Matching spends an LLM call per candidate title, so every hit
+     * handed back costs one whether it is the product or not; this is the backstop that
+     * keeps a broad query from spending the whole budget. See TASKS.md.
+     */
+    private static final int MAX_RESULTS = 3;
+
+    /**
+     * Candidates asked of the endpoint, before the relevance gate thins them.
+     * <p>
+     * More than {@link #MAX_RESULTS} because the gate drops hits for free and the LLM only
+     * ever sees what survives it, so a wider look costs one HTTP request and nothing else —
+     * while giving a genuine match ranked fourth a chance to be seen at all.
+     */
+    private static final int SEARCH_CANDIDATES = MAX_RESULTS * 2;
+
+    /**
+     * The endpoint refuses a longer phrase outright — {@code HTTP 400, "Search phrase is
+     * more than 150 characters"} — and retailer titles routinely run past it, so the query
+     * is cut rather than the store being skipped. Safe to cut: this search matches loosely,
+     * so the leading words carry the query.
+     */
+    private static final int MAX_QUERY_CHARS = 150;
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    @Override
+    public List<SearchResult> search(String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(MARKETPLACE_ID);
+        String url = "https://" + SEARCH_API_HOST + "/" + searchLocale(marketplace)
+                + "/search-result-page?q="
+                + URLEncoder.encode(searchPhrase(query), StandardCharsets.UTF_8)
+                + "&size=" + SEARCH_CANDIDATES;
+        return parseSearchResults(fetchSearch(url, marketplace), query);
+    }
+
+    /** The title as a query the endpoint will accept: collapsed, and cut on a word boundary. */
+    static String searchPhrase(String title) {
+        String cleaned = title.trim().replaceAll("\\s+", " ");
+        if (cleaned.length() <= MAX_QUERY_CHARS) {
+            return cleaned;
+        }
+        String cut = cleaned.substring(0, MAX_QUERY_CHARS);
+        int lastSpace = cut.lastIndexOf(' ');
+        return (lastSpace > 0 ? cut.substring(0, lastSpace) : cut).trim();
+    }
+
+    /**
+     * The {@code country/language} pair the endpoint is keyed by, taken from the same
+     * configuration the product fetch uses so search and scrape cannot drift to different
+     * storefronts. Country comes from delivery-country, language from the first tag of
+     * accept-language ("en-US,en;q=0.9" -> "en").
+     */
+    private String searchLocale(ScrapeProperties.MarketplaceConfig marketplace) {
+        String country = marketplace.getDeliveryCountry();
+        if (country == null || country.isBlank()) {
+            throw new ScrapeException("Marketplace IKEA has no configured delivery country");
+        }
+        String acceptLanguage = marketplace.getAcceptLanguage();
+        String language = "en";
+        if (acceptLanguage != null && !acceptLanguage.isBlank()) {
+            String first = acceptLanguage.split(",")[0].trim();
+            int dash = first.indexOf('-');
+            String primary = dash > 0 ? first.substring(0, dash) : first;
+            if (primary.matches("[A-Za-z]{2}")) {
+                language = primary.toLowerCase(Locale.ROOT);
+            }
+        }
+        return country.toLowerCase(Locale.ROOT) + "/" + language;
+    }
+
+    /**
+     * Split out so tests can run the real parsing against a saved response.
+     *
+     * @param queryTitle the title searched for, which the relevance gate judges hits against
+     */
+    List<SearchResult> parseSearchResults(String json, String queryTitle) {
+        JsonNode root;
+        try {
+            root = MAPPER.readTree(json);
+        } catch (RuntimeException e) {
+            throw new ScrapeException("Unparseable IKEA search response", e);
+        }
+
+        Set<String> queryTokens = significantTokens(queryTitle);
+        List<SearchResult> results = new ArrayList<>();
+        Set<String> seen = new LinkedHashSet<>();
+        for (JsonNode item : root.path("searchResultPage").path("products").path("main").path("items")) {
+            JsonNode product = item.path("product");
+            String url = text(product.path("pipUrl"));
+            // A row can be a shelf header or a retired article rather than a product.
+            if (url.isBlank() || productKey(url).isEmpty() || !seen.add(url)) {
+                continue;
+            }
+            // IKEA splits a product title in two: the range name ("ÄNGSLILJA") and what the
+            // thing actually is ("Duvet cover and pillowcase(s)"). Matching needs both —
+            // the range name alone names no product, and the type alone names every one.
+            String name = text(product.path("name"));
+            String title = (name + " " + text(product.path("typeName"))).trim();
+            if (title.isBlank()) {
+                continue;
+            }
+            if (!isPlausible(queryTokens, name, title)) {
+                log.debug("Dropping IKEA hit '{}' — shares nothing with the query", title);
+                continue;
+            }
+            results.add(new SearchResult(title, url));
+            if (results.size() >= MAX_RESULTS) {
+                break;
+            }
+        }
+        return results;
+    }
+
+    /**
+     * Whether a hit is worth spending an LLM call on.
+     * <p>
+     * IKEA's search has no concept of "no match": ask it for "Samsung 990 PRO 1TB SSD" and it
+     * answers, in all seriousness, with three pie plates. Every one of those used to reach
+     * the attribute gate, which costs a Groq call each to reject — on a budget the project
+     * has already run dry once. Nothing here decides whether two products are the same; that
+     * is still the gate's job. It only drops hits that cannot possibly be, so the calls are
+     * spent on candidates rather than on pie plates.
+     * <p>
+     * A hit qualifies on either of two counts, and the first is what carries it: IKEA
+     * identity <em>is</em> the range name, so a hit whose range name appears in the query is
+     * a real candidate however differently the rest is worded. Failing that, two shared
+     * descriptive words ("6-drawer dresser") also carry it, which covers a title that names
+     * the thing without naming the range. One shared word does not — that is how "Foldable"
+     * headphones reach a foldable IKEA chair.
+     */
+    private static boolean isPlausible(Set<String> queryTokens, String name, String title) {
+        if (queryTokens.isEmpty()) {
+            return true; // nothing to judge against; let the attribute gate decide
+        }
+        String rangeName = name.isBlank() ? "" : name.trim().split("\\s+")[0];
+        for (String token : significantTokens(rangeName)) {
+            if (queryTokens.contains(token)) {
+                return true;
+            }
+        }
+        int shared = 0;
+        for (String token : significantTokens(title)) {
+            if (queryTokens.contains(token) && ++shared >= 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Words worth comparing: lower-cased, stripped of accents so "ÄNGSLILJA" and the
+     * "angslilja" another retailer writes are the same word, and short ones dropped because
+     * "of" and "cm" are shared by everything.
+     */
+    private static Set<String> significantTokens(String text) {
+        if (text == null || text.isBlank()) {
+            return Set.of();
+        }
+        String folded = Normalizer.normalize(text, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .toLowerCase(Locale.ROOT);
+        Set<String> tokens = new LinkedHashSet<>();
+        for (String token : folded.split("[^a-z0-9]+")) {
+            if (token.length() >= 3) {
+                tokens.add(token);
+            }
+        }
+        return tokens;
+    }
+
+    private static String text(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) return "";
+        String value = node.isObject() || node.isArray() ? "" : node.asString();
+        return value == null ? "" : value.trim();
+    }
+
+    /**
+     * Fetches the search endpoint as JSON rather than HTML.
+     * <p>
+     * Keeps the marketplace's proxy, because the endpoint prices and stocks by the
+     * requesting IP exactly as the storefront does.
+     */
+    private String fetchSearch(String url, ScrapeProperties.MarketplaceConfig marketplace) {
+        try {
+            Connection connection = Jsoup.connect(url)
+                    .userAgent(randomUserAgent())
+                    .header("Accept", "application/json")
+                    .header("Accept-Language", marketplace.getAcceptLanguage())
+                    .header("Accept-Encoding", "gzip, deflate")
+                    .header("Referer", "https://www." + marketplace.getHost() + "/")
+                    .ignoreContentType(true) // the response is JSON, not a document
+                    .maxBodySize(0)
+                    .timeout(15000);
+            if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
+                connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
+            }
+            return connection.execute().body();
+        } catch (IOException e) {
+            throw new ScrapeException("Failed to fetch IKEA search results: " + url, e);
+        }
     }
 
     /** Fetches an IKEA product page and extracts title, price, currency and image. */

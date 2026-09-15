@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,6 +35,7 @@ class JarirScraperTest {
         config.setHost("jarir.com");
         config.setDeliveryCountry("SA");
         config.setAcceptLanguage("en-SA,en;q=0.9");
+        config.setSearchKey("key_test");
         return config;
     }
 
@@ -177,5 +180,123 @@ class JarirScraperTest {
         doc.select("script[type=application/ld+json]").remove();
         ScrapeException thrown = assertThrows(ScrapeException.class, () -> parse(doc));
         assertTrue(thrown.getMessage().contains("not a product page"), thrown.getMessage());
+    }
+
+    // ---- search ----
+
+    /**
+     * Jarir's results page is a client-rendered shell with no product links, so search goes
+     * to the hosted search provider its own search box queries. This is a saved response
+     * from it, for the same product the page fixture is of.
+     */
+    private static String searchFixture() throws IOException {
+        try (InputStream in = JarirScraperTest.class.getResourceAsStream("/scraper/jarir/search.json")) {
+            assertNotNull(in, "Missing search fixture on the test classpath");
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private static List<SearchResult> searchResults() throws IOException {
+        return scraper().parseSearchResults(searchFixture(), jarirConfig());
+    }
+
+    /**
+     * The provider answers with the slug alone. Rebuilding the URL from the configured host
+     * and locale is what makes a hit land on the same storefront the product fetch uses.
+     */
+    @Test
+    void parsesSearchResultsFromFixture() throws IOException {
+        List<SearchResult> results = searchResults();
+        assertFalse(results.isEmpty(), "expected hits from the saved search response");
+        assertTrue(results.stream().anyMatch(r -> PRODUCT_URL.equals(r.url())),
+                "the fixture's own product was not among the hits: " + results);
+    }
+
+    /** Every hit must be a product URL this scraper can go on to scrape. */
+    @Test
+    void everySearchResultCarriesATitleAndAProductUrl() throws IOException {
+        for (SearchResult r : searchResults()) {
+            assertFalse(r.title().isBlank(), "blank title in results");
+            assertTrue(r.url().startsWith("https://www.jarir.com/sa-en/"), "wrong storefront: " + r.url());
+            assertTrue(scraper().productKey(r.url()).isPresent(), "not a product URL: " + r.url());
+        }
+    }
+
+    @Test
+    void searchResultsAreNotDuplicatedPerProduct() throws IOException {
+        List<SearchResult> results = searchResults();
+        assertEquals(results.size(), results.stream().map(SearchResult::url).distinct().count(),
+                "duplicate product URLs in results");
+    }
+
+    /** One track costs 1 + this many LLM calls on this store alone. */
+    @Test
+    void searchResultsAreCappedForQuota() throws IOException {
+        assertTrue(searchResults().size() <= 3);
+    }
+
+    @Test
+    void searchIgnoresABlankQueryWithoutFetching() {
+        assertEquals(List.of(), scraper().search("   "));
+    }
+
+    /**
+     * "Not configured" is a different fact from "found nothing", and the discovery loop logs
+     * the one and silently accepts the other.
+     */
+    @Test
+    void searchFailsLoudlyWhenNoSearchKeyIsConfigured() {
+        ScrapeProperties.MarketplaceConfig keyless = jarirConfig();
+        keyless.setSearchKey(null);
+        ScrapeProperties properties = new ScrapeProperties();
+        properties.getMarketplaces().put("JARIR", keyless);
+        JarirScraper scraper = new JarirScraper(new MarketplaceRegistry(properties));
+
+        ScrapeException thrown = assertThrows(ScrapeException.class, () -> scraper.search("prang watercolor"));
+        assertTrue(thrown.getMessage().contains("search key"), thrown.getMessage());
+    }
+
+    @Test
+    void reportsAnUnparseableSearchResponseRatherThanNoHits() {
+        ScrapeException thrown = assertThrows(ScrapeException.class,
+                () -> scraper().parseSearchResults("not json at all", jarirConfig()));
+        assertTrue(thrown.getMessage().contains("Unparseable"), thrown.getMessage());
+    }
+
+    /**
+     * The point of the whole change: cross-store discovery iterates only the searchable
+     * scrapers, so without this Jarir can be tracked from a pasted URL but never found.
+     */
+    @Test
+    void isDiscoverableAsASearchableScraper() {
+        assertInstanceOf(SearchableScraper.class, scraper());
+    }
+
+    /**
+     * The provider matches tokens, not meaning: a whole retailer title matches nothing at
+     * all, so the query is narrowed to its leading words.
+     */
+    @Test
+    void narrowsATitleToItsLeadingWords() {
+        String title = "soundcore by Anker Q20i Hybrid ANC Foldable Headphones, 40H";
+        assertEquals("soundcore by Anker Q20i", JarirScraper.firstWords(title, 4));
+        assertEquals("soundcore by Anker", JarirScraper.firstWords(title, 3));
+        assertEquals("soundcore by", JarirScraper.firstWords(title, 2));
+    }
+
+    /** A word boundary that lands on a separator would be sent as a token of its own. */
+    @Test
+    void narrowingDropsATrailingSeparator() {
+        assertEquals("Ninja 2-In-1 Professional Blender",
+                JarirScraper.firstWords("Ninja 2-In-1 Professional Blender, One Touch Blending", 4));
+        assertEquals("Sony WH-1000XM5 Noise Cancelling",
+                JarirScraper.firstWords("Sony  WH-1000XM5   Noise Cancelling Wireless Headphones", 4));
+    }
+
+    /** A title shorter than the widest rung narrows to itself, and must not loop on it. */
+    @Test
+    void narrowingAShortTitleYieldsTheWholeTitle() {
+        assertEquals("Prang Watercolor", JarirScraper.firstWords("Prang Watercolor", 4));
+        assertEquals("Prang Watercolor", JarirScraper.firstWords("Prang Watercolor", 2));
     }
 }
