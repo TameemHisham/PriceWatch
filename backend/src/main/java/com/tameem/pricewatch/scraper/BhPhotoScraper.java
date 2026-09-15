@@ -37,6 +37,10 @@ import java.util.regex.Pattern;
  * class {@code price__9gLfjPSjp}, which can change on any deploy, while the JSON-LD offer is
  * load-bearing for Google rich results and so has an external reason to stay put. The stable
  * {@code data-selenium} hook is kept as the fallback.
+ * <p>
+ * Since September 2026 the site sits behind Cloudflare bot management, which answers a share
+ * of requests with a challenge instead of the page. {@link #fetch} is where that is dealt
+ * with; read its note before changing how requests are made here.
  */
 @Component
 public class BhPhotoScraper implements SearchableScraper {
@@ -196,11 +200,6 @@ public class BhPhotoScraper implements SearchableScraper {
         return results;
     }
 
-    /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
-    private String randomUserAgent() {
-        return USER_AGENTS.get(ThreadLocalRandom.current().nextInt(USER_AGENTS.size()));
-    }
-
     /** Fetches a B&H product page and extracts title, price, currency and image. */
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
@@ -275,47 +274,182 @@ public class BhPhotoScraper implements SearchableScraper {
 
     private record Fetched(Document document, URL finalUrl) {}
 
+    /**
+     * Fetches a B&amp;H URL, retrying across the user agent rotation while the edge answers
+     * with a bot challenge.
+     * <p>
+     * B&amp;H put Cloudflare bot management in front of the site in September 2026 — it
+     * answers {@code HTTP 403} with {@code cf-mitigated: challenge} and a "Just a moment…"
+     * interstitial. Three things follow from that, and all three are handled here.
+     * <p>
+     * First, the block was invisible. Jsoup throws {@link org.jsoup.HttpStatusException} on a
+     * 403 before {@code parse()} ever runs, so {@link #isBotChallenge} never saw the page and
+     * every block surfaced as the generic "Failed to fetch page" — indistinguishable from a
+     * timeout or a DNS failure. Errors are read off the response here instead, which is the
+     * rule the recon notes already set down: assert on content, never on status code.
+     * <p>
+     * Second, the challenge is not absolute, and which agent asks matters. Measured against
+     * the live site over 36 interleaved requests: the Safari agent was served 9 times in 12,
+     * each Chrome agent only 4 in 12. Jsoup sends no {@code Sec-CH-UA} client hints, which is
+     * consistent for Safari and inconsistent for a request claiming Chrome — the same
+     * fingerprint mismatch that got Namshi dropped. Retrying across the rotation therefore
+     * turns a challenged request into a served one most of the time. The rotation still starts
+     * at a random agent rather than always at Safari: ordering it would cut the average
+     * attempts per fetch from about 1.9 to 1.3, but that advantage is one 36-request sample
+     * from one address at one moment, and spending it would make Safari the standing
+     * signature — the fixed-agent trade the Namshi note refused. At sweep pacing the extra
+     * request costs nothing that matters.
+     * <p>
+     * Third, and separately: past a certain rate B&amp;H stops challenging and starts rate
+     * limiting, with {@code HTTP 429} to every agent alike. Retrying that would only spend
+     * three requests against a limit already tripped, so a 429 fails immediately instead.
+     */
     private Fetched fetch(String url, String marketplaceId, ScrapeProperties.MarketplaceConfig marketplace) {
-        try {
-            CookieStore cookies = cookieStores.computeIfAbsent(
-                    marketplaceId, id -> new CookieManager().getCookieStore());
-
-            Connection connection = Jsoup.connect(url)
-                    .userAgent(randomUserAgent()) // simulates a real user
-                    .header("Accept",
-                            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-                    .header("Accept-Language", marketplace.getAcceptLanguage())
-                    .header("Accept-Encoding", "gzip, deflate") // NOT br: Jsoup cannot decode Brotli,
-                    // and a br response parses to garbage with no error — Newegg serves it
-                    .header("Cache-Control", "no-cache")
-                    .header("Sec-Fetch-Dest", "document")
-                    .header("Sec-Fetch-Mode", "navigate")
-                    .header("Sec-Fetch-Site", "none")
-                    .cookieStore(cookies) // get cookies
-                    .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
-                    .timeout(10000);
-            if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
-                connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
-            } else {
-                log.debug("No proxy for delivery country {} — scraping from local egress",
-                        marketplace.getDeliveryCountry());
+        IOException lastFailure = null;
+        boolean challenged = false;
+        List<String> agents = rotatedUserAgents();
+        for (int attempt = 0; attempt < agents.size(); attempt++) {
+            if (attempt > 0) {
+                pauseBetweenAttempts();
             }
+            String userAgent = agents.get(attempt);
+            try {
+                Connection.Response response = execute(url, userAgent, marketplaceId, marketplace);
+                if (response.statusCode() == 429) {
+                    // Rate limited, not fingerprinted. Another agent would be another request
+                    // into a limit that is already tripped, so this one stops here. Measured
+                    // on the live site: once 429s start, every agent gets them.
+                    throw new ScrapeException("B&H rate-limited this client (HTTP 429) for "
+                            + url + " — backing off rather than retrying");
+                }
+                if (isEdgeChallenge(response)) {
+                    challenged = true;
+                    log.debug("B&H answered {} with a bot challenge (HTTP {}) — retrying on the next user agent",
+                            url, response.statusCode());
+                    continue;
+                }
+                if (response.statusCode() >= 400) {
+                    // Not a challenge, so retrying it would only repeat it.
+                    throw new ScrapeException("B&H answered HTTP " + response.statusCode()
+                            + " for " + url);
+                }
+                return new Fetched(response.parse(), response.url());
+            } catch (IOException e) {
+                // A transport failure is worth one more agent too, but keep it: a run that
+                // never got past the transport should report that, not a block.
+                lastFailure = e;
+            }
+        }
+        if (challenged) {
+            // Named as a block even when a transport failure also occurred: the block is the
+            // fact that explains the listing, and the one worth acting on.
+            throw new ScrapeException("B&H blocked all " + agents.size() + " attempts at " + url
+                    + " with a bot challenge — the edge check cannot be answered by Jsoup",
+                    lastFailure);
+        }
+        throw new ScrapeException("Failed to fetch page: " + url, lastFailure);
+    }
 
-            Connection.Response response = connection.execute();
-            return new Fetched(response.parse(), response.url());
-        } catch (IOException e) {
-            throw new ScrapeException("Failed to fetch page: " + url, e);
+    /** Keeps three attempts from leaving as one burst, which is its own bot signal. */
+    private void pauseBetweenAttempts() {
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
+    /** The rotation, starting at a random agent, so a fixed one is never the signature. */
+    private List<String> rotatedUserAgents() {
+        int start = ThreadLocalRandom.current().nextInt(USER_AGENTS.size());
+        List<String> rotated = new ArrayList<>(USER_AGENTS.size());
+        for (int i = 0; i < USER_AGENTS.size(); i++) {
+            rotated.add(USER_AGENTS.get((start + i) % USER_AGENTS.size()));
+        }
+        return rotated;
+    }
+
+    private Connection.Response execute(String url, String userAgent, String marketplaceId,
+                                        ScrapeProperties.MarketplaceConfig marketplace) throws IOException {
+        CookieStore cookies = cookieStores.computeIfAbsent(
+                marketplaceId, id -> new CookieManager().getCookieStore());
+
+        Connection connection = Jsoup.connect(url)
+                .userAgent(userAgent) // simulates a real user
+                .header("Accept",
+                        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+                .header("Accept-Language", marketplace.getAcceptLanguage())
+                .header("Accept-Encoding", "gzip, deflate") // NOT br: Jsoup cannot decode Brotli,
+                // and a br response parses to garbage with no error — Newegg serves it
+                .header("Cache-Control", "no-cache")
+                .header("Sec-Fetch-Dest", "document")
+                .header("Sec-Fetch-Mode", "navigate")
+                .header("Sec-Fetch-Site", "none")
+                .cookieStore(cookies) // get cookies
+                .ignoreHttpErrors(true) // read the block off the response instead of throwing on it
+                .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
+                .timeout(10000);
+        if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
+            connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
+        } else {
+            log.debug("No proxy for delivery country {} — scraping from local egress",
+                    marketplace.getDeliveryCountry());
+        }
+        return connection.execute();
+    }
+
     /**
-     * B&H did not challenge this codebase during recon, so these markers are the generic
-     * vendor interstitials rather than an observed B&H block page.
+     * Whether this response is an edge bot check rather than the page that was asked for.
+     * <p>
+     * Cloudflare states it outright in {@code cf-mitigated}, which is the reliable signal and
+     * costs nothing to read. The body markers are the fallback for a challenge whose header
+     * is absent, and are only worth materialising the body for on a status that could
+     * plausibly be one — a challenge served with a 200, the shape the recon notes flag as
+     * fooling a status-code check, is caught later by {@link #isBotChallenge} on the parsed
+     * document instead of being paid for on every healthy fetch.
+     */
+    private boolean isEdgeChallenge(Connection.Response response) {
+        String mitigated = response.header("cf-mitigated");
+        if (mitigated != null && !mitigated.isBlank()) {
+            return true;
+        }
+        int status = response.statusCode();
+        if (status != 403 && status != 503) {
+            return false; // 429 is rate limiting, handled before this and never retried
+        }
+        try {
+            return hasChallengeMarkers(response.body());
+        } catch (RuntimeException e) {
+            return false; // nothing readable to judge on
+        }
+    }
+
+    /** Vendor interstitial markers, in the body of a response. */
+    static boolean hasChallengeMarkers(String body) {
+        if (body == null) return false;
+        return body.contains("challenges.cloudflare.com")
+                || body.contains("cf-browser-verification")
+                || body.contains("__cf_chl")
+                || body.contains("sec-if-cpt-container")
+                || body.contains("captcha-delivery")
+                || body.contains("validateCaptcha");
+    }
+    /**
+     * Last-ditch check on a page that was fetched successfully.
+     * <p>
+     * A challenge normally never reaches here — {@link #fetch} recognises it on the
+     * response and retries or fails loudly — so this covers only an interstitial served
+     * with a 200 and no {@code cf-mitigated} header, which is the shape the recon notes
+     * record for Noon, Walmart and Lazada.
      */
     private boolean isBotChallenge(Document doc) {
         if (doc.selectFirst("#sec-if-cpt-container") != null) return true;
+        if (doc.selectFirst("#challenge-form, #cf-challenge-running") != null) return true;
         String html = doc.html();
-        return html.contains("captcha-delivery") || html.contains("validateCaptcha");
+        return html.contains("captcha-delivery")
+                || html.contains("validateCaptcha")
+                || html.contains("challenges.cloudflare.com")
+                || html.contains("cf-browser-verification");
     }
 
     private void requireExpectedHost(URL finalUrl, ScrapeProperties.MarketplaceConfig marketplace,

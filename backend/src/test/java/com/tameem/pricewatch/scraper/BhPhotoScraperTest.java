@@ -245,4 +245,32 @@ class BhPhotoScraperTest {
                 scraper().parse(challenge, url(PRODUCT_URL), PRODUCT_URL, bhConfig()));
         assertTrue(thrown.getMessage().contains("bot challenge"), thrown.getMessage());
     }
+
+    // ---- edge bot check ----
+
+    /**
+     * B&amp;H went behind Cloudflare in September 2026. Jsoup throws on the 403 before a
+     * document exists, so the block used to surface as "Failed to fetch page" and read as a
+     * network fault; these are the markers the fetch now recognises instead.
+     */
+    @Test
+    void recognisesACloudflareChallengeBody() {
+        assertTrue(BhPhotoScraper.hasChallengeMarkers(
+                "<html><head><title>Just a moment...</title>"
+                        + "<script src=\"https://challenges.cloudflare.com/turnstile/v0/api.js\"></script>"
+                        + "</head></html>"));
+    }
+
+    @Test
+    void recognisesTheOtherVendorInterstitials() {
+        assertTrue(BhPhotoScraper.hasChallengeMarkers("<div id=\"sec-if-cpt-container\"></div>"));
+        assertTrue(BhPhotoScraper.hasChallengeMarkers("<script src=\"//captcha-delivery.com/x.js\"></script>"));
+    }
+
+    /** A real product page must never be read as a block, or every scrape fails. */
+    @Test
+    void doesNotReadARealPageAsAChallenge() throws IOException {
+        assertFalse(BhPhotoScraper.hasChallengeMarkers(fixture().html()));
+        assertFalse(BhPhotoScraper.hasChallengeMarkers(null));
+    }
 }
