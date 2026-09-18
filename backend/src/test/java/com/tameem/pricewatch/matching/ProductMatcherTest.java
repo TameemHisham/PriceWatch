@@ -198,6 +198,67 @@ class ProductMatcherTest {
         assertEquals(Decision.UNCERTAIN, outcome.decision());
     }
 
+    // ---- cross-retailer wording of model/brand (real production cases) ----
+
+    /** Jarir folds the brand into the model: 'Q20i' vs 'Soundcore Q20i', same headphones. */
+    @Test
+    void matchesWhenBrandLeaksIntoTheModelString() {
+        ProductMatcher.Outcome outcome = matcher.match(
+                attrs("soundcore by Anker", "Q20i", null),
+                attrs("Anker", "Soundcore Q20i", null),
+                "soundcore by Anker Q20i Hybrid ANC Headphones",
+                "Anker Soundcore Q20i On-Ear Headphones");
+        assertEquals(Decision.MATCH, outcome.decision(), outcome.reason());
+    }
+
+    /** A redundant restatement is not a difference: 'WH-1000XM5' vs 'WH-1000XM5 Mark 5'. */
+    @Test
+    void matchesModelWithARedundantRestatement() {
+        assertEquals(Decision.MATCH, matcher.match(
+                attrs("Sony", "WH-1000XM5", null),
+                attrs("Sony", "WH-1000XM5 Mark 5", null),
+                "Sony WH-1000XM5 Headphones", "Sony WH-1000XM5 Mark 5 Headphones").decision());
+    }
+
+    /** Brand written at different lengths is the same maker: 'Anker' vs 'soundcore by Anker'. */
+    @Test
+    void matchesBrandStatedAtDifferentLengths() {
+        assertEquals(Decision.MATCH, matcher.match(
+                attrs("soundcore by Anker", "Q20i", null),
+                attrs("Anker", "Q20i", null),
+                "a", "b").decision());
+    }
+
+    /** A shared code but an extra tier word is a different variant: 'AK820' vs 'AK820 Pro'. */
+    @Test
+    void rejectsATierVariantSharingTheModelCode() {
+        assertEquals(Decision.REJECT, matcher.match(
+                attrs("EPOMAKER", "AK820", null),
+                attrs("EPOMAKER", "AK820 Pro", null),
+                "EPOMAKER AK820", "EPOMAKER AK820 Pro").decision());
+    }
+
+    /**
+     * The subset trap: 'iPhone 17 Pro' is a token-subset of 'iPhone 17 Pro Max', but a
+     * different product, and there is no alphanumeric code to anchor on. Must still reject.
+     */
+    @Test
+    void rejectsAModelSubsetWithNoCodeAnchor() {
+        assertEquals(Decision.REJECT, matcher.match(
+                attrs("Apple", "iPhone 17 Pro Max", "512 GB"),
+                attrs("Apple", "iPhone 17 Pro", "512 GB"),
+                "Apple iPhone 17 Pro Max 512 GB", "Apple iPhone 17 Pro 512 GB").decision());
+    }
+
+    /** Codes that differ are always different, however similar the surrounding words. */
+    @Test
+    void stillRejectsAOneCharacterModelCodeDifference() {
+        assertEquals(Decision.REJECT, matcher.match(
+                attrs("Anker", "Q20i", null),
+                attrs("Anker", "Q21i", null),
+                "Soundcore Q20i", "Soundcore Q21i").decision());
+    }
+
     @Test
     void stripsCodeFencesTheModelWasAskedNotToEmit() {
         assertEquals("{\"brand\":\"Samsung\"}",

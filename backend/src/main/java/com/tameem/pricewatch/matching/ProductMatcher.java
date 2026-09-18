@@ -32,6 +32,14 @@ import java.util.stream.Collectors;
  * disagreed about nothing and were matched for it. A match now needs at least one hard
  * field stated on both sides and agreeing; anything less is UNCERTAIN, which never
  * attaches.
+ * <p>
+ * "Agreeing" is not string equality. A different retailer writes the same model and brand
+ * differently — {@code 'Q20i'} against {@code 'Soundcore Q20i'}, {@code 'Anker'} against
+ * {@code 'soundcore by Anker'} — so {@link #sameValue} compares each field on its own terms
+ * (see {@link #sameModel} and {@link #sameBrand}). Capacity is the exception and stays exact:
+ * a quantity difference is always a real one. The reconstructed precision measurement for
+ * this change is in {@code MatcherEvalTest} — 88.9% to 91.7%, recall 72.7% to 100%, on frozen
+ * real extractions.
  */
 @Component
 public class ProductMatcher {
@@ -96,7 +104,7 @@ public class ProductMatcher {
         for (String field : HARD_FIELDS) {
             String va = valueOf(a, field);
             String vb = valueOf(b, field);
-            if (va != null && vb != null && !sameValue(va, vb)) {
+            if (va != null && vb != null && !sameValue(field, va, vb)) {
                 return new Outcome(Decision.REJECT,
                         "%s differs: '%s' vs '%s'".formatted(field, va, vb));
             }
@@ -110,7 +118,7 @@ public class ProductMatcher {
         for (String field : HARD_FIELDS) {
             String va = valueOf(a, field);
             String vb = valueOf(b, field);
-            if (va != null && vb != null && sameValue(va, vb)) {
+            if (va != null && vb != null && sameValue(field, va, vb)) {
                 agreed.add(field);
             }
         }
@@ -136,19 +144,130 @@ public class ProductMatcher {
     }
 
     /**
-     * Whether two stated values mean the same thing, ignoring case and all whitespace.
+     * Model tier words: an extra one of these on one side marks a different variant, so it
+     * blocks a match even when the distinctive model code is shared — a Q20i and a "Q20i
+     * Pro" are not the same product. Kept small and specific; a descriptor that is not here
+     * (a brand name leaking in, a redundant "Mark 5") is treated as noise, not a difference.
+     */
+    private static final Set<String> MODEL_TIER_WORDS = Set.of(
+            "pro", "max", "plus", "ultra", "mini", "lite", "air", "se", "xl", "xs", "ti", "gen", "fe");
+
+    /**
+     * Whether two stated values for one hard field mean the same product.
      * <p>
-     * Retailers write the same quantity differently — B&H lists "2TB" where Currys lists
-     * "2 TB" — and with capacity the only hard field, treating those as a disagreement
-     * silently threw away correct matches. Cross-store formatting differences are the
-     * normal case for this feature, not an edge one.
+     * Dispatched by field because the fields are not alike. capacity is a quantity, where a
+     * difference is always a real difference; model and brand are names a different retailer
+     * writes differently for the identical product, where an exact-string test threw away
+     * genuine matches — {@code 'Q20i'} against {@code 'Soundcore Q20i'}, {@code 'soundcore'}
+     * against {@code 'Soundcore by Anker'}.
      * <p>
-     * Comparison only: the original strings are what a rejection message reports, so it
+     * Comparison only: callers keep the original strings for the rejection message, so it
      * still shows what each retailer actually wrote.
      */
-    private static boolean sameValue(String a, String b) {
-        return a.replaceAll("\\s+", "").toLowerCase(Locale.ROOT)
-                .equals(b.replaceAll("\\s+", "").toLowerCase(Locale.ROOT));
+    private static boolean sameValue(String field, String a, String b) {
+        return switch (field) {
+            case "model" -> sameModel(a, b);
+            case "brand" -> sameBrand(a, b);
+            // capacity and anything else: a quantity, compared exactly bar case and spacing.
+            // Retailers write "2TB" and "2 TB"; they do not write "2TB" to mean "4TB".
+            default -> normalized(a).equals(normalized(b));
+        };
+    }
+
+    /**
+     * Two model strings name the same product when their distinctive alphanumeric codes
+     * agree and nothing tier-distinguishing separates them.
+     * <p>
+     * The distinctive code is the token carrying both letters and digits — "Q20i",
+     * "WH-1000XM5", "9800X3D". That token is the model's identity; the words around it are
+     * mostly the brand or filler a given retailer chose to fold in. So:
+     * <ul>
+     *   <li>codes must match exactly — "Q20i" ≠ "Q21i", "9800X3D" ≠ "9850X3D" — and a code
+     *       stated on one side but not the other is a difference too.</li>
+     *   <li>with the codes equal, extra descriptive words are ignored, which is what lets
+     *       "Q20i" match "Soundcore Q20i" and "WH-1000XM5" match "WH-1000XM5 Mark 5" — unless
+     *       the extra word is a {@link #MODEL_TIER_WORDS tier word}, since "AK820" and "AK820
+     *       Pro" really are different.</li>
+     *   <li>with no code on either side, there is no anchor to trust, so anything short of an
+     *       exact match stays a difference. This is what keeps "iPhone 17 Pro" apart from
+     *       "iPhone 17 Pro Max" and "Space One" from "Space One Pro" — a subset in tokens,
+     *       but a different product, and nothing alphanumeric to lean on.</li>
+     * </ul>
+     * The bias throughout is to reject when unsure: a missed match costs a manual re-add, a
+     * wrong match corrupts a price history.
+     */
+    private static boolean sameModel(String a, String b) {
+        List<String> ta = tokens(a);
+        List<String> tb = tokens(b);
+        if (multisetEquals(ta, tb)) {
+            return true;
+        }
+        Set<String> codesA = codeTokens(ta);
+        Set<String> codesB = codeTokens(tb);
+        if (!codesA.equals(codesB) || codesA.isEmpty()) {
+            return false;
+        }
+        // Codes agree and are non-empty. Accept unless an extra word marks a variant.
+        Set<String> extras = symmetricDifference(ta, tb);
+        return extras.stream().noneMatch(MODEL_TIER_WORDS::contains);
+    }
+
+    /**
+     * Two brand strings name the same maker when one side's words are contained in the
+     * other's — "Anker" and "soundcore by Anker", "Samsung" and "Samsung Electronics" are
+     * the same brand written at different lengths. A brand has no tier the way a model does,
+     * so containment is safe here where it is not for model.
+     */
+    private static boolean sameBrand(String a, String b) {
+        Set<String> sa = new HashSet<>(tokens(a));
+        Set<String> sb = new HashSet<>(tokens(b));
+        if (sa.isEmpty() || sb.isEmpty()) {
+            return normalized(a).equals(normalized(b));
+        }
+        return sa.containsAll(sb) || sb.containsAll(sa);
+    }
+
+    private static String normalized(String value) {
+        return value.replaceAll("\\s+", "").toLowerCase(Locale.ROOT);
+    }
+
+    /** Lowercased alphanumeric tokens, splitting on everything else so "WH-1000XM5" -> wh, 1000xm5. */
+    private static List<String> tokens(String value) {
+        return Arrays.stream(value.toLowerCase(Locale.ROOT).split("[^a-z0-9]+"))
+                .filter(t -> !t.isBlank())
+                .toList();
+    }
+
+    /** Tokens carrying both a letter and a digit — the distinctive model codes. */
+    private static Set<String> codeTokens(List<String> tokens) {
+        Set<String> codes = new HashSet<>();
+        for (String token : tokens) {
+            boolean hasLetter = token.chars().anyMatch(Character::isLetter);
+            boolean hasDigit = token.chars().anyMatch(Character::isDigit);
+            if (hasLetter && hasDigit) {
+                codes.add(token);
+            }
+        }
+        return codes;
+    }
+
+    private static boolean multisetEquals(List<String> a, List<String> b) {
+        List<String> sa = new ArrayList<>(a);
+        List<String> sb = new ArrayList<>(b);
+        sa.sort(null);
+        sb.sort(null);
+        return sa.equals(sb);
+    }
+
+    private static Set<String> symmetricDifference(List<String> a, List<String> b) {
+        Set<String> sa = new HashSet<>(a);
+        Set<String> sb = new HashSet<>(b);
+        Set<String> diff = new HashSet<>(sa);
+        diff.addAll(sb);
+        Set<String> shared = new HashSet<>(sa);
+        shared.retainAll(sb);
+        diff.removeAll(shared);
+        return diff;
     }
 
     private static String valueOf(ProductAttributes attributes, String field) {
