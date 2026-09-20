@@ -85,7 +85,12 @@ public class SchedulerScraper {
 //    @Scheduled(fixedRate = 10000)
     public void scrapeCurrency() {
             try {
-                currencyDTO[] currencies = restClient.get().uri("?base=USD&quotes=USD,GBP,AED,SAR,INR").retrieve().body(currencyDTO[].class);
+                // EUR and JPY are here because the scrapers can observe them: Amazon renders
+                // imported offers in the visitor's currency, so a Euro or Yen price is a real
+                // observation, not a symbol typo. Without a rate for them the price stores fine
+                // but drops out of every USD comparison — the same UNKNOWN-shaped gap the GBP/USD
+                // currency-parsing fix closed on the scraping side.
+                currencyDTO[] currencies = restClient.get().uri("?base=USD&quotes=USD,GBP,AED,SAR,INR,EUR,JPY").retrieve().body(currencyDTO[].class);
                 assert currencies != null;
                 log.info("Currencies: " + Arrays.toString(currencies));
                 for (currencyDTO currency : currencies) {
