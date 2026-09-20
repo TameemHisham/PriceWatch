@@ -91,4 +91,35 @@ class AmazonScraperTest {
         assertThrows(ScrapeException.class,
                 () -> scraper().canonicalUrl("https://www.amazon.co.uk/gp/bestsellers"));
     }
+
+    // ---- currency parsing ----
+
+    /**
+     * The regression: amazon.com served to an international visitor renders the price as the
+     * ISO code in text ("GBP 53.94"), not a glyph. That used to fall through to UNKNOWN, so
+     * the listing dropped out of every USD comparison and stored a bogus currency. Both forms
+     * of every currency Amazon shows here must resolve.
+     */
+    @Test
+    void resolvesCurrencyWhetherWrittenAsCodeOrGlyph() {
+        // ISO code in text — the amazon.com Global-Store rendering that produced UNKNOWN.
+        assertEquals("GBP", AmazonScraper.parseCurrency("GBP 53.94"));
+        assertEquals("USD", AmazonScraper.parseCurrency("USD 229.00"));
+        assertEquals("AED", AmazonScraper.parseCurrency("AED 1,724.76"));
+        assertEquals("EUR", AmazonScraper.parseCurrency("EUR 19,99"));
+
+        // Glyph — the amazon.co.uk rendering that already worked, and must keep working.
+        assertEquals("GBP", AmazonScraper.parseCurrency("£31.99"));
+        assertEquals("USD", AmazonScraper.parseCurrency("$229.00"));
+        assertEquals("USD", AmazonScraper.parseCurrency("US$229.00"));
+        assertEquals("EUR", AmazonScraper.parseCurrency("€19,99"));
+        assertEquals("AED", AmazonScraper.parseCurrency("د.إ 100"));
+    }
+
+    /** A bare number with no currency marker is genuinely unknowable, and stays UNKNOWN. */
+    @Test
+    void reportsUnknownOnlyWhenThereIsNoCurrencyMarkerAtAll() {
+        assertEquals("UNKNOWN", AmazonScraper.parseCurrency("229.00"));
+        assertNull(AmazonScraper.parseCurrency(null));
+    }
 }

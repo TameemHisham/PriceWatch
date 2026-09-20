@@ -17,6 +17,7 @@ import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -397,18 +398,48 @@ public class AmazonScraper implements ProductScraper {
         }
     }
 
-    /** Maps the currency symbol in the price text to an ISO code, or UNKNOWN when unrecognised. */
-    private String parseCurrency(String raw) {
+    /**
+     * Maps the currency in Amazon's rendered price to an ISO code, handling both ways Amazon
+     * writes it, or UNKNOWN when it is neither.
+     * <p>
+     * Amazon renders the currency as a glyph ("£31.99") or as the ISO code in text
+     * ("GBP&nbsp;53.94", "AED&nbsp;1,724.76"). The code form is what a Global-Store or
+     * imported offer shows — an amazon.com page served to an international visitor prices the
+     * item in GBP and writes "GBP", not "$". Recognising only the glyph left every code-form
+     * price as UNKNOWN, which then dropped out of every USD comparison and surfaced as the
+     * "No exchange rate for currency UNKNOWN" warning.
+     * <p>
+     * The currency is read from the page rather than derived from the marketplace on purpose:
+     * with no in-country proxy the storefront renders the visitor's import currency, so
+     * amazon.co.uk can genuinely show AED and amazon.com GBP. The code on the page is the
+     * currency the observed amount is actually in; forcing it to the storefront's native
+     * currency (AMAZON_US -> USD) would mislabel that amount. Package-private for the
+     * regression test.
+     */
+    static String parseCurrency(String raw) {
         if (raw == null) return null;
 
-        if (raw.contains("AED") || raw.contains("د.إ")) return "AED";
+        // ISO code written as text — Global-Store / imported offers ("GBP 53.94").
+        String upper = raw.toUpperCase(Locale.ROOT);
+        if (upper.contains("AED")) return "AED";
+        if (upper.contains("SAR")) return "SAR";
+        if (upper.contains("QAR")) return "QAR";
+        if (upper.contains("INR")) return "INR";
+        if (upper.contains("GBP")) return "GBP";
+        if (upper.contains("EUR")) return "EUR";
+        if (upper.contains("JPY")) return "JPY";
+        if (upper.contains("USD")) return "USD"; // also covers "US$" via the $ branch below
 
+        // Glyph.
+        if (raw.contains("د.إ")) return "AED";
+        if (raw.contains("ر.س")) return "SAR";
+        if (raw.contains("₹")) return "INR";
         if (raw.contains("£")) return "GBP";
         if (raw.contains("€")) return "EUR";
         if (raw.contains("¥")) return "JPY";
         if (raw.contains("$")) return "USD";
 
-        return "UNKNOWN"; // unknown symbol
+        return "UNKNOWN"; // neither a known code nor a known symbol
     }
 
 }
