@@ -126,6 +126,10 @@
     font-size: 32px;
     font-weight: 600;
     letter-spacing: -0.02em;
+    /* JetBrains Mono seats glyph tops flush with the top of the line box — its
+       ascent metric leaves no room above cap height — so £/$/€/¥ clip against any
+       overflow-clipping ancestor. The extra leading gives them top breathing room. */
+    line-height: 1.65;
 }
 
 /* One column for now. The mockup's second column holds the target-price panel,
@@ -241,6 +245,8 @@
     font-family: "JetBrains Mono", monospace;
     font-size: 15px;
     font-weight: 600;
+    /* Top breathing room: JetBrains Mono clips glyph tops at line-height 1.45. */
+    line-height: 1.65;
 }
 
 /* A store we are watching that has no offer right now. Muted rather than hidden: the row

@@ -60,6 +60,10 @@
     font-family: "JetBrains Mono", monospace;
     font-size: 18px;
     font-weight: 600;
+    /* JetBrains Mono seats glyph tops flush with the top of the line box — its
+       ascent metric leaves no room above cap height — so £/$/€/¥ clip against any
+       overflow-clipping ancestor. The extra leading gives them top breathing room. */
+    line-height: 1.65;
 }
 
 .product-card--stores {

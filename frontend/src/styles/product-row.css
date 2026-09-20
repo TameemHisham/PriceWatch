@@ -68,6 +68,8 @@
     font-family: "JetBrains Mono", monospace;
     font-size: 15px;
     font-weight: 600;
+    /* Top breathing room: JetBrains Mono clips glyph tops at line-height 1.45. */
+    line-height: 1.65;
 }
 
 .product-row--price-indicator {
