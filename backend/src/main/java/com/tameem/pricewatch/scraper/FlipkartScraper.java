@@ -274,12 +274,7 @@ public class FlipkartScraper implements SearchableScraper {
                     .cookieStore(cookies) // get cookies
                     .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
                     .timeout(15000);
-            if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
-                connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
-            } else {
-                log.debug("No proxy for delivery country {} — scraping from local egress",
-                        marketplace.getDeliveryCountry());
-            }
+            marketplace.applyProxy(connection, log);
 
             Connection.Response response = connection.execute();
             return new Fetched(response.parse(), response.url());

@@ -171,6 +171,7 @@ public class AmazonScraper implements ProductScraper {
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
+
         Fetched fetched = fetch(url, marketplaceId, marketplace);
         Document document = fetched.document();
 
@@ -235,12 +236,7 @@ public class AmazonScraper implements ProductScraper {
                     .header("Sec-Fetch-Site", "none")
                     .cookieStore(cookies) // get cookies
                     .timeout(10000);
-            if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
-                connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
-            } else {
-                log.debug("No proxy for delivery country {} — scraping from local egress",
-                        marketplace.getDeliveryCountry());
-            }
+            marketplace.applyProxy(connection, log);
 
             Connection.Response response = connection.execute();
             return new Fetched(response.parse(), response.url());

@@ -1,0 +1,969 @@
+2026-09-24T08:35:20.301+01:00  INFO 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 6834 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T08:35:20.302+01:00 DEBUG 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T08:35:20.303+01:00  INFO 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T08:35:20.318+01:00  INFO 6834 --- [pricewatch] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-09-24T08:35:20.319+01:00  INFO 6834 --- [pricewatch] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-09-24T08:35:20.569+01:00  INFO 6834 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T08:35:20.588+01:00  INFO 6834 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 16 ms. Found 5 JPA repository interfaces.
+2026-09-24T08:35:20.779+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T08:35:20.785+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T08:35:20.785+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T08:35:20.796+01:00  INFO 6834 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 477 ms
+2026-09-24T08:35:20.815+01:00 DEBUG 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T08:35:20.866+01:00  INFO 6834 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T08:35:20.888+01:00  INFO 6834 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.1.Final
+2026-09-24T08:35:21.028+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T08:35:21.040+01:00  INFO 6834 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-09-24T08:35:21.115+01:00  INFO 6834 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5199ed62
+2026-09-24T08:35:21.115+01:00  INFO 6834 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-09-24T08:35:21.153+01:00  INFO 6834 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T08:35:21.525+01:00  INFO 6834 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T08:35:21.565+01:00  INFO 6834 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:35:21.601+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-09-24T08:35:21.794+01:00  WARN 6834 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 27b987ad-41c7-4e9c-9cd0-8a9946c94ea3
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T08:35:21.797+01:00  INFO 6834 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T08:35:21.936+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-24T08:35:21.939+01:00  INFO 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 1.794 seconds (process running for 2.038)
+2026-09-24T08:36:22.136+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:36:26.346+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:36:30.618+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:36:33.218+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:36:36.658+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:36:38.631+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 124 (https://www.amazon.ae/dp/B07MB6G74R) — recorded check, no price point
+2026-09-24T08:36:39.570+01:00  INFO 6834 --- [pricewatch] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 79 class path changes (0 additions, 0 deletions, 79 modifications)
+2026-09-24T08:36:39.572+01:00  INFO 6834 --- [pricewatch] [Thread-1] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-24T08:36:39.576+01:00  INFO 6834 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-24T08:36:40.205+01:00  INFO 6992 --- [pricewatch] [main] c.t.p.PricewatchApplicationTests         : Starting PricewatchApplicationTests using Java 26.0.1 with PID 6992 (started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T08:36:40.206+01:00 DEBUG 6992 --- [pricewatch] [main] c.t.p.PricewatchApplicationTests         : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T08:36:40.206+01:00  INFO 6992 --- [pricewatch] [main] c.t.p.PricewatchApplicationTests         : The following 1 profile is active: "secrets"
+2026-09-24T08:36:40.426+01:00  INFO 6992 --- [pricewatch] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T08:36:40.452+01:00  INFO 6992 --- [pricewatch] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 22 ms. Found 5 JPA repository interfaces.
+2026-09-24T08:36:40.612+01:00  INFO 6992 --- [pricewatch] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T08:36:40.630+01:00  INFO 6992 --- [pricewatch] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.1.Final
+2026-09-24T08:36:40.643+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:36:40.754+01:00  INFO 6992 --- [pricewatch] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T08:36:40.765+01:00  INFO 6992 --- [pricewatch] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-09-24T08:36:40.842+01:00  INFO 6992 --- [pricewatch] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@9976b27
+2026-09-24T08:36:40.843+01:00  INFO 6992 --- [pricewatch] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-09-24T08:36:40.872+01:00  INFO 6992 --- [pricewatch] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T08:36:41.232+01:00  INFO 6992 --- [pricewatch] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T08:36:41.271+01:00  INFO 6992 --- [pricewatch] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:36:41.313+01:00  INFO 6992 --- [pricewatch] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-09-24T08:36:41.539+01:00  WARN 6992 --- [pricewatch] [main] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 6a73fc17-5aad-49db-ad71-7e650995b487
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T08:36:41.542+01:00  INFO 6992 --- [pricewatch] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T08:36:41.713+01:00  INFO 6992 --- [pricewatch] [main] c.t.p.PricewatchApplicationTests         : Started PricewatchApplicationTests in 1.598 seconds (process running for 2.863)
+2026-09-24T08:36:41.943+01:00  WARN 6992 --- [pricewatch] [main] c.t.p.controller.ApiExceptionHandler     : Constraint violation: org.springframework.dao.DataIntegrityViolationException: could not execute statement [ERROR: duplicate key value violates unique constraint "ukcupyehhxn6mo94km94jsdlywj" Detail: Key (tracked_product_id, marketplace)=(44, AMAZON_UK) already exists.]
+2026-09-24T08:36:41.944+01:00  WARN 6992 --- [pricewatch] [main] c.t.p.controller.ApiExceptionHandler     : Constraint violation: org.springframework.dao.DataIntegrityViolationException: could not execute statement [ERROR: duplicate key value violates unique constraint "ukcupyehhxn6mo94km94jsdlywj" Detail: Key (tracked_product_id, marketplace)=(44, AMAZON_UK) already exists.]
+2026-09-24T08:36:42.230+01:00  WARN 6992 --- [pricewatch] [main] c.t.p.service.ExchangeRateService        : No exchange rate for currency PLN (first seen on listing 42) — prices in PLN are stored but left out of every USD comparison, so the API will report them as null. Add PLN to the quotes list in SchedulerScraper.scrapeCurrency().
+2026-09-24T08:36:42.230+01:00  WARN 6992 --- [pricewatch] [main] c.t.p.service.ExchangeRateService        : No exchange rate for currency INR (first seen on listing 1) — prices in INR are stored but left out of every USD comparison, so the API will report them as null. Add INR to the quotes list in SchedulerScraper.scrapeCurrency().
+2026-09-24T08:36:42.239+01:00  INFO 6992 --- [pricewatch] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:36:42.240+01:00  INFO 6992 --- [pricewatch] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-09-24T08:36:42.241+01:00  INFO 6992 --- [pricewatch] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-09-24T08:36:44.767+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:36:48.160+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.NeweggScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:36:50.846+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:36:51.164+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 148 (https://www.currys.co.uk/products/10244400.html): com.tameem.pricewatch.scraper.ScrapeException: Failed to fetch page: https://www.currys.co.uk/products/10244400.html
+2026-09-24T08:36:53.171+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:36:53.378+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 21 (https://www.amazon.co.uk/Cuisinart®-ClassicTM-Stainless-Cookware-11-Piece/dp/B0FJYZCSNF): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:36:55.382+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:36:55.643+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 34 (https://www.amazon.co.uk/Tower-Casserole-Collection-Non-Stick-Aluminium/dp/B076FH2T9G): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:36:57.650+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:36:57.919+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 28 (https://www.amazon.co.uk/Dreo-Humidifiers-Supersized-Ultrasonic-Humidifier/dp/B0CCVX6FSD): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:36:59.928+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:37:02.505+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:37:05.378+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:37:05.639+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 25 (https://www.amazon.co.uk/TAPMEI-Larger-Adjustable-Rotation-Compatible-Black/dp/B0DQCDN64H): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:37:07.646+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:37:09.581+01:00  INFO 6834 --- [pricewatch] [Thread-1] o.s.c.support.DefaultLifecycleProcessor  : Shutdown phase 1073741823 ends with 1 bean still running after timeout of 30000ms: [taskScheduler]
+2026-09-24T08:37:09.587+01:00  INFO 6834 --- [pricewatch] [Thread-1] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:37:09.592+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 59 (https://www.amazon.com/dp/B0CMWJSQMB): com.tameem.pricewatch.scraper.ScrapeException: Failed to fetch page: https://www.amazon.com/dp/B0CMWJSQMB
+2026-09-24T08:37:09.592+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Sweep complete: 93 listings checked, 10 succeeded, 83 failed, 47472ms
+2026-09-24T08:37:09.592+01:00  INFO 6834 --- [pricewatch] [Thread-1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-09-24T08:37:09.604+01:00  INFO 6834 --- [pricewatch] [Thread-1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-09-24T08:37:09.661+01:00  INFO 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 6834 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T08:37:09.661+01:00 DEBUG 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T08:37:09.661+01:00  INFO 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T08:37:09.751+01:00  INFO 6834 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T08:37:09.756+01:00  INFO 6834 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 5 ms. Found 5 JPA repository interfaces.
+2026-09-24T08:37:09.808+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T08:37:09.809+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T08:37:09.809+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T08:37:09.813+01:00  INFO 6834 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 151 ms
+2026-09-24T08:37:09.819+01:00 DEBUG 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T08:37:09.833+01:00  INFO 6834 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T08:37:09.841+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T08:37:09.842+01:00  INFO 6834 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-09-24T08:37:09.860+01:00  INFO 6834 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@135b12b1
+2026-09-24T08:37:09.860+01:00  INFO 6834 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-09-24T08:37:09.867+01:00  INFO 6834 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T08:37:09.919+01:00  INFO 6834 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T08:37:09.951+01:00  INFO 6834 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:37:10.190+01:00  WARN 6834 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 8ffaff83-bf96-43c9-bb1c-1b6bdd3b4a80
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T08:37:10.193+01:00  INFO 6834 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T08:37:10.284+01:00  INFO 6834 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-24T08:37:10.287+01:00  INFO 6834 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 0.637 seconds (process running for 110.387)
+2026-09-24T08:37:10.291+01:00  INFO 6834 --- [pricewatch] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-09-24T08:37:42.228+01:00  INFO 6834 --- [pricewatch] [http-nio-8080-exec-3] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-24T08:37:42.229+01:00  INFO 6834 --- [pricewatch] [http-nio-8080-exec-3] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-09-24T08:37:42.232+01:00  INFO 6834 --- [pricewatch] [http-nio-8080-exec-3] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2026-09-24T08:37:54.421+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-6] c.t.p.service.ExchangeRateService        : No exchange rate for currency UNKNOWN (first seen on listing null) — prices in UNKNOWN are stored but left out of every USD comparison, so the API will report them as null. Add UNKNOWN to the quotes list in SchedulerScraper.scrapeCurrency().
+2026-09-24T08:38:10.310+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:12.930+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:16.938+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:17.138+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 34 (https://www.amazon.co.uk/Tower-Casserole-Collection-Non-Stick-Aluminium/dp/B076FH2T9G): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:38:19.146+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:19.970+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 28 (https://www.amazon.co.uk/Dreo-Humidifiers-Supersized-Ultrasonic-Humidifier/dp/B0CCVX6FSD): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:38:21.979+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:22.353+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 25 (https://www.amazon.co.uk/TAPMEI-Larger-Adjustable-Rotation-Compatible-Black/dp/B0DQCDN64H): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:38:24.357+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:38:24.713+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 59 (https://www.amazon.com/dp/B0CMWJSQMB): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:38:26.717+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:38:29.823+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:38:32.442+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-10] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:32.627+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-10] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=204
+2026-09-24T08:38:32.632+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-10] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:38:32.636+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-10] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:38:33.540+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:38:34.611+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:34.808+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=205
+2026-09-24T08:38:34.811+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:38:34.813+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-1] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:38:37.697+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:38:38.436+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-4] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:38.646+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=215
+2026-09-24T08:38:38.647+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:38:38.649+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-4] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:38:40.722+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:38:43.916+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:38:44.707+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : ld+json availability OutOfStock for https://www.bhphotovideo.com/c/product/1790806-REG/ — treating as unavailable
+2026-09-24T08:38:44.709+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 105 (https://www.bhphotovideo.com/c/product/1790806-REG/) — recorded check, no price point
+2026-09-24T08:38:46.716+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:49.384+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:38:54.091+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:38:56.136+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 43 (https://www.amazon.com/Sony-Camera-Content-Creators-Vloggers/dp/B0BHKWZRQ5/ref=prem26_sum_away_grid): com.tameem.pricewatch.scraper.ScrapeException: No buy option and no readable product price for URL: https://www.amazon.com/Sony-Camera-Content-Creators-Vloggers/dp/B0BHKWZRQ5/ref=prem26_sum_away_grid
+2026-09-24T08:38:58.138+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:38:58.646+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : ld+json availability OutOfStock for https://www.currys.co.uk/products/10292207.html — treating as unavailable
+2026-09-24T08:38:58.648+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 219 (https://www.currys.co.uk/products/10292207.html) — recorded check, no price point
+2026-09-24T08:39:00.655+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-24T08:39:03.960+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:39:07.856+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:39:12.780+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:39:16.729+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:39:19.764+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:23.008+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:39:26.859+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-5] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:39:27.189+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.NeweggScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:39:27.458+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-5] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=603
+2026-09-24T08:39:27.460+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-5] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:39:27.462+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-5] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:39:27.769+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 99 (https://www.newegg.com/p/N82E16820147860): com.tameem.pricewatch.scraper.ScrapeException: Page for item 9SIAG5BKTM1255 was returned for requested item N82E16820147860 (https://www.newegg.com/p/N82E16820147860)
+2026-09-24T08:39:29.776+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:30.031+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 29 (https://www.amazon.co.uk/BANKERS-Strong-SmoothMove-Cardboard-Handles/dp/B0B3JGDY8D/ref=pd_rhf_gw_s_pd_sbs_rvi_d_sccl_1_3/520-5720121-7464805): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:39:32.038+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:34.516+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:34.704+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 37 (https://www.amazon.co.uk/Garmin-Forerunner-Lightweight-Smartwatch-Touchscreen/dp/B0CT3SGHXL): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:39:36.710+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:36.891+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 45 (https://www.amazon.co.uk/SteelSeries-Aerox-Wireless-Gen-Super-Light/dp/B0GNM9S22Q): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:39:38.899+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:39.158+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 58 (https://www.amazon.co.uk/dp/B0CMWJSQMB): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:39:41.166+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:41.378+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 125 (https://www.amazon.co.uk/dp/B07MB6G74R): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:39:43.384+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.tameem.pricewatch.scraper.IkeaScraper  : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:39:44.556+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.tameem.pricewatch.scraper.IkeaScraper  : ld+json availability OutOfStock for https://www.ikea.com/ae/en/p/-99513930/ — treating as unavailable
+2026-09-24T08:39:44.559+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 160 (https://www.ikea.com/ae/en/p/-99513930/) — recorded check, no price point
+2026-09-24T08:39:46.570+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:46.762+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 162 (https://www.amazon.co.uk/dp/B0FYFTRX8Z): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:39:48.769+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:39:52.709+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:53.272+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : ld+json availability OutOfStock for https://www.currys.co.uk/products/10273350.html — treating as unavailable
+2026-09-24T08:39:53.275+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 153 (https://www.currys.co.uk/products/10273350.html) — recorded check, no price point
+2026-09-24T08:39:55.286+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:39:55.558+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 154 (https://www.currys.co.uk/products/10245870.html): com.tameem.pricewatch.scraper.ScrapeException: Failed to fetch page: https://www.currys.co.uk/products/10245870.html
+2026-09-24T08:39:57.565+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:40:00.055+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:40:04.082+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:40:07.017+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:40:10.687+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:40:15.164+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:40:18.582+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-6] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:40:18.898+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-6] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=323
+2026-09-24T08:40:18.899+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-6] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:40:18.902+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-6] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:40:19.049+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:40:19.463+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : ld+json availability OutOfStock for https://www.currys.co.uk/products/10290132.html — treating as unavailable
+2026-09-24T08:40:19.465+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 86 (https://www.currys.co.uk/products/10290132.html) — recorded check, no price point
+2026-09-24T08:40:21.478+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:40:21.505+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:40:21.698+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=202
+2026-09-24T08:40:21.698+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:40:21.699+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-7] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:40:25.356+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:40:29.285+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:40:31.339+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 167 (https://www.amazon.com/dp/B0GR4GR5QH) — recorded check, no price point
+2026-09-24T08:40:33.348+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:40:37.138+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:40:37.365+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 171 (https://www.amazon.com/dp/B0C3HCD34R): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:40:39.370+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:40:43.231+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:40:47.239+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:40:51.162+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:40:54.222+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:40:56.718+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:40:56.983+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 175 (https://www.amazon.com/dp/B09ZFD9CBB): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:40:58.989+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:41:02.873+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:03.112+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 253 (https://www.amazon.co.uk/dp/B0FQGBGDRW): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:41:05.119+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:05.294+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 254 (https://www.amazon.co.uk/dp/B09LQRBSZF): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:41:07.300+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:41:11.300+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:11.495+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 164 (https://www.amazon.co.uk/dp/B09CNMLZS3): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:41:13.499+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:13.711+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 158 (https://www.amazon.co.uk/dp/B0G6FF1TTH): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:41:15.717+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:15.904+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 166 (https://www.amazon.co.uk/dp/B0GR4GR5QH): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:41:17.910+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:41:22.162+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:41:23.736+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 126 (https://www.amazon.com/dp/B07MB6G74R) — recorded check, no price point
+2026-09-24T08:41:25.745+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:41:29.812+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:32.586+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:35.400+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:38.046+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:41:42.621+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-24T08:41:45.819+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:49.114+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:41:52.820+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:41:56.555+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:56.839+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 170 (https://www.amazon.co.uk/dp/B0C3HCD34R): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:41:58.844+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:41:59.022+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 151 (https://www.currys.co.uk/products/10290132.html): com.tameem.pricewatch.scraper.ScrapeException: Failed to fetch page: https://www.currys.co.uk/products/10290132.html
+2026-09-24T08:42:01.031+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:42:05.126+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:42:05.352+01:00  WARN 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 40 (https://www.amazon.co.uk/Sony-WH-1000XM6-Cancelling-Bluetooth-Headphones-Black/dp/B0F2TT8Q7M): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:42:07.357+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:42:09.219+01:00 ERROR 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 249 (https://www.amazon.com/dp/B0CFSD4TSQ): org.springframework.orm.ObjectOptimisticLockingFailureException: Row was already updated or deleted by another transaction for entity [com.tameem.pricewatch.entity.ProductListing with id '249']
+2026-09-24T08:42:11.226+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:42:12.267+01:00 ERROR 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 250 (https://www.bhphotovideo.com/c/product/1706293-REG/): org.springframework.orm.ObjectOptimisticLockingFailureException: Row was already updated or deleted by another transaction for entity [com.tameem.pricewatch.entity.ProductListing with id '250']
+2026-09-24T08:42:14.275+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:42:15.069+01:00 ERROR 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 251 (https://www.currys.co.uk/products/10238756.html): org.springframework.orm.ObjectOptimisticLockingFailureException: Row was already updated or deleted by another transaction for entity [com.tameem.pricewatch.entity.ProductListing with id '251']
+2026-09-24T08:42:17.077+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-24T08:42:17.963+01:00 ERROR 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 252 (https://www.jarir.com/sa-en/sony-headsets-588361.html): org.springframework.orm.ObjectOptimisticLockingFailureException: Row was already updated or deleted by another transaction for entity [com.tameem.pricewatch.entity.ProductListing with id '252']
+2026-09-24T08:42:19.970+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.NeweggScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:42:22.532+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:42:26.349+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:42:28.980+01:00 DEBUG 6834 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-24T08:42:30.062+01:00  INFO 6834 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Sweep complete: 83 listings checked, 56 succeeded, 27 failed, 259758ms
+2026-09-24T08:43:16.810+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-8] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:43:17.141+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=339
+2026-09-24T08:43:17.143+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:43:17.145+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-8] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:43:29.080+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:43:30.548+01:00  INFO 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Matched 'Sony WH-1000XM5 Noise-Canceling Wireless Over-Ear Headphones (Black)' on BH_PHOTO — agrees on model, brand
+2026-09-24T08:43:30.548+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:43:33.159+01:00  INFO 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Matched 'SONY WH-1000XM5 Wireless Bluetooth Noise-Cancelling Headphones - Black' on CURRYS — agrees on model, brand
+2026-09-24T08:43:33.160+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:43:35.160+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Skipped 'SONY WH-1000XM6 Wireless Noise Cancellation with AI Noise Reduction Bluetooth & Wired' on FLIPKART — REJECT: model differs: 'WH-1000XM5' vs 'WH-1000XM6'
+2026-09-24T08:43:36.079+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Skipped 'SONY WH1000XM4/BMIN Bluetooth' on FLIPKART — REJECT: model differs: 'WH-1000XM5' vs 'WH1000XM4/BMIN'
+2026-09-24T08:43:36.999+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Skipped 'SONY WH1000XM4/LMIN Bluetooth' on FLIPKART — REJECT: model differs: 'WH-1000XM5' vs 'WH1000XM4/LMIN'
+2026-09-24T08:43:39.150+01:00  INFO 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Matched 'Sony WH-1000XM5 Mark 5 Over-Ear Headphones, Active Noise Cancelling, Bluetooth, USB (Charging), Built-in Microphone, Black' on JARIR — agrees on model, brand
+2026-09-24T08:43:39.151+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:43:39.421+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:43:39.920+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-24T08:50:05.496+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-24T08:50:07.867+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:50:10.516+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Beyerdynamic DT 1770 PRO MKII Over-Ear Closed-Back Studio Monitoring Headphones' on BH_PHOTO — REJECT: model differs: 'Mark 5' vs 'DT 1770 PRO MKII'
+2026-09-24T08:50:10.517+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:50:12.873+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.matching.CrossStoreDiscovery       : Skipped 'SONY WH-1000XM5 Wireless Bluetooth Noise-Cancelling Headphones - Silver' on CURRYS — REJECT: model differs: 'Mark 5' vs 'WH-1000XM5'
+2026-09-24T08:50:12.874+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.matching.CrossStoreDiscovery       : Skipped 'SONY WH-1000XM5 Wireless Bluetooth Noise-Cancelling Headphones - Black' on CURRYS — REJECT: model differs: 'Mark 5' vs 'WH-1000XM5'
+2026-09-24T08:50:13.506+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.matching.CrossStoreDiscovery       : Skipped 'SONY WH-1000XM6 Wireless Bluetooth Noise-Cancelling Headphones - Black' on CURRYS — REJECT: model differs: 'Mark 5' vs 'WH-1000XM6'
+2026-09-24T08:50:13.507+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:50:26.117+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.matching.CrossStoreDiscovery       : Skipped 'TRIGGR Trinity 2 with Dual Pairing, ENC, Fast Charge, 50H Battery, Rubber Finish, v5.3 Bluetooth' on FLIPKART — REJECT: model differs: 'Mark 5' vs 'Trinity 2'
+2026-09-24T08:50:27.105+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Number Headit Pro 100H Battery, Dual Pairing, 40mm Hi-Bass Drivers, AI ENC, 35ms Gaming Bluetooth' on FLIPKART — REJECT: model differs: 'Mark 5' vs 'Pro 100H'
+2026-09-24T08:50:29.445+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.matching.CrossStoreDiscovery       : Skipped 'CYBERLABS P9 Wireless, 5.1 Bluetooth Headphones Over Ear With Adjustable DesignC165 Bluetooth' on FLIPKART — REJECT: model differs: 'Mark 5' vs 'P9'
+2026-09-24T08:50:30.794+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'KVARNVEN Ergonomic pillow, side/back sleeper' — shares nothing with the query
+2026-09-24T08:50:30.794+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'RAGGARV Neck/lumbar pillow' — shares nothing with the query
+2026-09-24T08:50:30.797+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'NORDSTÅLÖRT Ergonomic pillow, side/back sleeper' — shares nothing with the query
+2026-09-24T08:50:30.798+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'RAMSLÖKSMAL Ergonomic pillow, multi position' — shares nothing with the query
+2026-09-24T08:50:30.798+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'SOLSKYDD Portable Bluetooth speaker' — shares nothing with the query
+2026-09-24T08:50:30.798+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'NATTBAD Bluetooth speaker' — shares nothing with the query
+2026-09-24T08:50:30.798+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.matching.CrossStoreDiscovery       : Skipping search on JarirScraper — its marketplaces are already attached
+2026-09-24T08:50:30.808+01:00  INFO 6834 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.controller.ProductController       : BENCHMARK trackByName tookMs=25318
+2026-09-24T08:51:05.503+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-3] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:51:06.410+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-3] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=910
+2026-09-24T08:51:06.411+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-3] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:51:06.417+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-3] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:51:17.574+01:00 DEBUG 6834 --- [pricewatch] [http-nio-8080-exec-5] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:51:17.775+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-5] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=205
+2026-09-24T08:51:17.776+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-5] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:51:17.777+01:00  WARN 6834 --- [pricewatch] [http-nio-8080-exec-5] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:51:36.096+01:00  INFO 6834 --- [pricewatch] [SpringApplicationShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-24T08:51:36.097+01:00  INFO 6834 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-24T08:51:36.099+01:00  INFO 6834 --- [pricewatch] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:51:36.100+01:00  INFO 6834 --- [pricewatch] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-09-24T08:51:36.100+01:00  INFO 6834 --- [pricewatch] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-09-24T08:51:37.029+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 11751 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T08:51:37.030+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T08:51:37.030+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T08:51:37.045+01:00  INFO 11751 --- [pricewatch] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-09-24T08:51:37.045+01:00  INFO 11751 --- [pricewatch] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-09-24T08:51:37.381+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T08:51:37.401+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 16 ms. Found 5 JPA repository interfaces.
+2026-09-24T08:51:37.576+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T08:51:37.581+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T08:51:37.581+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T08:51:37.592+01:00  INFO 11751 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 547 ms
+2026-09-24T08:51:37.609+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T08:51:37.654+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T08:51:37.678+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.1.Final
+2026-09-24T08:51:37.821+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T08:51:37.833+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-09-24T08:51:37.894+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3ac9ab37
+2026-09-24T08:51:37.894+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-09-24T08:51:37.924+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T08:51:38.285+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T08:51:38.321+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:51:38.357+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-09-24T08:51:38.548+01:00  WARN 11751 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: cba61b2b-69f3-4ee9-ba4b-033e9b7bc4a0
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T08:51:38.551+01:00  INFO 11751 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T08:51:38.689+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-24T08:51:38.696+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 1.807 seconds (process running for 2.044)
+2026-09-24T08:51:43.388+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-24T08:51:43.389+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-09-24T08:51:43.391+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-09-24T08:51:43.619+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:51:48.341+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:51:52.997+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:51:54.025+01:00  WARN 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.service.TrackedProductService      : Sibling scrape failed for AMAZON_US (https://amazon.com/dp/B0FWCDLTSV): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:51:55.632+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:51:57.563+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Lenovo 11" Idea Tab Multi-Touch 128GB Tablet' on BH_PHOTO — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128GB'
+2026-09-24T08:51:58.395+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Samsung 11" Galaxy Tab A11+ Tablet (Wi-Fi + 5G, Verizon, Gray)' on BH_PHOTO — REJECT: brand differs: 'Gemini' vs 'Samsung'
+2026-09-24T08:51:59.007+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Lenovo 10.95" ThinkTab X11 Gen 1 128GB Tablet (5G + Wi-Fi)' on BH_PHOTO — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128GB'
+2026-09-24T08:51:59.008+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:52:01.813+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'LENOVO Idea Tab 11" Tablet - 128 GB, Luna Grey' on CURRYS — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128 GB'
+2026-09-24T08:52:02.696+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'TCL TAB 11 FE Tablet - 128 GB, Grey' on CURRYS — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128 GB'
+2026-09-24T08:52:03.695+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'SAMSUNG Galaxy Tab A11+ 11" Tablet - 128 GB, Grey' on CURRYS — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128 GB'
+2026-09-24T08:52:03.698+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:52:07.744+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'MOTOROLA pad 70 Groove 8 GB RAM 256 GB ROM 12.1 inch with Wi-Fi Only Gaming Tablet (PANTONE Blue Surf)' on FLIPKART — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '8 GB RAM, 256 GB ROM'
+2026-09-24T08:52:08.801+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'MOTOROLA pad 60 neo 8 GB RAM 128 GB ROM 11 inch with Wi-Fi Only MediaTek Dimensity 6300 Tablet (Malibu Blue)' on FLIPKART — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '8 GB RAM, 128 GB ROM'
+2026-09-24T08:52:10.069+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'MOTOROLA Pad 60 Neo 4 GB RAM 128 GB ROM 11 inch with Wi-Fi Only MediaTek Dimensity 6300 Tablet (Malibu Blue)' on FLIPKART — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '4 GB RAM, 128 GB ROM'
+2026-09-24T08:52:10.770+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'HAVREHOJ Holder for tablet' — shares nothing with the query
+2026-09-24T08:52:10.772+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'ÖVNING Desk accessories organizer' — shares nothing with the query
+2026-09-24T08:52:10.772+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'RESARÖ Mobile drop-leaf table w storage' — shares nothing with the query
+2026-09-24T08:52:10.773+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'STENERIK Laptop support' — shares nothing with the query
+2026-09-24T08:52:10.773+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'VIVALLA Tablet stand' — shares nothing with the query
+2026-09-24T08:52:10.773+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'VIVALLA Tablet stand' — shares nothing with the query
+2026-09-24T08:52:11.126+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.pricewatch.scraper.JarirScraper      : No Jarir hits for 'Tablet,11 Inch Android 16' — narrowing the query
+2026-09-24T08:52:12.020+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Xiaomi Pad 6 Tablet - Wi-Fi, 11", 256 GB, Octa Core, Champagne' on JARIR — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '256 GB'
+2026-09-24T08:52:12.987+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Xiaomi Pad 6 Tablet - Wi-Fi, 11", 256 GB, Octa Core, Gravity Grey' on JARIR — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '256 GB'
+2026-09-24T08:52:13.744+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Xiaomi Pad 6 Tablet - Wi-Fi, 11", 256 GB, Octa Core, Mist Blue' on JARIR — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '256 GB'
+2026-09-24T08:52:13.804+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-1] c.t.p.controller.ProductController       : BENCHMARK trackByName tookMs=30328
+2026-09-24T08:52:38.725+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:52:39.058+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 34 (https://www.amazon.co.uk/Tower-Casserole-Collection-Non-Stick-Aluminium/dp/B076FH2T9G): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:52:41.063+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:52:41.282+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 28 (https://www.amazon.co.uk/Dreo-Humidifiers-Supersized-Ultrasonic-Humidifier/dp/B0CCVX6FSD): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:52:43.289+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:52:43.489+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 25 (https://www.amazon.co.uk/TAPMEI-Larger-Adjustable-Rotation-Compatible-Black/dp/B0DQCDN64H): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:52:45.498+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:52:49.650+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:52:49.897+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 43 (https://www.amazon.com/Sony-Camera-Content-Creators-Vloggers/dp/B0BHKWZRQ5/ref=prem26_sum_away_grid): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:52:51.907+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.NeweggScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:52:52.903+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 99 (https://www.newegg.com/p/N82E16820147860): com.tameem.pricewatch.scraper.ScrapeException: Page for item 9SIAG5BKTM1255 was returned for requested item N82E16820147860 (https://www.newegg.com/p/N82E16820147860)
+2026-09-24T08:52:54.911+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:52:55.117+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 29 (https://www.amazon.co.uk/BANKERS-Strong-SmoothMove-Cardboard-Handles/dp/B0B3JGDY8D/ref=pd_rhf_gw_s_pd_sbs_rvi_d_sccl_1_3/520-5720121-7464805): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:52:57.125+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:52:57.407+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 37 (https://www.amazon.co.uk/Garmin-Forerunner-Lightweight-Smartwatch-Touchscreen/dp/B0CT3SGHXL): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:52:59.412+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:52:59.610+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 45 (https://www.amazon.co.uk/SteelSeries-Aerox-Wireless-Gen-Super-Light/dp/B0GNM9S22Q): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:01.618+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:02.197+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 58 (https://www.amazon.co.uk/dp/B0CMWJSQMB): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:04.204+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:04.451+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 125 (https://www.amazon.co.uk/dp/B07MB6G74R): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:06.459+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:06.703+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 162 (https://www.amazon.co.uk/dp/B0FYFTRX8Z): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:08.710+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:11.355+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:53:11.586+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 171 (https://www.amazon.com/dp/B0C3HCD34R): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:13.592+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:53:19.507+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:20.208+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 253 (https://www.amazon.co.uk/dp/B0FQGBGDRW): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:22.216+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:22.998+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 254 (https://www.amazon.co.uk/dp/B09LQRBSZF): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:25.001+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:25.192+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 164 (https://www.amazon.co.uk/dp/B09CNMLZS3): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:27.199+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:27.389+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 158 (https://www.amazon.co.uk/dp/B0G6FF1TTH): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:29.392+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:29.665+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 166 (https://www.amazon.co.uk/dp/B0GR4GR5QH): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:31.672+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:31.886+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 170 (https://www.amazon.co.uk/dp/B0C3HCD34R): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:33.891+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:34.471+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : ld+json availability OutOfStock for https://www.currys.co.uk/products/10290132.html — treating as unavailable
+2026-09-24T08:53:34.475+01:00  INFO 11751 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 151 (https://www.currys.co.uk/products/10290132.html) — recorded check, no price point
+2026-09-24T08:53:36.487+01:00 DEBUG 11751 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:36.642+01:00  WARN 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 40 (https://www.amazon.co.uk/Sony-WH-1000XM6-Cancelling-Bluetooth-Headphones-Black/dp/B0F2TT8Q7M): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:36.642+01:00  INFO 11751 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Sweep complete: 23 listings checked, 4 succeeded, 19 failed, 57917ms
+2026-09-24T08:53:47.796+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:47.952+01:00  WARN 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.service.TrackedProductService      : Refresh failed for listing 262 (https://www.amazon.co.uk/dp/B0FWCDLTSV): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:53:47.954+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:53:49.752+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:53:50.465+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Lenovo 11" Idea Tab Multi-Touch 128GB Tablet' on BH_PHOTO — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128GB'
+2026-09-24T08:53:50.465+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Samsung 11" Galaxy Tab A11+ Tablet (Wi-Fi + 5G, Verizon, Gray)' on BH_PHOTO — REJECT: brand differs: 'Gemini' vs 'Samsung'
+2026-09-24T08:53:50.465+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Lenovo 10.95" ThinkTab X11 Gen 1 128GB Tablet (5G + Wi-Fi)' on BH_PHOTO — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128GB'
+2026-09-24T08:53:50.465+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:53:51.550+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'LENOVO Idea Tab 11" Tablet - 128 GB, Luna Grey' on CURRYS — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128 GB'
+2026-09-24T08:53:51.550+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'TCL TAB 11 FE Tablet - 128 GB, Grey' on CURRYS — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128 GB'
+2026-09-24T08:53:51.550+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'SAMSUNG Galaxy Tab A11+ 11" Tablet - 128 GB, Grey' on CURRYS — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '128 GB'
+2026-09-24T08:53:51.550+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:53:53.104+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'MOTOROLA pad 70 Groove 8 GB RAM 256 GB ROM 12.1 inch with Wi-Fi Only Gaming Tablet (PANTONE Blue Surf)' on FLIPKART — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '8 GB RAM, 256 GB ROM'
+2026-09-24T08:53:53.104+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'MOTOROLA pad 60 neo 8 GB RAM 128 GB ROM 11 inch with Wi-Fi Only MediaTek Dimensity 6300 Tablet (Malibu Blue)' on FLIPKART — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '8 GB RAM, 128 GB ROM'
+2026-09-24T08:53:53.104+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'MOTOROLA Pad 60 Neo 4 GB RAM 128 GB ROM 11 inch with Wi-Fi Only MediaTek Dimensity 6300 Tablet (Malibu Blue)' on FLIPKART — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '4 GB RAM, 128 GB ROM'
+2026-09-24T08:53:54.286+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'HAVREHOJ Holder for tablet' — shares nothing with the query
+2026-09-24T08:53:54.286+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'ÖVNING Desk accessories organizer' — shares nothing with the query
+2026-09-24T08:53:54.287+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'RESARÖ Mobile drop-leaf table w storage' — shares nothing with the query
+2026-09-24T08:53:54.287+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'STENERIK Laptop support' — shares nothing with the query
+2026-09-24T08:53:54.287+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'VIVALLA Tablet stand' — shares nothing with the query
+2026-09-24T08:53:54.287+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'VIVALLA Tablet stand' — shares nothing with the query
+2026-09-24T08:53:54.661+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.pricewatch.scraper.JarirScraper      : No Jarir hits for 'Tablet,11 Inch Android 16' — narrowing the query
+2026-09-24T08:53:54.921+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Xiaomi Pad 6 Tablet - Wi-Fi, 11", 256 GB, Octa Core, Champagne' on JARIR — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '256 GB'
+2026-09-24T08:53:54.921+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Xiaomi Pad 6 Tablet - Wi-Fi, 11", 256 GB, Octa Core, Gravity Grey' on JARIR — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '256 GB'
+2026-09-24T08:53:54.922+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-4] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Xiaomi Pad 6 Tablet - Wi-Fi, 11", 256 GB, Octa Core, Mist Blue' on JARIR — REJECT: capacity differs: '24GB RAM, 128GB ROM' vs '256 GB'
+2026-09-24T08:54:24.408+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-7] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:54:24.712+01:00  WARN 11751 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.controller.ProductController       : BENCHMARK trackByName FAILED tookMs=313
+2026-09-24T08:54:24.714+01:00  WARN 11751 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.controller.ApiExceptionHandler     : Scrape failed: com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:54:24.715+01:00  WARN 11751 --- [pricewatch] [http-nio-8080-exec-7] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA]
+2026-09-24T08:54:32.403+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:54:42.715+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:54:43.185+01:00  WARN 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.service.TrackedProductService      : Sibling scrape failed for AMAZON_UK (https://amazon.co.uk/dp/B0CFSD4TSQ): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T08:54:45.190+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T08:54:48.584+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:54:50.731+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.matching.CrossStoreDiscovery       : Matched 'Sony WH-1000XM5 Noise-Canceling Wireless Over-Ear Headphones (Black)' on BH_PHOTO — agrees on model, brand
+2026-09-24T08:54:50.732+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:54:53.054+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.matching.CrossStoreDiscovery       : Matched 'SONY WH-1000XM5 Wireless Bluetooth Noise-Cancelling Headphones - Black' on CURRYS — agrees on model, brand
+2026-09-24T08:54:53.055+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T08:54:56.245+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.matching.CrossStoreDiscovery       : Skipped 'FRONY SH12 Premium (Bluetooth Headset) with Noise Cancelation Technology_SRR425 Bluetooth' on FLIPKART — REJECT: model differs: 'WH-1000XM5' vs 'SH12 Premium SRR425'
+2026-09-24T08:54:57.436+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Gupta Engineering 01 P47 Wireless Bluetooth Headphones with Adjustable Headband || StereoD119 Bluetooth without Mic' on FLIPKART — REJECT: model differs: 'WH-1000XM5' vs '01 P47, StereoD119'
+2026-09-24T08:54:58.413+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Gupta Engineering 01 P47 Wireless Bluetooth Headphones with Adjustable Headband || StereoD106 Bluetooth without Mic' on FLIPKART — REJECT: model differs: 'WH-1000XM5' vs '01 P47 StereoD106'
+2026-09-24T08:54:59.951+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'VAPPEBY Bluetooth speakers' — shares nothing with the query
+2026-09-24T08:54:59.952+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'VÄSTMÄRKE Wireless charger' — shares nothing with the query
+2026-09-24T08:54:59.952+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'BLOMPRAKT Bluetooth speaker lamp' — shares nothing with the query
+2026-09-24T08:54:59.952+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'SOLSKYDD Bluetooth speaker' — shares nothing with the query
+2026-09-24T08:54:59.952+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'BADKRUKA Bluetooth speaker' — shares nothing with the query
+2026-09-24T08:54:59.952+01:00 DEBUG 11751 --- [pricewatch] [http-nio-8080-exec-8] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'SOLSKYDD Portable Bluetooth speaker' — shares nothing with the query
+2026-09-24T08:55:01.790+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.matching.CrossStoreDiscovery       : Matched 'Sony WH-1000XM5 Mark 5 Over-Ear Headphones, Active Noise Cancelling, Bluetooth, USB (Charging), Built-in Microphone, Black' on JARIR — agrees on model, brand
+2026-09-24T08:55:01.793+01:00 DEBUG 11751 --- [pricewatch] [pool-2-thread-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T08:55:01.793+01:00 DEBUG 11751 --- [pricewatch] [pool-2-thread-2] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T08:55:01.795+01:00 DEBUG 11751 --- [pricewatch] [pool-2-thread-3] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-24T08:55:02.334+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.service.TrackedProductService      : Attached discovered listing on BH_PHOTO to product 133
+2026-09-24T08:55:02.338+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.service.TrackedProductService      : Attached discovered listing on CURRYS to product 133
+2026-09-24T08:55:02.344+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.service.TrackedProductService      : Attached discovered listing on JARIR to product 133
+2026-09-24T08:55:02.363+01:00  INFO 11751 --- [pricewatch] [http-nio-8080-exec-8] c.t.p.controller.ProductController       : BENCHMARK trackByName tookMs=29967
+2026-09-24T08:59:20.359+01:00  INFO 11751 --- [pricewatch] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 81 class path changes (0 additions, 1 deletion, 80 modifications)
+2026-09-24T08:59:20.375+01:00  INFO 11751 --- [pricewatch] [Thread-1] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-24T08:59:20.380+01:00  INFO 11751 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-24T08:59:20.387+01:00  INFO 11751 --- [pricewatch] [Thread-1] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:59:20.390+01:00  INFO 11751 --- [pricewatch] [Thread-1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-09-24T08:59:20.391+01:00  INFO 11751 --- [pricewatch] [Thread-1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-09-24T08:59:20.463+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 11751 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T08:59:20.463+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T08:59:20.463+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T08:59:20.520+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T08:59:20.525+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 4 ms. Found 5 JPA repository interfaces.
+2026-09-24T08:59:20.563+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T08:59:20.563+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T08:59:20.563+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T08:59:20.567+01:00  INFO 11751 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 103 ms
+2026-09-24T08:59:20.573+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T08:59:20.586+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T08:59:20.593+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T08:59:20.594+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-09-24T08:59:20.613+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@1efcea37
+2026-09-24T08:59:20.613+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-09-24T08:59:20.618+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T08:59:20.650+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T08:59:20.674+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:59:20.716+01:00  WARN 11751 --- [pricewatch] [restartedMain] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'productController' defined in file [/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes/com/tameem/pricewatch/controller/ProductController.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'trackedProductService' defined in file [/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes/com/tameem/pricewatch/service/TrackedProductService.class]: Unsatisfied dependency expressed through constructor parameter 9: No qualifying bean of type 'java.util.concurrent.ExecutorService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+2026-09-24T08:59:20.716+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:59:20.717+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-09-24T08:59:20.772+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-09-24T08:59:20.773+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2026-09-24T08:59:20.775+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-09-24T08:59:20.782+01:00 ERROR 11751 --- [pricewatch] [restartedMain] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 9 of constructor in com.tameem.pricewatch.service.TrackedProductService required a bean of type 'java.util.concurrent.ExecutorService' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'java.util.concurrent.ExecutorService' in your configuration.
+
+2026-09-24T08:59:37.405+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 11751 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T08:59:37.405+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T08:59:37.406+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T08:59:37.468+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T08:59:37.472+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 3 ms. Found 5 JPA repository interfaces.
+2026-09-24T08:59:37.499+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T08:59:37.499+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T08:59:37.499+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T08:59:37.502+01:00  INFO 11751 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 95 ms
+2026-09-24T08:59:37.507+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T08:59:37.517+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T08:59:37.522+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T08:59:37.523+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-09-24T08:59:37.540+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@ef2e7d6
+2026-09-24T08:59:37.540+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-09-24T08:59:37.543+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T08:59:37.575+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T08:59:37.601+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:59:37.633+01:00  WARN 11751 --- [pricewatch] [restartedMain] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'productController' defined in file [/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes/com/tameem/pricewatch/controller/ProductController.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'trackedProductService' defined in file [/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes/com/tameem/pricewatch/service/TrackedProductService.class]: Unsatisfied dependency expressed through constructor parameter 9: No qualifying bean of type 'java.util.concurrent.ExecutorService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+2026-09-24T08:59:37.634+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T08:59:37.634+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+2026-09-24T08:59:37.634+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
+2026-09-24T08:59:37.634+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2026-09-24T08:59:37.637+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-09-24T08:59:37.638+01:00 ERROR 11751 --- [pricewatch] [restartedMain] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 9 of constructor in com.tameem.pricewatch.service.TrackedProductService required a bean of type 'java.util.concurrent.ExecutorService' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'java.util.concurrent.ExecutorService' in your configuration.
+
+2026-09-24T09:02:04.909+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 11751 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T09:02:04.910+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T09:02:04.910+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T09:02:04.974+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T09:02:04.979+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 4 ms. Found 5 JPA repository interfaces.
+2026-09-24T09:02:05.008+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T09:02:05.009+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T09:02:05.009+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T09:02:05.012+01:00  INFO 11751 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 101 ms
+2026-09-24T09:02:05.018+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T09:02:05.028+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T09:02:05.036+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T09:02:05.036+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+2026-09-24T09:02:05.062+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection org.postgresql.jdbc.PgConnection@445d7f05
+2026-09-24T09:02:05.062+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+2026-09-24T09:02:05.067+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T09:02:05.097+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T09:02:05.119+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:02:05.173+01:00  WARN 11751 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 5206e369-07dd-44c0-a3c5-e09f533dba8b
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T09:02:05.173+01:00  INFO 11751 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T09:02:05.222+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-24T09:02:05.223+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 0.329 seconds (process running for 628.571)
+2026-09-24T09:02:05.224+01:00  INFO 11751 --- [pricewatch] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-09-24T09:02:15.720+01:00  INFO 11751 --- [pricewatch] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 3 class path changes (0 additions, 0 deletions, 3 modifications)
+2026-09-24T09:02:15.725+01:00  INFO 11751 --- [pricewatch] [Thread-5] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-24T09:02:15.727+01:00  INFO 11751 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-24T09:02:15.729+01:00  INFO 11751 --- [pricewatch] [Thread-5] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:02:15.730+01:00  INFO 11751 --- [pricewatch] [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown initiated...
+2026-09-24T09:02:15.739+01:00  INFO 11751 --- [pricewatch] [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown completed.
+2026-09-24T09:02:15.824+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 11751 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T09:02:15.824+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T09:02:15.824+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T09:02:15.875+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T09:02:15.879+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 3 ms. Found 5 JPA repository interfaces.
+2026-09-24T09:02:15.907+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T09:02:15.907+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T09:02:15.907+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T09:02:15.911+01:00  INFO 11751 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 86 ms
+2026-09-24T09:02:15.916+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T09:02:15.924+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T09:02:15.931+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T09:02:15.931+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Starting...
+2026-09-24T09:02:15.947+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-5 - Added connection org.postgresql.jdbc.PgConnection@31ec7d0d
+2026-09-24T09:02:15.947+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Start completed.
+2026-09-24T09:02:15.952+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T09:02:15.978+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T09:02:16.000+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:02:16.061+01:00  WARN 11751 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: dcfa0607-7908-4b1a-85eb-4cb64a7c9bc6
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T09:02:16.062+01:00  INFO 11751 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T09:02:16.108+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-24T09:02:16.109+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 0.292 seconds (process running for 639.457)
+2026-09-24T09:02:16.109+01:00  INFO 11751 --- [pricewatch] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-09-24T09:02:39.133+01:00  INFO 11751 --- [pricewatch] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 2 class path changes (0 additions, 0 deletions, 2 modifications)
+2026-09-24T09:02:39.136+01:00  INFO 11751 --- [pricewatch] [Thread-15] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-24T09:02:39.138+01:00  INFO 11751 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-24T09:02:39.140+01:00  INFO 11751 --- [pricewatch] [Thread-15] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:02:39.140+01:00  INFO 11751 --- [pricewatch] [Thread-15] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown initiated...
+2026-09-24T09:02:39.141+01:00  INFO 11751 --- [pricewatch] [Thread-15] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown completed.
+2026-09-24T09:02:39.194+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 11751 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T09:02:39.194+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T09:02:39.194+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T09:02:39.246+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T09:02:39.251+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 4 ms. Found 5 JPA repository interfaces.
+2026-09-24T09:02:39.278+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T09:02:39.278+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T09:02:39.278+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T09:02:39.282+01:00  INFO 11751 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 87 ms
+2026-09-24T09:02:39.287+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T09:02:39.296+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T09:02:39.303+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T09:02:39.303+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Starting...
+2026-09-24T09:02:39.315+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-6 - Added connection org.postgresql.jdbc.PgConnection@24621017
+2026-09-24T09:02:39.315+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Start completed.
+2026-09-24T09:02:39.320+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T09:02:39.343+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T09:02:39.364+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:02:39.421+01:00  WARN 11751 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: da3abedd-0ac7-4a50-ad0f-34519f45ffaf
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T09:02:39.422+01:00  INFO 11751 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T09:02:39.462+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-24T09:02:39.463+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 0.276 seconds (process running for 662.811)
+2026-09-24T09:02:39.463+01:00  INFO 11751 --- [pricewatch] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-09-24T09:02:46.310+01:00  INFO 11751 --- [pricewatch] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 2 class path changes (0 additions, 0 deletions, 2 modifications)
+2026-09-24T09:02:46.317+01:00  INFO 11751 --- [pricewatch] [Thread-19] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-24T09:02:46.320+01:00  INFO 11751 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-24T09:02:46.324+01:00  INFO 11751 --- [pricewatch] [Thread-19] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:02:46.326+01:00  INFO 11751 --- [pricewatch] [Thread-19] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown initiated...
+2026-09-24T09:02:46.327+01:00  INFO 11751 --- [pricewatch] [Thread-19] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown completed.
+2026-09-24T09:02:46.409+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 11751 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T09:02:46.411+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T09:02:46.411+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T09:02:46.457+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T09:02:46.462+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 4 ms. Found 5 JPA repository interfaces.
+2026-09-24T09:02:46.493+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T09:02:46.493+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T09:02:46.494+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T09:02:46.497+01:00  INFO 11751 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 85 ms
+2026-09-24T09:02:46.502+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T09:02:46.511+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T09:02:46.517+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T09:02:46.518+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Starting...
+2026-09-24T09:02:46.538+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-7 - Added connection org.postgresql.jdbc.PgConnection@2705e7cf
+2026-09-24T09:02:46.538+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Start completed.
+2026-09-24T09:02:46.546+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T09:02:46.576+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T09:02:46.595+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:02:46.658+01:00  WARN 11751 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: d34e2bba-e280-4ce5-939f-bea1c20ed7a5
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T09:02:46.658+01:00  INFO 11751 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T09:02:46.702+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-24T09:02:46.704+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 0.302 seconds (process running for 670.052)
+2026-09-24T09:02:46.704+01:00  INFO 11751 --- [pricewatch] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-09-24T09:02:59.208+01:00  INFO 11751 --- [pricewatch] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 2 class path changes (0 additions, 0 deletions, 2 modifications)
+2026-09-24T09:02:59.210+01:00  INFO 11751 --- [pricewatch] [Thread-23] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-24T09:02:59.213+01:00  INFO 11751 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-24T09:02:59.216+01:00  INFO 11751 --- [pricewatch] [Thread-23] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:02:59.216+01:00  INFO 11751 --- [pricewatch] [Thread-23] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Shutdown initiated...
+2026-09-24T09:02:59.217+01:00  INFO 11751 --- [pricewatch] [Thread-23] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Shutdown completed.
+2026-09-24T09:02:59.275+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 11751 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T09:02:59.275+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T09:02:59.275+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T09:02:59.325+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T09:02:59.330+01:00  INFO 11751 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 4 ms. Found 5 JPA repository interfaces.
+2026-09-24T09:02:59.356+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T09:02:59.356+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T09:02:59.356+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T09:02:59.359+01:00  INFO 11751 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 83 ms
+2026-09-24T09:02:59.364+01:00 DEBUG 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T09:02:59.372+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T09:02:59.378+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T09:02:59.378+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Starting...
+2026-09-24T09:02:59.391+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-8 - Added connection org.postgresql.jdbc.PgConnection@4d2d7a68
+2026-09-24T09:02:59.391+01:00  INFO 11751 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Start completed.
+2026-09-24T09:02:59.397+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T09:02:59.418+01:00  INFO 11751 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T09:02:59.438+01:00  INFO 11751 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:02:59.494+01:00  WARN 11751 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 48b57f33-81de-4347-b7ff-56c94e696c10
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T09:02:59.495+01:00  INFO 11751 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T09:02:59.535+01:00  INFO 11751 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-24T09:02:59.536+01:00  INFO 11751 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 0.268 seconds (process running for 682.885)
+2026-09-24T09:02:59.537+01:00  INFO 11751 --- [pricewatch] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-09-24T09:03:01.516+01:00  INFO 11751 --- [pricewatch] [SpringApplicationShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-24T09:03:01.517+01:00  INFO 11751 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-24T09:03:01.518+01:00  INFO 11751 --- [pricewatch] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:03:01.518+01:00  INFO 11751 --- [pricewatch] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Shutdown initiated...
+2026-09-24T09:03:01.519+01:00  INFO 11751 --- [pricewatch] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Shutdown completed.
+2026-09-24T09:11:27.018+01:00  INFO 15070 --- [pricewatch] [main] c.t.p.PricewatchApplicationTests         : Starting PricewatchApplicationTests using Java 26.0.1 with PID 15070 (started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T09:11:27.019+01:00 DEBUG 15070 --- [pricewatch] [main] c.t.p.PricewatchApplicationTests         : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T09:11:27.019+01:00  INFO 15070 --- [pricewatch] [main] c.t.p.PricewatchApplicationTests         : The following 1 profile is active: "secrets"
+2026-09-24T09:11:27.253+01:00  INFO 15070 --- [pricewatch] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T09:11:27.276+01:00  INFO 15070 --- [pricewatch] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 20 ms. Found 5 JPA repository interfaces.
+2026-09-24T09:11:27.441+01:00  INFO 15070 --- [pricewatch] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T09:11:27.458+01:00  INFO 15070 --- [pricewatch] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.1.Final
+2026-09-24T09:11:27.587+01:00  INFO 15070 --- [pricewatch] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T09:11:27.597+01:00  INFO 15070 --- [pricewatch] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-09-24T09:11:27.677+01:00  INFO 15070 --- [pricewatch] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@9976b27
+2026-09-24T09:11:27.677+01:00  INFO 15070 --- [pricewatch] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-09-24T09:11:27.707+01:00  INFO 15070 --- [pricewatch] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T09:11:28.087+01:00  INFO 15070 --- [pricewatch] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T09:11:28.129+01:00  INFO 15070 --- [pricewatch] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:11:28.171+01:00  INFO 15070 --- [pricewatch] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-09-24T09:11:28.401+01:00  WARN 15070 --- [pricewatch] [main] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 70dc7a5d-fed5-4beb-81e5-733516a69baf
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T09:11:28.404+01:00  INFO 15070 --- [pricewatch] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T09:11:28.579+01:00  INFO 15070 --- [pricewatch] [main] c.t.p.PricewatchApplicationTests         : Started PricewatchApplicationTests in 1.656 seconds (process running for 3.027)
+2026-09-24T09:11:28.799+01:00  WARN 15070 --- [pricewatch] [main] c.t.p.controller.ApiExceptionHandler     : Constraint violation: org.springframework.dao.DataIntegrityViolationException: could not execute statement [ERROR: duplicate key value violates unique constraint "ukcupyehhxn6mo94km94jsdlywj" Detail: Key (tracked_product_id, marketplace)=(44, AMAZON_UK) already exists.]
+2026-09-24T09:11:28.801+01:00  WARN 15070 --- [pricewatch] [main] c.t.p.controller.ApiExceptionHandler     : Constraint violation: org.springframework.dao.DataIntegrityViolationException: could not execute statement [ERROR: duplicate key value violates unique constraint "ukcupyehhxn6mo94km94jsdlywj" Detail: Key (tracked_product_id, marketplace)=(44, AMAZON_UK) already exists.]
+2026-09-24T09:11:29.092+01:00  WARN 15070 --- [pricewatch] [main] c.t.p.service.ExchangeRateService        : No exchange rate for currency PLN (first seen on listing 42) — prices in PLN are stored but left out of every USD comparison, so the API will report them as null. Add PLN to the quotes list in SchedulerScraper.scrapeCurrency().
+2026-09-24T09:11:29.093+01:00  WARN 15070 --- [pricewatch] [main] c.t.p.service.ExchangeRateService        : No exchange rate for currency INR (first seen on listing 1) — prices in INR are stored but left out of every USD comparison, so the API will report them as null. Add INR to the quotes list in SchedulerScraper.scrapeCurrency().
+2026-09-24T09:11:29.100+01:00  INFO 15070 --- [pricewatch] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:11:29.101+01:00  INFO 15070 --- [pricewatch] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-09-24T09:11:29.102+01:00  INFO 15070 --- [pricewatch] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-09-24T09:12:17.076+01:00  INFO 15216 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 15216 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-24T09:12:17.077+01:00 DEBUG 15216 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-24T09:12:17.077+01:00  INFO 15216 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-24T09:12:17.092+01:00  INFO 15216 --- [pricewatch] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-09-24T09:12:17.092+01:00  INFO 15216 --- [pricewatch] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-09-24T09:12:17.328+01:00  INFO 15216 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-24T09:12:17.348+01:00  INFO 15216 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 16 ms. Found 5 JPA repository interfaces.
+2026-09-24T09:12:17.511+01:00  INFO 15216 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-24T09:12:17.516+01:00  INFO 15216 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-24T09:12:17.517+01:00  INFO 15216 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-24T09:12:17.526+01:00  INFO 15216 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 434 ms
+2026-09-24T09:12:17.544+01:00 DEBUG 15216 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-24T09:12:17.588+01:00  INFO 15216 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-24T09:12:17.605+01:00  INFO 15216 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.1.Final
+2026-09-24T09:12:17.731+01:00  INFO 15216 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-24T09:12:17.743+01:00  INFO 15216 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-09-24T09:12:17.842+01:00  INFO 15216 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7c762f73
+2026-09-24T09:12:17.843+01:00  INFO 15216 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-09-24T09:12:17.874+01:00  INFO 15216 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-24T09:12:18.248+01:00  INFO 15216 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-24T09:12:18.282+01:00  INFO 15216 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-24T09:12:18.319+01:00  INFO 15216 --- [pricewatch] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-09-24T09:12:18.485+01:00  WARN 15216 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 6faff4be-3c51-460e-b5fb-fc75d7b8a0a6
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-24T09:12:18.489+01:00  INFO 15216 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-24T09:12:18.631+01:00  INFO 15216 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-24T09:12:18.634+01:00  INFO 15216 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 1.699 seconds (process running for 1.94)
+2026-09-24T09:12:20.323+01:00  INFO 15216 --- [pricewatch] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-24T09:12:20.324+01:00  INFO 15216 --- [pricewatch] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-09-24T09:12:20.325+01:00  INFO 15216 --- [pricewatch] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-09-24T09:12:26.023+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-24T09:12:29.970+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T09:12:32.224+01:00  INFO 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.service.TrackedProductService      : Tracking https://www.amazon.co.uk/dp/B0CFSD4TSQ with no current offer — no initial price point
+2026-09-24T09:12:34.229+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-24T09:12:35.125+01:00  WARN 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.service.TrackedProductService      : Sibling scrape failed for AMAZON_US (https://amazon.com/dp/B0CFSD4TSQ): com.tameem.pricewatch.scraper.ScrapeException: Amazon blocked request with CAPTCHA
+2026-09-24T09:12:36.130+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T09:12:38.296+01:00  INFO 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Matched 'Sony WH-1000XM5 Noise-Canceling Wireless Over-Ear Headphones (Black)' on BH_PHOTO — agrees on model, brand
+2026-09-24T09:12:38.298+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T09:12:40.893+01:00  INFO 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Matched 'SONY WH-1000XM5 Wireless Bluetooth Noise-Cancelling Headphones - Black' on CURRYS — agrees on model, brand
+2026-09-24T09:12:40.896+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-24T09:12:43.518+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Skipped 'FRONY SH12 Premium (Bluetooth Headset) with Noise Cancelation Technology_SRR425 Bluetooth' on FLIPKART — REJECT: model differs: 'WH-1000XM5' vs 'SH12 Premium'
+2026-09-24T09:12:44.223+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Gupta Engineering 01 P47 Wireless Bluetooth Headphones with Adjustable Headband || StereoD119 Bluetooth without Mic' on FLIPKART — REJECT: model differs: 'WH-1000XM5' vs '01 P47 StereoD119'
+2026-09-24T09:12:45.319+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Skipped 'Gupta Engineering 01 P47 Wireless Bluetooth Headphones with Adjustable Headband || StereoD106 Bluetooth without Mic' on FLIPKART — REJECT: model differs: 'WH-1000XM5' vs '01 P47 StereoD106'
+2026-09-24T09:12:45.320+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.tameem.pricewatch.scraper.IkeaScraper  : No proxy for delivery country US — scraping from local egress
+2026-09-24T09:12:45.951+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'VAPPEBY Bluetooth speakers' — shares nothing with the query
+2026-09-24T09:12:45.952+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'VÄSTMÄRKE Wireless charger' — shares nothing with the query
+2026-09-24T09:12:45.952+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'BLOMPRAKT Bluetooth speaker lamp' — shares nothing with the query
+2026-09-24T09:12:45.952+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'SOLSKYDD Bluetooth speaker' — shares nothing with the query
+2026-09-24T09:12:45.952+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'BADKRUKA Bluetooth speaker' — shares nothing with the query
+2026-09-24T09:12:45.952+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.tameem.pricewatch.scraper.IkeaScraper  : Dropping IKEA hit 'SOLSKYDD Portable Bluetooth speaker' — shares nothing with the query
+2026-09-24T09:12:45.953+01:00 DEBUG 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-24T09:12:46.863+01:00  INFO 15216 --- [pricewatch] [http-nio-8080-exec-9] c.t.p.matching.CrossStoreDiscovery       : Matched 'Sony WH-1000XM5 Mark 5 Over-Ear Headphones, Active Noise Cancelling, Bluetooth, USB (Charging), Built-in Microphone, Black' on JARIR — agrees on model, brand
+2026-09-24T09:12:46.864+01:00 DEBUG 15216 --- [pricewatch] [pool-2-thread-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-24T09:12:46.864+01:00 DEBUG 15216 --- [pricewatch] [pool-2-thread-2] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-24T09:12:46.865+01:00 DEBUG 15216 --- [pricewatch] [pool-2-thread-3] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress

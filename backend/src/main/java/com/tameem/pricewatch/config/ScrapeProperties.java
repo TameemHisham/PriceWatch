@@ -1,10 +1,14 @@
 package com.tameem.pricewatch.config;
 
+import org.jsoup.Connection;
+import org.slf4j.Logger;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 @ConfigurationProperties(prefix = "pricewatch.scrape")
@@ -28,8 +32,9 @@ public class ScrapeProperties {
         private String deliveryCountry;
         /** Sent as Accept-Language so the storefront does not guess locale from IP. */
         private String acceptLanguage = "en-GB,en;q=0.9";
-        private String proxyHost;
-        private int proxyPort;
+        /** Zero or more proxy endpoints for this marketplace; empty means scrape from local egress. */
+        private List<ProxyEndpoint> proxyPool = List.of();
+        public record ProxyEndpoint(String host, int port) {}
         /**
          * Public API key for the storefront's hosted search provider, where searching it
          * means calling that provider rather than fetching a results page. Configuration
@@ -48,13 +53,25 @@ public class ScrapeProperties {
         public String getAcceptLanguage() { return acceptLanguage; }
         public void setAcceptLanguage(String acceptLanguage) { this.acceptLanguage = acceptLanguage; }
 
-        public String getProxyHost() { return proxyHost; }
-        public void setProxyHost(String proxyHost) { this.proxyHost = proxyHost; }
-
-        public int getProxyPort() { return proxyPort; }
-        public void setProxyPort(int proxyPort) { this.proxyPort = proxyPort; }
+        public List<ProxyEndpoint> getProxyPool() { return proxyPool; }
+        public void setProxyPool(List<ProxyEndpoint> proxyPool) { this.proxyPool = proxyPool; }
 
         public String getSearchKey() { return searchKey; }
         public void setSearchKey(String searchKey) { this.searchKey = searchKey; }
+
+        /**
+         * Applies a random proxy from this marketplace's pool to the connection, or logs and
+         * leaves it unset when the pool is empty — the one place every scraper's fetch()
+         * decides how to reach a storefront, so proxy selection lives here instead of being
+         * repeated per scraper.
+         */
+        public void applyProxy(Connection connection, Logger log) {
+            if (!proxyPool.isEmpty()) {
+                ProxyEndpoint proxy = proxyPool.get(ThreadLocalRandom.current().nextInt(proxyPool.size()));
+                connection.proxy(proxy.host(), proxy.port());
+            } else {
+                log.debug("No proxy for delivery country {} — scraping from local egress", deliveryCountry);
+            }
+        }
     }
 }

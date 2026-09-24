@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * page is really the product that was asked for, then extract.
  * <p>
  * Price comes from the schema.org JSON-LD offer first, falling back to the rendered price
- * box. Jarir publishes a complete offer — SAR, price and availability — so the fallback
+ * box. Jarir publishes a complete offer — SAR, pricemarketplace.applyProxy(connection, log); and availability — so the fallback
  * exists only for the case where the block disappears.
  * <p>
  * Jarir fronts its pages with PerimeterX. Note that its sensor script is present on
@@ -331,9 +331,7 @@ public class JarirScraper implements SearchableScraper {
                     .ignoreContentType(true) // the response is JSON, not a document
                     .maxBodySize(0)
                     .timeout(15000);
-            if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
-                connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
-            }
+            marketplace.applyProxy(connection, log);
             return connection.execute().body();
         } catch (IOException e) {
             throw new ScrapeException("Failed to fetch Jarir search results: " + url, e);
@@ -429,12 +427,7 @@ public class JarirScraper implements SearchableScraper {
                     .cookieStore(cookies) // get cookies
                     .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
                     .timeout(15000);
-            if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
-                connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
-            } else {
-                log.debug("No proxy for delivery country {} — scraping from local egress",
-                        marketplace.getDeliveryCountry());
-            }
+            marketplace.applyProxy(connection, log);
 
             Connection.Response response = connection.execute();
             return new Fetched(response.parse(), response.url());

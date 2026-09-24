@@ -8,6 +8,8 @@ import com.tameem.pricewatch.service.ExchangeRateService;
 import com.tameem.pricewatch.service.PriceHistoryService;
 import com.tameem.pricewatch.service.TrackedProductService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +19,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-public class ProductController {
+public class
+ProductController {
 
 //    private final ProductScraper scraper;
     private final TrackedProductService trackedProductService;
     private final ExchangeRateService exchangeRateService;
     private final PriceHistoryService priceHistoryService;
     private final DashboardService dashboardService;
+    private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
     public ProductController(TrackedProductService trackedProductService, ExchangeRateService exchangeRateService, PriceHistoryService priceHistoryService, DashboardService dashboardService) {
 
@@ -37,10 +41,22 @@ public class ProductController {
     /** POST /api/tracked-products — track a URL. 201 when newly scraped, 200 when already tracked. */
     @PostMapping("/tracked-products")
     public ResponseEntity<TrackedProductResponse> trackProduct(@RequestBody @Valid TrackRequest request) {
-        TrackResult result = trackedProductService.trackProduct(request.url());
-        // 201 when we scraped and inserted, 200 when this listing was already tracked.
-        HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
-        return ResponseEntity.status(status).body(result.product());
+        long start = System.nanoTime();
+        boolean success = false;
+        try {
+            //TODO add multi-threading
+            TrackResult result = trackedProductService.trackProduct(request.url());
+            HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+            success = true;
+            return ResponseEntity.status(status).body(result.product());
+        } finally {
+            long tookMs = (System.nanoTime() - start) / 1_000_000;
+            if (success) {
+                log.info("BENCHMARK trackByName tookMs={}", tookMs);
+            } else {
+                log.warn("BENCHMARK trackByName FAILED tookMs={}", tookMs);
+            }
+        }
     }
     /**
      * POST /api/tracked-products/by-name — track by product name instead of a URL.

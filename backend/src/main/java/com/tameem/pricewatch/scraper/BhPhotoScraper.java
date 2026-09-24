@@ -389,12 +389,7 @@ public class BhPhotoScraper implements SearchableScraper {
                 .ignoreHttpErrors(true) // read the block off the response instead of throwing on it
                 .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
                 .timeout(10000);
-        if (marketplace.getProxyHost() != null && !marketplace.getProxyHost().isBlank()) {
-            connection.proxy(marketplace.getProxyHost(), marketplace.getProxyPort());
-        } else {
-            log.debug("No proxy for delivery country {} — scraping from local egress",
-                    marketplace.getDeliveryCountry());
-        }
+        marketplace.applyProxy(connection, log);
         return connection.execute();
     }
 
