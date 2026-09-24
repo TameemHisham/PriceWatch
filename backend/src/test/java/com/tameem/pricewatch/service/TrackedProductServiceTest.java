@@ -1,6 +1,7 @@
 package com.tameem.pricewatch.service;
 
 import com.tameem.pricewatch.config.MarketplaceRegistry;
+import com.tameem.pricewatch.config.ScraperExecutorConfig;
 import com.tameem.pricewatch.config.ScraperRegistry;
 import com.tameem.pricewatch.dto.TrackResult;
 import com.tameem.pricewatch.entity.ProductListing;
@@ -26,6 +27,7 @@ import org.mockito.quality.Strictness;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,16 +65,17 @@ class TrackedProductServiceTest {
     @Mock private CurrentUserProvider currentUserProvider;
     @Mock private UserRepository userRepository;
     @Mock private ProductScraper scraper;
-
+    @Mock private ExecutorService scraperExecutor;
     private TrackedProductService service;
     private TrackedProduct existingProduct;
     private ProductListing existingListing;
+
 
     @BeforeEach
     void setUp() {
         service = new TrackedProductService(trackedProductRepository, productListingRepository,
                 pricePointRepository, scrapers, discovery, marketplaces, exchangeRateService,
-                currentUserProvider, userRepository);
+                currentUserProvider, userRepository,scraperExecutor);
 
         existingProduct = new TrackedProduct();
         existingProduct.setId(44L);

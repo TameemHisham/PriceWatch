@@ -22,6 +22,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -40,13 +42,13 @@ public class TrackedProductService {
     private final CurrentUserProvider currentUserProvider;
     private final UserRepository userRepository;
 
-
+    private final ExecutorService scraperExecutor;
     public TrackedProductService(TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
                                  ScraperRegistry scrapers,
                                  CrossStoreDiscovery discovery,
-                                 MarketplaceRegistry marketplaces, ExchangeRateService exchangeRateService,CurrentUserProvider currentUserProvider,UserRepository userRepository) {
+                                 MarketplaceRegistry marketplaces, ExchangeRateService exchangeRateService,CurrentUserProvider currentUserProvider,UserRepository userRepository,ExecutorService scraperExecutor) {
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
         this.pricePointRepository = pricePointRepository;
@@ -56,6 +58,7 @@ public class TrackedProductService {
         this.exchangeRateService = exchangeRateService;
         this.currentUserProvider=currentUserProvider;
         this.userRepository = userRepository;
+        this.scraperExecutor = scraperExecutor;
     }
 
     /** Asks the storefront's own scraper for a canonical key, so the same product always
@@ -102,28 +105,20 @@ public class TrackedProductService {
     public TrackResult trackProduct(String url) {
         String normalized = normalizeUrl(url);
         Long userId = currentUserProvider.getCurrentUserId();
-
-        // Both dedupe lookups are scoped to the caller. Unscoped, they matched any user's
-        // listing: the URL check handed back another user's product (which the owner check
-        // on the detail endpoint then refused), and the id check could attach this listing
-        // to their TrackedProduct, feeding our price points into their history.
         Optional<ProductListing> existingURL =
                 productListingRepository.findByUrlAndTrackedProduct_User_Id(normalized, userId);
         if (existingURL.isPresent()) {
             return new TrackResult(this.toResponse(existingURL.get().getTrackedProduct()), false);
         }
-
         ProductData productData = scrapers.forUrl(url).scrape(url);
         if (productData.title() == null || productData.title().isBlank()) {
             throw new ScrapeException("Could not locate product title for URL: " + url);
         }
-
         Optional<String> ASIN = scrapers.forUrl(normalized).productKey(normalized);
         Optional<ProductListing> existingASIN = ASIN.isPresent()
                 ? productListingRepository.findByUrlContainingAndTrackedProduct_User_Id(
                         ASIN.get(), userId)
                 : Optional.empty();
-
         TrackedProduct savedProduct;
         boolean matched = false;
 
@@ -153,12 +148,6 @@ public class TrackedProductService {
         }
 
         String requestedMarketplace = marketplaces.idFor(normalized);
-
-        // The URL check above is an exact string match, so it misses a URL that differs only
-        // in shape from one already stored — a pasted www.amazon.co.uk/... against the bare
-        // amazon.co.uk/... that sibling fan-out builds. The ASIN lookup then resolves it to
-        // the product that already holds this marketplace, and inserting would collide. It is
-        // the same outcome as the URL check finding it: already tracked, nothing created.
         if (matched && productListingRepository
                 .findByTrackedProductAndMarketplace(savedProduct, requestedMarketplace)
                 .isPresent()) {
@@ -169,28 +158,23 @@ public class TrackedProductService {
         saveListing(savedProduct, normalized, productData, requestedMarketplace,
                 ListingOrigin.USER_SUBMITTED);
 
-        // Fan out to sibling marketplaces of the same store, using the same ASIN.
+        // Get to sibling marketplaces of the same store, using the same ASIN.
         if (ASIN.isPresent()) {
             String originalMarketplace = marketplaces.idFor(normalized);
             for (String marketplaceId : marketplaces.allMarketplaceIds()) {
                 if (marketplaceId.equals(originalMarketplace)) continue;
-                // A product id only carries across storefronts of one retailer: an ASIN means
-                // something on amazon.co.uk/.ae/.com and nothing on any other store, so fanning
-                // out to every configured marketplace would build junk URLs.
+                // A product id only carries across storefronts of one retailer
                 if (!scrapers.sameRetailer(originalMarketplace, marketplaceId)) continue;
 
                 String siblingUrl = "https://" + marketplaces.configFor(marketplaceId).getHost()
                         + "/dp/" + ASIN.get();
 
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(2000); // to not run into a rate limiting problem
                     ProductData siblingData = scrapers.forUrl(siblingUrl).scrape(siblingUrl);
                     if (siblingData.title() == null || siblingData.title().isBlank()) {
                         throw new ScrapeException("Could not locate product title for URL: " + siblingUrl);
                     }
-                    // Stored canonical, like every other attach path: siblingUrl is built
-                    // from the bare configured host, and storing that raw is what let the
-                    // same page exist under two URL strings.
                     saveListing(savedProduct,
                             scrapers.forUrl(siblingUrl).canonicalUrl(siblingUrl),
                             siblingData, marketplaceId, ListingOrigin.SIBLING_MARKETPLACE);
@@ -207,7 +191,6 @@ public class TrackedProductService {
         // Look for the same product on other storefronts. Additive: the requested URL has
         // already been scraped and saved above, and nothing here can change that listing.
         attachDiscoveredListings(savedProduct, productData.title());
-
         return new TrackResult(this.toResponse(savedProduct), true);
     }
 
@@ -256,9 +239,7 @@ public class TrackedProductService {
     }
 
     /**
-     * Attaches listings for the same product found on other storefronts. Best effort by
-     * design — a store being unsearchable, unreachable or unmatched leaves the tracked
-     * product exactly as it already was.
+     * Attaches listings for the same product found on other storefronts.
      */
     private void attachDiscoveredListings(TrackedProduct product, String title) {
         attachMatches(product, discovery.findMatches(title, attachedMarketplaces(product)));
@@ -273,25 +254,42 @@ public class TrackedProductService {
 
     /** Scrapes and saves each confirmed match; returns the marketplaces actually attached. */
     private List<String> attachMatches(TrackedProduct product, Map<String, SearchResult> matches) {
+
+        // Step 1: kick off a scrape for every match at the same time
+        List<CompletableFuture<MatchScrapeResult>> futures = matches.entrySet().stream()
+                .map(entry -> CompletableFuture.supplyAsync(() -> {
+                    String marketplaceId = entry.getKey();
+                    SearchResult hit = entry.getValue();
+                    try {
+                        ProductScraper scraper = scrapers.forUrl(hit.url());
+                        ProductData data = scraper.scrape(hit.url());
+                        return new MatchScrapeResult(marketplaceId, hit.url(), scraper, data, null);
+                    } catch (RuntimeException e) {
+                        log.warn("Discovered listing failed to scrape for {} ({}): {}",
+                                marketplaceId, hit.url(), e.toString());
+                        return new MatchScrapeResult(marketplaceId, hit.url(), null, null, e);
+                    }
+                }, scraperExecutor))
+                .toList();
+
+        // Step 2: wait for every scrape to finish, collect the results
+        List<MatchScrapeResult> results = futures.stream().map(CompletableFuture::join).toList();
+
+        // Step 3: save everything, one at a time, back on this thread
         List<String> attached = new ArrayList<>();
-        for (Map.Entry<String, SearchResult> entry : matches.entrySet()) {
-            SearchResult hit = entry.getValue();
-            try {
-                ProductScraper scraper = scrapers.forUrl(hit.url());
-                ProductData data = scraper.scrape(hit.url());
-                if (data.title() == null || data.title().isBlank()) continue;
-                saveListing(product, scraper.canonicalUrl(hit.url()), data, entry.getKey(),
-                        ListingOrigin.CROSS_STORE_DISCOVERY);
-                log.info("Attached discovered listing on {} to product {}",
-                        entry.getKey(), product.getId());
-                attached.add(entry.getKey());
-            } catch (RuntimeException e) {
-                log.warn("Discovered listing failed to scrape for {} ({}): {}",
-                        entry.getKey(), hit.url(), e.toString());
-            }
+        for (MatchScrapeResult r : results) {
+            if (r.error() != null) continue;
+            if (r.data().title() == null || r.data().title().isBlank()) continue;
+            saveListing(product, r.scraper().canonicalUrl(r.url()), r.data(), r.marketplaceId(),
+                    ListingOrigin.CROSS_STORE_DISCOVERY);
+            log.info("Attached discovered listing on {} to product {}", r.marketplaceId(), product.getId());
+            attached.add(r.marketplaceId());
         }
         return attached;
     }
+
+    private record MatchScrapeResult(String marketplaceId, String url, ProductScraper scraper,
+                                     ProductData data, Exception error) {}
 
     /**
      * One product's discovery pass, as its own transaction — the unit the one-time backfill
