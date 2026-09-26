@@ -40,11 +40,6 @@ public class AmazonScraper implements ProductScraper {
         this.rateLimiter = rateLimiter;
     }
 
-    private static final List<String> USER_AGENTS = List.of(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
-    );
 
     /** Optional currency code or symbol, then a number: "£7.73", "AED 1,724.76". */
     private static final Pattern PRICE_TOKEN =
@@ -165,10 +160,7 @@ public class AmazonScraper implements ProductScraper {
 
         return Optional.empty();
     }
-    /** Picks a random desktop user agent — a fixed one is an obvious bot signature. */
-    private String randomUserAgent() {
-        return USER_AGENTS.get(ThreadLocalRandom.current().nextInt(USER_AGENTS.size()));
-    }
+
 
     /** Fetches an Amazon product page and extracts title, price, currency and image. */
     public ProductData scrape(String url) {
@@ -229,23 +221,19 @@ public class AmazonScraper implements ProductScraper {
                     marketplaceId, id -> new CookieManager().getCookieStore());
 
             Connection connection = Jsoup.connect(url)
-                    .userAgent(randomUserAgent()) // simulates a real user
-                    .header("Accept",
-                            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-                    .header("Accept-Language", marketplace.getAcceptLanguage())
-                    .header("Accept-Encoding", "gzip, deflate") // NOT br: Jsoup cannot decode Brotli,
-                    // and a br response parses to garbage with no error — Newegg serves it
-                    .header("Cache-Control", "no-cache")
-                    .header("Sec-Fetch-Dest", "document")
-                    .header("Sec-Fetch-Mode", "navigate")
-                    .header("Sec-Fetch-Site", "none")
-                    .cookieStore(cookies) // get cookies
+                    .userAgent("curl/8.7.1")
+                    .header("Accept", "*/*")
+                    .header("Accept-Encoding", "gzip, deflate")
+                    // Amazon sometimes omits Content-Type for an Accept: */* request; parse it anyway.
+                    .ignoreContentType(true)
+                    .cookieStore(cookies)
                     .timeout(10000);
             marketplace.applyProxy(connection, log);
 
             Connection.Response response = connection.execute();
             return new Fetched(response.parse(), response.url());
         } catch (IOException e) {
+            log.warn("Fetch failed for {}: {}", url, e.toString());
             throw new ScrapeException("Failed to fetch page: " + url, e);
         }
     }

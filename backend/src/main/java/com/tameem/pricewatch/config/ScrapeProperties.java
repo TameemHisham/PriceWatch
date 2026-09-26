@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-
+import org.jsoup.helper.RequestAuthenticator;
 @Component
 @ConfigurationProperties(prefix = "pricewatch.scrape")
 public class ScrapeProperties {
@@ -34,7 +34,7 @@ public class ScrapeProperties {
         private String acceptLanguage = "en-GB,en;q=0.9";
         /** Zero or more proxy endpoints for this marketplace; empty means scrape from local egress. */
         private List<ProxyEndpoint> proxyPool = List.of();
-        public record ProxyEndpoint(String host, int port) {}
+        public record ProxyEndpoint(String host, int port, String username, String password) {}
         /**
          * Public API key for the storefront's hosted search provider, where searching it
          * means calling that provider rather than fetching a results page. Configuration
@@ -69,6 +69,10 @@ public class ScrapeProperties {
             if (!proxyPool.isEmpty()) {
                 ProxyEndpoint proxy = proxyPool.get(ThreadLocalRandom.current().nextInt(proxyPool.size()));
                 connection.proxy(proxy.host(), proxy.port());
+                connection.auth(ctx -> ctx.isProxy()
+                        ? ctx.credentials(proxy.username(), proxy.password())
+                        : null);
+                log.debug("Using proxy {}:{} for delivery country {}", proxy.host(), proxy.port(), deliveryCountry);
             } else {
                 log.debug("No proxy for delivery country {} — scraping from local egress", deliveryCountry);
             }

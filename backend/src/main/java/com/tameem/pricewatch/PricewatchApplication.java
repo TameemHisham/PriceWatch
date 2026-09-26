@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class PricewatchApplication {
 
 	public static void main(String[] args) {
+		System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
 		SpringApplication.run(PricewatchApplication.class, args);
 	}
 
