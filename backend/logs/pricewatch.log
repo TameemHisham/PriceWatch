@@ -176,3 +176,199 @@ This generated password is for development use only. Your security configuration
 2026-09-26T11:32:04.577+01:00  INFO 14524 --- [pricewatch] [http-nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
 2026-09-26T11:32:04.577+01:00  INFO 14524 --- [pricewatch] [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
 2026-09-26T11:32:04.577+01:00  INFO 14524 --- [pricewatch] [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-09-26T11:32:55.631+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:32:58.592+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:33:01.707+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:33:05.419+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.NeweggScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:33:07.975+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:33:10.404+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:33:13.126+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:33:17.076+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-26T11:33:20.617+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:33:23.012+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:33:26.707+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:33:30.868+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:33:35.091+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:33:37.980+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:33:41.925+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:33:45.634+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:33:49.280+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:33:52.071+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:33:55.561+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:33:56.205+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : ld+json availability OutOfStock for https://www.bhphotovideo.com/c/product/1790806-REG/ — treating as unavailable
+2026-09-26T11:33:56.208+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 105 (https://www.bhphotovideo.com/c/product/1790806-REG/) — recorded check, no price point
+2026-09-26T11:33:58.219+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:34:00.676+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:34:01.015+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : ld+json availability OutOfStock for https://www.currys.co.uk/products/10292207.html — treating as unavailable
+2026-09-26T11:34:01.017+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 219 (https://www.currys.co.uk/products/10292207.html) — recorded check, no price point
+2026-09-26T11:34:03.025+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:34:04.441+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 124 (https://www.amazon.ae/dp/B07MB6G74R) — recorded check, no price point
+2026-09-26T11:34:06.454+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:34:10.318+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-26T11:34:12.614+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:34:16.262+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:34:20.875+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:34:23.011+01:00  WARN 14524 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 43 (https://www.amazon.com/Sony-Camera-Content-Creators-Vloggers/dp/B0BHKWZRQ5/ref=prem26_sum_away_grid): com.tameem.pricewatch.scraper.ScrapeException: No buy option and no readable product price for URL: https://www.amazon.com/Sony-Camera-Content-Creators-Vloggers/dp/B0BHKWZRQ5/ref=prem26_sum_away_grid
+2026-09-26T11:34:25.016+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:34:28.971+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:34:31.665+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:34:34.200+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:34:37.023+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:34:40.872+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:34:43.664+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.NeweggScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:34:44.197+01:00  WARN 14524 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 99 (https://www.newegg.com/p/N82E16820147860): com.tameem.pricewatch.scraper.ScrapeException: Page for item 9SIAG5BKTM1255 was returned for requested item N82E16820147860 (https://www.newegg.com/p/N82E16820147860)
+2026-09-26T11:34:46.206+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:34:50.189+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:34:54.245+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:34:58.225+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:34:59.984+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 125 (https://www.amazon.co.uk/dp/B07MB6G74R) — recorded check, no price point
+2026-09-26T11:35:01.992+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:35:04.353+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-26T11:35:07.345+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:35:09.747+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:35:11.991+01:00  WARN 14524 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 253 (https://www.amazon.co.uk/dp/B0FQGBGDRW): com.tameem.pricewatch.scraper.ScrapeException: Page for ASIN B0FQF5CSPB was returned for requested ASIN B0FQGBGDRW (https://www.amazon.co.uk/dp/B0FQGBGDRW)
+2026-09-26T11:35:13.998+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:35:16.692+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:35:18.259+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 270 (https://www.amazon.co.uk/dp/B0CFSD4TSQ) — recorded check, no price point
+2026-09-26T11:35:20.266+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-26T11:35:23.326+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:35:26.931+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:35:27.254+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : ld+json availability OutOfStock for https://www.currys.co.uk/products/10290132.html — treating as unavailable
+2026-09-26T11:35:27.256+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 86 (https://www.currys.co.uk/products/10290132.html) — recorded check, no price point
+2026-09-26T11:35:29.265+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:35:32.770+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:35:36.217+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:35:38.063+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 167 (https://www.amazon.com/dp/B0GR4GR5QH) — recorded check, no price point
+2026-09-26T11:35:40.069+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:35:43.613+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:35:48.216+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-26T11:35:51.158+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-26T11:35:54.190+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:35:56.025+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 171 (https://www.amazon.com/dp/B0C3HCD34R) — recorded check, no price point
+2026-09-26T11:35:58.036+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:36:00.812+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:36:03.183+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:36:06.855+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:36:10.545+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:36:14.528+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.BhPhotoScraper    : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:36:17.189+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:36:18.410+01:00  WARN 14524 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 73 (https://www.currys.co.uk/products/10263813.html): com.tameem.pricewatch.scraper.ScrapeException: No product title on page — not a product page: https://www.currys.co.uk/products/10263813.html
+2026-09-26T11:36:20.414+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:36:21.835+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 158 (https://www.amazon.co.uk/dp/B0G6FF1TTH) — recorded check, no price point
+2026-09-26T11:36:23.847+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:36:27.538+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:36:30.750+01:00  INFO 14524 --- [pricewatch] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 1 class path change (0 additions, 0 deletions, 1 modification)
+2026-09-26T11:36:30.754+01:00  INFO 14524 --- [pricewatch] [Thread-5] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-26T11:36:30.756+01:00  INFO 14524 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-26T11:36:31.425+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.tameem.pricewatch.scraper.IkeaScraper  : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:36:32.355+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.tameem.pricewatch.scraper.IkeaScraper  : ld+json availability OutOfStock for https://www.ikea.com/ae/en/p/-99513930/ — treating as unavailable
+2026-09-26T11:36:32.359+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.service.TrackedProductService      : No offer for listing 160 (https://www.ikea.com/ae/en/p/-99513930/) — recorded check, no price point
+2026-09-26T11:36:34.368+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:36:38.195+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:36:41.652+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.FlipkartScraper   : No proxy for delivery country IN — scraping from local egress
+2026-09-26T11:36:44.610+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.JarirScraper      : No proxy for delivery country SA — scraping from local egress
+2026-09-26T11:36:46.970+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:36:49.682+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:36:53.235+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country AE — scraping from local egress
+2026-09-26T11:36:56.717+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.CurrysScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:36:59.261+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:37:00.763+01:00  INFO 14524 --- [pricewatch] [Thread-5] o.s.c.support.DefaultLifecycleProcessor  : Shutdown phase 1073741823 ends with 1 bean still running after timeout of 30000ms: [taskScheduler]
+2026-09-26T11:37:00.768+01:00  INFO 14524 --- [pricewatch] [Thread-5] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-26T11:37:00.770+01:00  INFO 14524 --- [pricewatch] [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-09-26T11:37:00.772+01:00  WARN 14524 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 175 (https://www.amazon.com/dp/B09ZFD9CBB): com.tameem.pricewatch.scraper.ScrapeException: Failed to fetch page: https://www.amazon.com/dp/B09ZFD9CBB
+2026-09-26T11:37:00.772+01:00  INFO 14524 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Sweep complete: 94 listings checked, 70 succeeded, 24 failed, 245151ms
+2026-09-26T11:37:00.774+01:00  INFO 14524 --- [pricewatch] [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-09-26T11:37:00.847+01:00  INFO 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 14524 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-26T11:37:00.847+01:00 DEBUG 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-26T11:37:00.847+01:00  INFO 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-26T11:37:00.947+01:00  INFO 14524 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-26T11:37:00.955+01:00  INFO 14524 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 6 ms. Found 5 JPA repository interfaces.
+2026-09-26T11:37:01.010+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-26T11:37:01.011+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-26T11:37:01.011+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-26T11:37:01.016+01:00  INFO 14524 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 167 ms
+2026-09-26T11:37:01.022+01:00 DEBUG 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-26T11:37:01.036+01:00  INFO 14524 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-26T11:37:01.048+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-26T11:37:01.048+01:00  INFO 14524 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-09-26T11:37:01.062+01:00  INFO 14524 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@52f691f
+2026-09-26T11:37:01.062+01:00  INFO 14524 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-09-26T11:37:01.067+01:00  INFO 14524 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-26T11:37:01.112+01:00  INFO 14524 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-26T11:37:01.133+01:00  INFO 14524 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-26T11:37:01.204+01:00  WARN 14524 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: ddd94fd6-9f27-413b-ad15-fd73048d8685
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-26T11:37:01.205+01:00  INFO 14524 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-26T11:37:01.259+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-26T11:37:01.261+01:00  INFO 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 0.433 seconds (process running for 322.429)
+2026-09-26T11:37:01.262+01:00  INFO 14524 --- [pricewatch] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-09-26T11:37:43.470+01:00  INFO 14524 --- [pricewatch] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 1 class path change (0 additions, 0 deletions, 1 modification)
+2026-09-26T11:37:43.472+01:00  INFO 14524 --- [pricewatch] [Thread-9] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-26T11:37:43.475+01:00  INFO 14524 --- [pricewatch] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-26T11:37:43.478+01:00  INFO 14524 --- [pricewatch] [Thread-9] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-09-26T11:37:43.479+01:00  INFO 14524 --- [pricewatch] [Thread-9] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+2026-09-26T11:37:43.481+01:00  INFO 14524 --- [pricewatch] [Thread-9] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
+2026-09-26T11:37:43.551+01:00  INFO 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Starting PricewatchApplication using Java 25.0.2 with PID 14524 (/Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend/target/classes started by hmkta in /Users/hmkta/Downloads/JOB_HUNT/Project-01/PriceWatch/backend)
+2026-09-26T11:37:43.551+01:00 DEBUG 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Running with Spring Boot v4.1.0, Spring v7.0.8
+2026-09-26T11:37:43.551+01:00  INFO 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : The following 1 profile is active: "secrets"
+2026-09-26T11:37:43.600+01:00  INFO 14524 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-26T11:37:43.605+01:00  INFO 14524 --- [pricewatch] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 5 ms. Found 5 JPA repository interfaces.
+2026-09-26T11:37:43.634+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-26T11:37:43.634+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-26T11:37:43.634+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-09-26T11:37:43.638+01:00  INFO 14524 --- [pricewatch] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 86 ms
+2026-09-26T11:37:43.644+01:00 DEBUG 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.security.JwtAuthFilter    : Filter 'jwtAuthFilter' configured for use
+2026-09-26T11:37:43.653+01:00  INFO 14524 --- [pricewatch] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-26T11:37:43.659+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-26T11:37:43.659+01:00  INFO 14524 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+2026-09-26T11:37:43.673+01:00  INFO 14524 --- [pricewatch] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection org.postgresql.jdbc.PgConnection@1db3b90e
+2026-09-26T11:37:43.673+01:00  INFO 14524 --- [pricewatch] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+2026-09-26T11:37:43.680+01:00  INFO 14524 --- [pricewatch] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/pricewatch]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.4
+	Default catalog/schema: pricewatch/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-26T11:37:43.709+01:00  INFO 14524 --- [pricewatch] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-26T11:37:43.733+01:00  INFO 14524 --- [pricewatch] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-26T11:37:43.790+01:00  WARN 14524 --- [pricewatch] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: fdd16147-9268-4637-99b7-9d292504c9d4
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-26T11:37:43.790+01:00  INFO 14524 --- [pricewatch] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-26T11:37:43.832+01:00  INFO 14524 --- [pricewatch] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-26T11:37:43.833+01:00  INFO 14524 --- [pricewatch] [restartedMain] c.t.pricewatch.PricewatchApplication     : Started PricewatchApplication in 0.29 seconds (process running for 365.0)
+2026-09-26T11:37:43.834+01:00  INFO 14524 --- [pricewatch] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-09-26T11:37:46.188+01:00  INFO 14524 --- [pricewatch] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-26T11:37:46.189+01:00  INFO 14524 --- [pricewatch] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-09-26T11:37:46.195+01:00  INFO 14524 --- [pricewatch] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-09-26T11:37:54.400+01:00  WARN 14524 --- [pricewatch] [http-nio-8080-exec-7] c.t.p.service.ExchangeRateService        : No exchange rate for currency UNKNOWN (first seen on listing null) — prices in UNKNOWN are stored but left out of every USD comparison, so the API will report them as null. Add UNKNOWN to the quotes list in SchedulerScraper.scrapeCurrency().
+2026-09-26T11:38:43.848+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:38:46.114+01:00  WARN 14524 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 43 (https://www.amazon.com/Sony-Camera-Content-Creators-Vloggers/dp/B0BHKWZRQ5/ref=prem26_sum_away_grid): com.tameem.pricewatch.scraper.ScrapeException: No buy option and no readable product price for URL: https://www.amazon.com/Sony-Camera-Content-Creators-Vloggers/dp/B0BHKWZRQ5/ref=prem26_sum_away_grid
+2026-09-26T11:38:48.117+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.NeweggScraper     : No proxy for delivery country US — scraping from local egress
+2026-09-26T11:38:48.535+01:00  WARN 14524 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 99 (https://www.newegg.com/p/N82E16820147860): com.tameem.pricewatch.scraper.ScrapeException: Page for item 9SIAG5BKTM1255 was returned for requested item N82E16820147860 (https://www.newegg.com/p/N82E16820147860)
+2026-09-26T11:38:50.541+01:00 DEBUG 14524 --- [pricewatch] [scheduling-1] c.t.pricewatch.scraper.AmazonScraper     : No proxy for delivery country GB — scraping from local egress
+2026-09-26T11:38:52.805+01:00  WARN 14524 --- [pricewatch] [scheduling-1] c.t.p.s.scheduler.SchedulerScraper       : Refresh failed for listing 253 (https://www.amazon.co.uk/dp/B0FQGBGDRW): com.tameem.pricewatch.scraper.ScrapeException: Page for ASIN B0FQF5CSPB was returned for requested ASIN B0FQGBGDRW (https://www.amazon.co.uk/dp/B0FQGBGDRW)

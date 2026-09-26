@@ -26,18 +26,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7); // removes the Bearer part
+            String token = authHeader.substring(7);
             if (jwtService.isTokenValid(token)) {
                 Long userId = jwtService.extractUserId(token);
-//           UsernamePasswordAuthenticationToken is basically "authenticated identity"
-//                parameters are id, credentials <- not needed since JWT proves identity in this case, and a list of roles
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userId, null, java.util.List.of());
-//                the context holder basically has localstorage for who is the currently authenticated user for this specific request's thread
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired or invalid");
+                return; // don't continue the filter chain — the request is rejected here
             }
         }
-//        hands control to the next thing in the chain could be another filter or controller
         filterChain.doFilter(request, response);
     }
 }

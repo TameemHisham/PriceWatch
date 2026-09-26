@@ -3,6 +3,7 @@ package com.tameem.pricewatch.config;
 
 import com.tameem.pricewatch.security.JwtAuthFilter;
 import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,6 +28,11 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable()) // stops a security layer that prevents CSRF since i not using session cookie anyways
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     // this basically says  don't create a session, don't expect one, JWT is stateless
+                .exceptionHandling(ex -> ex
+                        // No valid authentication at all (missing/expired/invalid token) — always 401,
+                        // never Spring Security's default 403, so the frontend's 401 check actually fires.
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
                         // The container forwards to /error as a separate ERROR dispatch, and
                         // OncePerRequestFilter skips that dispatch by default — so jwtAuthFilter
