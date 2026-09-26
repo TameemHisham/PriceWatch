@@ -77,6 +77,20 @@ ProductController {
         return ResponseEntity.ok(trackedProductService.reTrack(id));
     }
 
+    /**
+     * POST /api/tracked-products/{id}/regions — opt this product into another storefront of the
+     * same retailer. 201 with the new listing, or 200 with the existing one when already tracked.
+     */
+    @PostMapping("/tracked-products/{id}/regions")
+    public ResponseEntity<ListingResponse> addRegion(@PathVariable long id,
+                                                     @RequestBody @Valid AddRegionRequest request) {
+        TrackedProductService.RegionResult result =
+                trackedProductService.addRegion(id, request.marketplaceId());
+        HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+        return ResponseEntity.status(status).body(
+                trackedProductService.toListingResponse(result.listing()));
+    }
+
     /** GET /api/tracked-products — every tracked product, for the dashboard grid. */
     @GetMapping("/tracked-products")
     public List<TrackedProductResponse> getTrackedProducts() {

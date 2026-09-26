@@ -13,6 +13,7 @@ import com.tameem.pricewatch.repositories.UserRepository;
 import com.tameem.pricewatch.scraper.ProductData;
 import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
+import com.tameem.pricewatch.scraper.UnsupportedMarketplaceException;
 import com.tameem.pricewatch.security.CurrentUserProvider;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
@@ -154,44 +155,115 @@ public class TrackedProductService {
             return new TrackResult(this.toResponse(savedProduct), false);
         }
 
-        // Save the originally-requested listing first, using data already scraped.
+        // Save the originally-requested listing first, using data already scraped. Sibling
+        // storefronts of the same retailer are no longer fanned out automatically: the caller
+        // opts each one in through POST /tracked-products/{id}/regions (see addRegion).
         saveListing(savedProduct, normalized, productData, requestedMarketplace,
                 ListingOrigin.USER_SUBMITTED);
-
-        // Get to sibling marketplaces of the same store, using the same ASIN.
-        if (ASIN.isPresent()) {
-            String originalMarketplace = marketplaces.idFor(normalized);
-            for (String marketplaceId : marketplaces.allMarketplaceIds()) {
-                if (marketplaceId.equals(originalMarketplace)) continue;
-                // A product id only carries across storefronts of one retailer
-                if (!scrapers.sameRetailer(originalMarketplace, marketplaceId)) continue;
-
-                String siblingUrl = "https://" + marketplaces.configFor(marketplaceId).getHost()
-                        + "/dp/" + ASIN.get();
-
-                try {
-                    Thread.sleep(2000); // to not run into a rate limiting problem
-                    ProductData siblingData = scrapers.forUrl(siblingUrl).scrape(siblingUrl);
-                    if (siblingData.title() == null || siblingData.title().isBlank()) {
-                        throw new ScrapeException("Could not locate product title for URL: " + siblingUrl);
-                    }
-                    saveListing(savedProduct,
-                            scrapers.forUrl(siblingUrl).canonicalUrl(siblingUrl),
-                            siblingData, marketplaceId, ListingOrigin.SIBLING_MARKETPLACE);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (ScrapeException e) {
-                    log.warn("Sibling scrape failed for {} ({}): {}", marketplaceId, siblingUrl, e.toString());
-                } catch (Exception e) {
-                    log.error("Sibling scrape failed for {} ({}): {}", marketplaceId, siblingUrl, e.toString());
-                }
-            }
-        }
 
         // Look for the same product on other storefronts. Additive: the requested URL has
         // already been scraped and saved above, and nothing here can change that listing.
         attachDiscoveredListings(savedProduct, productData.title());
         return new TrackResult(this.toResponse(savedProduct), true);
+    }
+
+    /** A region listing plus whether this call created it — lets the endpoint answer 201 vs 200. */
+    public record RegionResult(ProductListing listing, boolean created) {}
+
+    /**
+     * Opts one same-retailer storefront (a "region") into an existing product, on request.
+     * Replaces the automatic sibling fan-out that used to run inside {@link #trackProduct}.
+     * <p>
+     * Ownership-scoped: a product that is missing or owned by someone else is a 404, matching
+     * every other per-product endpoint. An unknown marketplace, or one served by a different
+     * retailer than any listing this product already holds, is a 400 — the ASIN that keys this
+     * product is meaningful only across storefronts of one retailer. Idempotent: a region the
+     * product already tracks returns the existing listing untouched (created=false), so the
+     * endpoint can answer 200 without inserting.
+     */
+    @Transactional
+    public RegionResult addRegion(long productId, String marketplaceId) {
+        TrackedProduct product = getEntity(productId); // 404 when missing or not the caller's
+        requireSameRetailerRegion(product, marketplaceId); // 400 when unknown or wrong retailer
+
+        Optional<ProductListing> existing =
+                productListingRepository.findByTrackedProductAndMarketplace(product, marketplaceId);
+        if (existing.isPresent()) {
+            return new RegionResult(existing.get(), false);
+        }
+
+        User owner = userRepository.findById(currentUserProvider.getCurrentUserId())
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+        return new RegionResult(addRegion(product.getId(), marketplaceId, owner), true);
+    }
+
+    /**
+     * Scrapes one same-retailer storefront for a product and saves the listing, reusing the
+     * ASIN the product is already keyed by. The reusable core the sibling fan-out used to
+     * inline: builds https://{host}/dp/{ASIN}, then routes it through the scraper's
+     * canonicalUrl so this write path normalizes exactly like every other. Idempotent via
+     * {@link #saveListing}; a zero-price result is still saved so the store renders "Not
+     * available" rather than vanishing.
+     */
+    @Transactional
+    public ProductListing addRegion(Long trackedProductId, String marketplaceId, User owner) {
+        TrackedProduct product = trackedProductRepository.findById(trackedProductId)
+                .orElseThrow(() -> new ResourceNotFoundException("No product with id: " + trackedProductId));
+        if (product.getUser() == null || !product.getUser().getId().equals(owner.getId())) {
+            throw new ResourceNotFoundException("No product with id: " + trackedProductId);
+        }
+
+        String asin = resolveProductKey(product, marketplaceId);
+        String url = "https://" + marketplaces.configFor(marketplaceId).getHost() + "/dp/" + asin;
+        // Mandatory: never let a write path bypass normalization.
+        String canonical = scrapers.forUrl(url).canonicalUrl(url);
+        ProductData data = scrapers.forUrl(url).scrape(url);
+        return saveListing(product, canonical, data, marketplaceId, ListingOrigin.SIBLING_MARKETPLACE);
+    }
+
+    /**
+     * Validates that {@code marketplaceId} names a configured storefront of the same retailer
+     * as a listing this product already holds, throwing a 400-mapped exception otherwise.
+     */
+    private void requireSameRetailerRegion(TrackedProduct product, String marketplaceId) {
+        if (!marketplaces.allMarketplaceIds().contains(marketplaceId)) {
+            throw new UnsupportedMarketplaceException("Unknown marketplace: " + marketplaceId);
+        }
+        boolean sameRetailer = productListingRepository.findByTrackedProduct(product).stream()
+                .anyMatch(listing -> scrapers.sameRetailer(listing.getMarketplace(), marketplaceId));
+        if (!sameRetailer) {
+            throw new UnsupportedMarketplaceException(
+                    "Marketplace " + marketplaceId + " is not the same retailer as this product");
+        }
+    }
+
+    /** The product key (Amazon ASIN) from an existing same-retailer listing, or a 400 if none carries one. */
+    private String resolveProductKey(TrackedProduct product, String marketplaceId) {
+        for (ProductListing listing : productListingRepository.findByTrackedProduct(product)) {
+            if (!scrapers.sameRetailer(listing.getMarketplace(), marketplaceId)) continue;
+            Optional<String> key = scrapers.forMarketplace(listing.getMarketplace())
+                    .productKey(listing.getUrl());
+            if (key.isPresent()) return key.get();
+        }
+        throw new UnsupportedMarketplaceException(
+                "No product id available to build a " + marketplaceId + " listing");
+    }
+
+    /**
+     * Same-retailer storefronts this product could still be added to: every configured
+     * marketplace served by the same scraper as a listing the product already holds, minus the
+     * ones it already tracks. Empty for a retailer with no siblings. Stable order for the UI.
+     */
+    private List<String> availableRegions(TrackedProduct product) {
+        Set<String> tracked = productListingRepository.findByTrackedProduct(product).stream()
+                .map(ProductListing::getMarketplace)
+                .collect(Collectors.toSet());
+        return marketplaces.allMarketplaceIds().stream()
+                .filter(id -> !tracked.contains(id))
+                .filter(id -> tracked.stream()
+                        .anyMatch(trackedId -> scrapers.sameRetailer(trackedId, id)))
+                .sorted()
+                .toList();
     }
 
     /**
@@ -466,6 +538,15 @@ public class TrackedProductService {
                 stores);
     }
 
+    /** Maps one listing to its response DTO, resolving the latest observed price. */
+    public ListingResponse toListingResponse(ProductListing listing) {
+        PricePoint latest = pricePointRepository.findTopByProductListingOrderByCheckedAtDesc(listing);
+        return new ListingResponse(
+                listing.getStore(), listing.getUrl(), listing.getCurrency(),
+                latest != null ? latest.getPrice() : null,
+                listing.getMarketplace(), listing.getOrigin());
+    }
+
     public TrackedProductDetailResponse toDetailResponse(TrackedProduct product) {
         List<ProductListing> listings = productListingRepository.findByTrackedProduct(product);
         Map<String, BigDecimal> rates = exchangeRateService.currentRatesByCurrency();
@@ -500,7 +581,8 @@ public class TrackedProductService {
         return new TrackedProductDetailResponse(
                 product.getId(), product.getName(), product.getBrand(), product.getCategory(),
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
-                currency, lowestPrice, listings.size(), listingResponse,targetReached,this.getAllTimeLow(product, rates));
+                currency, lowestPrice, listings.size(), listingResponse,targetReached,
+                this.getAllTimeLow(product, rates), availableRegions(product));
     }
 
     @Transactional
