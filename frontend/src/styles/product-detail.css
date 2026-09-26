@@ -279,6 +279,73 @@
     text-decoration: underline;
 }
 
+/* ── Also check: same-retailer regions the product can be opted into ── */
+
+.store-prices--also-check {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+
+    padding: 14px 4px 4px;
+    border-top: 1px dashed var(--border);
+}
+
+.store-prices--also-check-label {
+    color: var(--text-3);
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.store-prices--chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.store-prices--chip-wrap {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.store-prices--chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 5px 11px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-1);
+
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.store-prices--chip:hover:not(:disabled) {
+    border-color: var(--accent);
+}
+
+.store-prices--chip:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.store-prices--chip-color {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.store-prices--chip-error {
+    color: var(--down);
+    font-size: 11px;
+}
+
 /* ── Responsive ────────────────────────────────────────────────────── */
 
 @media (max-width: 860px) {

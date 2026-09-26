@@ -1,5 +1,8 @@
 import type { CurrencyResponse } from "../types/CurrencyResponse";
-import type { TrackedProductDetailResponse } from "../types/TrackedProductDetailResponse";
+import type {
+    ListingResponse,
+    TrackedProductDetailResponse,
+} from "../types/TrackedProductDetailResponse";
 import type { TrackedProductResponse } from "../types/TrackedProductResponse";
 import type { TrackRequest } from "../types/TrackRequest";
 import type { TrackByNameRequest } from "../types/TrackByNameRequest";
@@ -99,6 +102,22 @@ export function trackProductByName(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+    });
+}
+
+/**
+ * POST to opt this product into another storefront of the same retailer. Slow — it scrapes
+ * the region live. Returns the listing (existing or newly created); callers refresh the
+ * product afterwards to pick up the new row.
+ */
+export function addRegion(
+    id: number,
+    marketplaceId: string,
+): Promise<ListingResponse> {
+    return jsonRequest<ListingResponse>(`${BASE}/${id}/regions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ marketplaceId }),
     });
 }
 

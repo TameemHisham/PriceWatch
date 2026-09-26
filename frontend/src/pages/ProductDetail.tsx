@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import type { TrackedProductDetailResponse } from "../types/TrackedProductDetailResponse";
 import {
+    addRegion,
     deleteProduct,
     getTrackedProduct,
     refreshProduct,
@@ -31,6 +32,12 @@ export default function ProductDetail() {
     );
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [deleting, setDeleting] = useState<boolean>(false);
+    // The region a chip is currently adding, and per-chip errors keyed by marketplace id —
+    // a failed region shows its message on the chip itself, not as a page-level error.
+    const [addingRegion, setAddingRegion] = useState<string | null>(null);
+    const [regionErrors, setRegionErrors] = useState<Record<string, string>>(
+        {},
+    );
     const navigate = useNavigate();
     useEffect(() => {
         if (!validId) return;
@@ -75,6 +82,27 @@ export default function ProductDetail() {
             if (err instanceof Error) setError(err.message);
         } finally {
             setRefreshing(false);
+        }
+    }
+    // Opt the product into another same-retailer storefront, then refresh so the new listing
+    // and the updated chip list both appear. Errors stay on the chip.
+    async function handleAddRegion(marketplaceId: string) {
+        try {
+            setAddingRegion(marketplaceId);
+            setRegionErrors((prev) => {
+                const next = { ...prev };
+                delete next[marketplaceId];
+                return next;
+            });
+            await addRegion(productId, marketplaceId);
+            const response = await getTrackedProduct(productId);
+            setProduct(response);
+        } catch (err) {
+            const message =
+                err instanceof Error ? err.message : "Could not add region";
+            setRegionErrors((prev) => ({ ...prev, [marketplaceId]: message }));
+        } finally {
+            setAddingRegion(null);
         }
     }
     async function handleDelete() {
@@ -376,6 +404,65 @@ export default function ProductDetail() {
                                             </a>
                                         </div>
                                     ))}
+
+                                {product.availableRegions.length > 0 && (
+                                    <div className="store-prices--also-check">
+                                        <span className="store-prices--also-check-label">
+                                            Also check:
+                                        </span>
+                                        <div className="store-prices--chips">
+                                            {product.availableRegions.map(
+                                                (region) => (
+                                                    <div
+                                                        className="store-prices--chip-wrap"
+                                                        key={region}
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            className="store-prices--chip"
+                                                            disabled={
+                                                                addingRegion !==
+                                                                null
+                                                            }
+                                                            onClick={() =>
+                                                                handleAddRegion(
+                                                                    region,
+                                                                )
+                                                            }
+                                                        >
+                                                            <span
+                                                                className="store-prices--chip-color"
+                                                                style={{
+                                                                    background:
+                                                                        marketplaceColor(
+                                                                            region,
+                                                                        ),
+                                                                }}
+                                                            />
+                                                            <span>
+                                                                {addingRegion ===
+                                                                region
+                                                                    ? "Adding…"
+                                                                    : `+ ${marketplaceLabel(region)}`}
+                                                            </span>
+                                                        </button>
+                                                        {regionErrors[
+                                                            region
+                                                        ] && (
+                                                            <span className="store-prices--chip-error">
+                                                                {
+                                                                    regionErrors[
+                                                                        region
+                                                                    ]
+                                                                }
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ),
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <TargetPriceCard

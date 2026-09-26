@@ -17,4 +17,6 @@ export interface ListingResponse {
 
 export interface TrackedProductDetailResponse extends TrackedProductResponse {
     listings: ListingResponse[];
+    /** Same-retailer storefronts this product can still be opted into, minus those already tracked. */
+    availableRegions: string[];
 }
