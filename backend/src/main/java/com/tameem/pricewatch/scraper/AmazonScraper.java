@@ -30,11 +30,14 @@ import java.util.regex.Pattern;
 public class AmazonScraper implements ProductScraper {
 
     private static final Logger log = LoggerFactory.getLogger(AmazonScraper.class); // manages logs
-    private final MarketplaceRegistry marketplaces; // manging the marketplace
-     private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>(); // deals with cookies
 
-    public AmazonScraper(MarketplaceRegistry marketplaces) {
+    private final MarketplaceRegistry marketplaces;
+    private final ScraperRateLimiter rateLimiter;
+    private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>();
+
+    public AmazonScraper(MarketplaceRegistry marketplaces, ScraperRateLimiter rateLimiter) {
         this.marketplaces = marketplaces;
+        this.rateLimiter = rateLimiter;
     }
 
     private static final List<String> USER_AGENTS = List.of(
@@ -171,14 +174,16 @@ public class AmazonScraper implements ProductScraper {
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
-
+        rateLimiter.acquire(marketplaceId); // to prevent rate limiting
         Fetched fetched = fetch(url, marketplaceId, marketplace);
         Document document = fetched.document();
 
         if (document.html().contains("validateCaptcha")) {
+            rateLimiter.recordCaptchaBlock(marketplaceId);
             throw new ScrapeException("Amazon blocked request with CAPTCHA");
         }
 
+        rateLimiter.recordSuccess(marketplaceId);
         requireExpectedHost(fetched.finalUrl(), marketplace, url);
 
         String title = findFirstMatch(document, TITLE_SELECTORS, false);

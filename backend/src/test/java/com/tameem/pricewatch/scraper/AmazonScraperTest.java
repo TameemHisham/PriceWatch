@@ -36,7 +36,7 @@ class AmazonScraperTest {
                 config("amazon.ae", "AE", "en-AE,en;q=0.9"));
         properties.getMarketplaces().put("AMAZON_US",
                 config("amazon.com", "US", "en-US,en;q=0.9"));
-        return new AmazonScraper(new MarketplaceRegistry(properties));
+        return new AmazonScraper(new MarketplaceRegistry(properties) , new ScraperRateLimiter());
     }
 
     /** The exact pair that produced the duplicate insert. */
