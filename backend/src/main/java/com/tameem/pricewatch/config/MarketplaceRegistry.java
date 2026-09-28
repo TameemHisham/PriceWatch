@@ -44,6 +44,16 @@ public class MarketplaceRegistry {
         return properties.getMarketplaces().keySet();
     }
 
+    /**
+     * Whether this marketplace is enabled for scraping and search. An id with no configuration
+     * counts as enabled: an unknown storefront is a resolution problem for the caller to raise,
+     * not something this switch should silently swallow.
+     */
+    public boolean isEnabled(String id) {
+        ScrapeProperties.MarketplaceConfig config = properties.getMarketplaces().get(id);
+        return config == null || config.isEnabled();
+    }
+
     /** Config for a marketplace id, or throws if it is no longer configured. */
     public ScrapeProperties.MarketplaceConfig configFor(String id) {
         ScrapeProperties.MarketplaceConfig config = properties.getMarketplaces().get(id);

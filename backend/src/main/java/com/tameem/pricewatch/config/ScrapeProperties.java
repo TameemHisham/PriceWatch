@@ -28,6 +28,14 @@ public class ScrapeProperties {
     public static class MarketplaceConfig {
         /** Domain that identifies this storefront in a product URL. */
         private String host;
+        /**
+         * Whether this storefront is scraped and searched at all. Default true. Set false to
+         * park a marketplace whose edge check the scrapers cannot pass — B&amp;H's Cloudflare
+         * JS challenge is the first — without deleting its scraper or its stored listings and
+         * price history. Discovery skips a disabled marketplace when fanning out searches, and
+         * the scheduler skips its listings on each sweep.
+         */
+        private boolean enabled = true;
         /** ISO country this storefront is being priced for. */
         private String deliveryCountry;
         /** Sent as Accept-Language so the storefront does not guess locale from IP. */
@@ -46,6 +54,9 @@ public class ScrapeProperties {
 
         public String getHost() { return host; }
         public void setHost(String host) { this.host = host; }
+
+        public boolean isEnabled() { return enabled; }
+        public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
         public String getDeliveryCountry() { return deliveryCountry; }
         public void setDeliveryCountry(String deliveryCountry) { this.deliveryCountry = deliveryCountry; }

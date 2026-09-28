@@ -2,6 +2,7 @@ package com.tameem.pricewatch.scraper;
 
 import com.tameem.pricewatch.config.MarketplaceRegistry;
 import com.tameem.pricewatch.config.ScrapeProperties;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,11 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Runs the real extraction against a saved copy of a live B&amp;H product page
@@ -272,5 +276,32 @@ class BhPhotoScraperTest {
     void doesNotReadARealPageAsAChallenge() throws IOException {
         assertFalse(BhPhotoScraper.hasChallengeMarkers(fixture().html()));
         assertFalse(BhPhotoScraper.hasChallengeMarkers(null));
+    }
+
+    /**
+     * A {@code cf-mitigated: challenge} response is a JS check no user agent can answer, so the
+     * fetch must fail on the first attempt rather than spending the whole agent rotation on it.
+     */
+    @Test
+    void cloudflareChallengeThrowsOnFirstAttemptWithoutRetrying() {
+        ScrapeProperties properties = new ScrapeProperties();
+        properties.getMarketplaces().put("BH_PHOTO", bhConfig());
+        AtomicInteger attempts = new AtomicInteger();
+
+        BhPhotoScraper scraper = new BhPhotoScraper(new MarketplaceRegistry(properties)) {
+            @Override
+            Connection.Response execute(String url, String userAgent, String marketplaceId,
+                                        ScrapeProperties.MarketplaceConfig marketplace) {
+                attempts.incrementAndGet();
+                Connection.Response response = mock(Connection.Response.class);
+                when(response.header("cf-mitigated")).thenReturn("challenge");
+                return response;
+            }
+        };
+
+        ScrapeException thrown = assertThrows(ScrapeException.class, () -> scraper.scrape(PRODUCT_URL));
+        assertEquals("Cloudflare JS challenge — not retryable", thrown.getMessage());
+        assertEquals(1, attempts.get(),
+                "a Cloudflare challenge must not be retried across the user agent rotation");
     }
 }

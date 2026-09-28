@@ -53,6 +53,11 @@ public class CrossStoreDiscovery {
         // Step 1: decide which scrapers are even worth calling — cheap, no I/O, stays sequential.
         List<SearchableScraper> toSearch = searchable.stream()
                 .filter(scraper -> {
+                    if (servesOnlyDisabled(scraper)) {
+                        log.debug("Skipping search on {} — all its marketplaces are disabled",
+                                scraper.getClass().getSimpleName());
+                        return false;
+                    }
                     if (servesOnlyExcluded(scraper, excludeMarketplaces)) {
                         log.debug("Skipping search on {} — its marketplaces are already attached",
                                 scraper.getClass().getSimpleName());
@@ -88,7 +93,8 @@ public class CrossStoreDiscovery {
                 } catch (RuntimeException e) {
                     continue;
                 }
-                if (excludeMarketplaces.contains(marketplaceId) || matches.containsKey(marketplaceId)) {
+                if (excludeMarketplaces.contains(marketplaceId) || matches.containsKey(marketplaceId)
+                        || !marketplaces.isEnabled(marketplaceId)) {
                     continue;
                 }
 
@@ -111,6 +117,18 @@ public class CrossStoreDiscovery {
                 .filter(scraper::supports)
                 .toList();
         return !served.isEmpty() && excluded.containsAll(served);
+    }
+
+    /**
+     * Whether every marketplace this scraper serves is disabled, so calling its search would
+     * only spend a request on a storefront no hit could be attached from. A multi-region
+     * scraper with one live region is still worth searching.
+     */
+    private boolean servesOnlyDisabled(SearchableScraper scraper) {
+        List<String> served = marketplaces.allMarketplaceIds().stream()
+                .filter(scraper::supports)
+                .toList();
+        return !served.isEmpty() && served.stream().noneMatch(marketplaces::isEnabled);
     }
 
     public Map<String, SearchResult> findMatches(String title) {

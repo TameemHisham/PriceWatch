@@ -315,6 +315,9 @@ public class BhPhotoScraper implements SearchableScraper {
             String userAgent = agents.get(attempt);
             try {
                 Connection.Response response = execute(url, userAgent, marketplaceId, marketplace);
+                // A Cloudflare managed challenge is not retryable — no user agent answers a JS
+                // check Jsoup cannot run — so it stops the fetch here rather than rotating on.
+                EdgeChallenge.failFastIfMitigated(response);
                 if (response.statusCode() == 429) {
                     // Rate limited, not fingerprinted. Another agent would be another request
                     // into a limit that is already tripped, so this one stops here. Measured
@@ -369,8 +372,10 @@ public class BhPhotoScraper implements SearchableScraper {
         return rotated;
     }
 
-    private Connection.Response execute(String url, String userAgent, String marketplaceId,
-                                        ScrapeProperties.MarketplaceConfig marketplace) throws IOException {
+    /** Package-private, not private, so a test can substitute the transport and prove the
+     *  retry behaviour of {@link #fetch} without a live request. */
+    Connection.Response execute(String url, String userAgent, String marketplaceId,
+                                ScrapeProperties.MarketplaceConfig marketplace) throws IOException {
         CookieStore cookies = cookieStores.computeIfAbsent(
                 marketplaceId, id -> new CookieManager().getCookieStore());
 
