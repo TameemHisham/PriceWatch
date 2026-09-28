@@ -42,10 +42,18 @@ public class ExtraScraper implements ProductScraper {
 
     private static final Logger log = LoggerFactory.getLogger(ExtraScraper.class);
     private final MarketplaceRegistry marketplaces;
+    private final ScraperRateLimiter rateLimiter;
     private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>();
 
+    /** Convenience for tests that only exercise parsing; uses a default breaker. */
     public ExtraScraper(MarketplaceRegistry marketplaces) {
+        this(marketplaces, new ScraperRateLimiter());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ExtraScraper(MarketplaceRegistry marketplaces, ScraperRateLimiter rateLimiter) {
         this.marketplaces = marketplaces;
+        this.rateLimiter = rateLimiter;
     }
 
     private static final String MARKETPLACE_ID = "EXTRA";
@@ -126,8 +134,10 @@ public class ExtraScraper implements ProductScraper {
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
-        Fetched fetched = fetch(url, marketplaceId, marketplace);
-        return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        return rateLimiter.guard(marketplaceId, () -> {
+            Fetched fetched = fetch(url, marketplaceId, marketplace);
+            return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        });
     }
 
     /**
@@ -138,7 +148,7 @@ public class ExtraScraper implements ProductScraper {
                       ScrapeProperties.MarketplaceConfig marketplace) {
 
         if (isBotChallenge(document)) {
-            throw new ScrapeException("eXtra blocked request with a bot challenge");
+            throw new EdgeChallengeException("eXtra blocked request with a bot challenge");
         }
 
         requireExpectedHost(finalUrl, marketplace, requestedUrl);
@@ -203,11 +213,16 @@ public class ExtraScraper implements ProductScraper {
                     .header("Sec-Fetch-Mode", "navigate")
                     .header("Sec-Fetch-Site", "none")
                     .cookieStore(cookies) // get cookies
+                    .ignoreHttpErrors(true) // read the block off the response instead of throwing on it
                     .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
                     .timeout(15000);
             marketplace.applyProxy(connection, log);
 
             Connection.Response response = connection.execute();
+            EdgeChallenge.check(response); // cf-mitigated / 403-503 interstitial → EdgeChallengeException
+            if (response.statusCode() >= 400) {
+                throw new ScrapeException("eXtra answered HTTP " + response.statusCode() + " for " + url);
+            }
             return new Fetched(response.parse(), response.url());
         } catch (IOException e) {
             throw new ScrapeException("Failed to fetch page: " + url, e);

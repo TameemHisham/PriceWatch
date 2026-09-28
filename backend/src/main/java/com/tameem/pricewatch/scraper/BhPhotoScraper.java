@@ -47,10 +47,18 @@ public class BhPhotoScraper implements SearchableScraper {
 
     private static final Logger log = LoggerFactory.getLogger(BhPhotoScraper.class);
     private final MarketplaceRegistry marketplaces;
+    private final ScraperRateLimiter rateLimiter;
     private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>();
 
+    /** Convenience for tests that only exercise parsing/fetch; uses a default breaker. */
     public BhPhotoScraper(MarketplaceRegistry marketplaces) {
+        this(marketplaces, new ScraperRateLimiter());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public BhPhotoScraper(MarketplaceRegistry marketplaces, ScraperRateLimiter rateLimiter) {
         this.marketplaces = marketplaces;
+        this.rateLimiter = rateLimiter;
     }
 
     private static final String MARKETPLACE_ID = "BH_PHOTO";
@@ -173,11 +181,13 @@ public class BhPhotoScraper implements SearchableScraper {
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(MARKETPLACE_ID);
         String url = "https://" + hostFor("https://" + marketplace.getHost())
                 + "/c/search?q=" + URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
-        Fetched fetched = fetch(url, MARKETPLACE_ID, marketplace);
-        if (isBotChallenge(fetched.document())) {
-            throw new ScrapeException("B&H blocked search with a bot challenge");
-        }
-        return parseSearchResults(fetched.document());
+        return rateLimiter.guard(MARKETPLACE_ID, () -> {
+            Fetched fetched = fetch(url, MARKETPLACE_ID, marketplace);
+            if (isBotChallenge(fetched.document())) {
+                throw new EdgeChallengeException("B&H blocked search with a bot challenge");
+            }
+            return parseSearchResults(fetched.document());
+        });
     }
 
     /** Split out so tests can run the real parsing against a saved results page. */
@@ -204,8 +214,10 @@ public class BhPhotoScraper implements SearchableScraper {
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
-        Fetched fetched = fetch(url, marketplaceId, marketplace);
-        return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        return rateLimiter.guard(marketplaceId, () -> {
+            Fetched fetched = fetch(url, marketplaceId, marketplace);
+            return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        });
     }
 
     /**
@@ -216,7 +228,7 @@ public class BhPhotoScraper implements SearchableScraper {
                       ScrapeProperties.MarketplaceConfig marketplace) {
 
         if (isBotChallenge(document)) {
-            throw new ScrapeException("B&H blocked request with a bot challenge");
+            throw new EdgeChallengeException("B&H blocked request with a bot challenge");
         }
 
         requireExpectedHost(finalUrl, marketplace, requestedUrl);
@@ -346,7 +358,7 @@ public class BhPhotoScraper implements SearchableScraper {
         if (challenged) {
             // Named as a block even when a transport failure also occurred: the block is the
             // fact that explains the listing, and the one worth acting on.
-            throw new ScrapeException("B&H blocked all " + agents.size() + " attempts at " + url
+            throw new EdgeChallengeException("B&H blocked all " + agents.size() + " attempts at " + url
                     + " with a bot challenge — the edge check cannot be answered by Jsoup",
                     lastFailure);
         }

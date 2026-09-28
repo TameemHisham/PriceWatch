@@ -3,6 +3,7 @@ package com.tameem.pricewatch.matching;
 import com.tameem.pricewatch.config.MarketplaceRegistry;
 import com.tameem.pricewatch.config.ScraperRegistry;
 import com.tameem.pricewatch.scraper.ScrapeException;
+import com.tameem.pricewatch.scraper.ScraperRateLimiter;
 import com.tameem.pricewatch.scraper.SearchResult;
 import com.tameem.pricewatch.scraper.SearchableScraper;
 import org.slf4j.Logger;
@@ -27,15 +28,17 @@ public class CrossStoreDiscovery {
     private final AttributeExtractor extractor;
     private final ProductMatcher matcher;
     private final ExecutorService scraperExecutor;
+    private final ScraperRateLimiter rateLimiter;
 
     public CrossStoreDiscovery(ScraperRegistry scrapers, MarketplaceRegistry marketplaces,
                                AttributeExtractor extractor, ProductMatcher matcher,
-                               ExecutorService scraperExecutor) {
+                               ExecutorService scraperExecutor, ScraperRateLimiter rateLimiter) {
         this.scrapers = scrapers;
         this.marketplaces = marketplaces;
         this.extractor = extractor;
         this.matcher = matcher;
         this.scraperExecutor = scraperExecutor;
+        this.rateLimiter = rateLimiter;
     }
 
     public Map<String, SearchResult> findMatches(String title, List<String> excludeMarketplaces) {
@@ -53,9 +56,10 @@ public class CrossStoreDiscovery {
         // Step 1: decide which scrapers are even worth calling — cheap, no I/O, stays sequential.
         List<SearchableScraper> toSearch = searchable.stream()
                 .filter(scraper -> {
-                    if (servesOnlyDisabled(scraper)) {
-                        log.debug("Skipping search on {} — all its marketplaces are disabled",
-                                scraper.getClass().getSimpleName());
+                    String unavailable = unavailableReason(scraper);
+                    if (unavailable != null) {
+                        log.debug("Skipping search on {} — {}",
+                                scraper.getClass().getSimpleName(), unavailable);
                         return false;
                     }
                     if (servesOnlyExcluded(scraper, excludeMarketplaces)) {
@@ -94,7 +98,7 @@ public class CrossStoreDiscovery {
                     continue;
                 }
                 if (excludeMarketplaces.contains(marketplaceId) || matches.containsKey(marketplaceId)
-                        || !marketplaces.isEnabled(marketplaceId)) {
+                        || !marketplaces.isEnabled(marketplaceId) || rateLimiter.isOpen(marketplaceId)) {
                     continue;
                 }
 
@@ -120,15 +124,26 @@ public class CrossStoreDiscovery {
     }
 
     /**
-     * Whether every marketplace this scraper serves is disabled, so calling its search would
-     * only spend a request on a storefront no hit could be attached from. A multi-region
-     * scraper with one live region is still worth searching.
+     * Why this scraper is not worth searching right now, or null when at least one marketplace
+     * it serves is both enabled and not circuit-broken. A multi-region scraper with one live
+     * region is still worth searching. The disabled flag is a hard manual override: it is
+     * reported even if the breaker would also skip the store.
      */
-    private boolean servesOnlyDisabled(SearchableScraper scraper) {
+    private String unavailableReason(SearchableScraper scraper) {
         List<String> served = marketplaces.allMarketplaceIds().stream()
                 .filter(scraper::supports)
                 .toList();
-        return !served.isEmpty() && served.stream().noneMatch(marketplaces::isEnabled);
+        if (served.isEmpty()) {
+            return null;
+        }
+        boolean anyReachable = served.stream()
+                .anyMatch(id -> marketplaces.isEnabled(id) && !rateLimiter.isOpen(id));
+        if (anyReachable) {
+            return null;
+        }
+        return served.stream().anyMatch(marketplaces::isEnabled)
+                ? "circuit breaker open on all its marketplaces"
+                : "all its marketplaces are disabled";
     }
 
     public Map<String, SearchResult> findMatches(String title) {

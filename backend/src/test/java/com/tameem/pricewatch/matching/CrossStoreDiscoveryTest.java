@@ -5,6 +5,7 @@ import com.tameem.pricewatch.config.ScrapeProperties;
 import com.tameem.pricewatch.config.ScraperRegistry;
 import com.tameem.pricewatch.entity.Store;
 import com.tameem.pricewatch.scraper.ProductData;
+import com.tameem.pricewatch.scraper.ScraperRateLimiter;
 import com.tameem.pricewatch.scraper.SearchResult;
 import com.tameem.pricewatch.scraper.SearchableScraper;
 import org.junit.jupiter.api.AfterEach;
@@ -82,11 +83,18 @@ class CrossStoreDiscoveryTest {
 
     private CrossStoreDiscovery discoveryOver(MarketplaceRegistry marketplaces,
                                               SearchableScraper... scrapers) {
+        return discoveryOver(marketplaces, new ScraperRateLimiter(), scrapers);
+    }
+
+    private CrossStoreDiscovery discoveryOver(MarketplaceRegistry marketplaces,
+                                              ScraperRateLimiter rateLimiter,
+                                              SearchableScraper... scrapers) {
         ScraperRegistry scraperRegistry = new ScraperRegistry(List.of(scrapers), marketplaces);
         AttributeExtractor extractor = mock(AttributeExtractor.class);
         when(extractor.extract(any())).thenReturn(Optional.empty());
         ProductMatcher matcher = mock(ProductMatcher.class);
-        return new CrossStoreDiscovery(scraperRegistry, marketplaces, extractor, matcher, executor);
+        return new CrossStoreDiscovery(scraperRegistry, marketplaces, extractor, matcher,
+                executor, rateLimiter);
     }
 
     @Test
@@ -113,5 +121,33 @@ class CrossStoreDiscoveryTest {
 
         assertTrue(reEnabled.searched.get(),
                 "an enabled marketplace should be searched — proves the skip is the flag, not the id");
+    }
+
+    /** A marketplace whose breaker is OPEN is skipped even though it is enabled. */
+    @Test
+    void doesNotSearchAMarketplaceWithAnOpenBreaker() {
+        ScraperRateLimiter rateLimiter = new ScraperRateLimiter();
+        rateLimiter.recordEdgeChallenge(ENABLED_ID, "Cloudflare JS challenge — not retryable");
+
+        RecordingScraper open = new RecordingScraper(ENABLED_ID);
+        CrossStoreDiscovery discovery = discoveryOver(registryWith(true), rateLimiter, open);
+
+        discovery.findMatches("Sony WH-1000XM5");
+
+        assertFalse(open.searched.get(),
+                "a marketplace with an open circuit breaker must not be searched");
+    }
+
+    /** enabled=false wins over a closed breaker: a disabled store is skipped regardless. */
+    @Test
+    void disabledWinsOverAClosedBreaker() {
+        ScraperRateLimiter rateLimiter = new ScraperRateLimiter(); // all breakers CLOSED
+        RecordingScraper disabled = new RecordingScraper(DISABLED_ID);
+        CrossStoreDiscovery discovery = discoveryOver(registryWith(false), rateLimiter, disabled);
+
+        discovery.findMatches("Sony WH-1000XM5");
+
+        assertFalse(disabled.searched.get(),
+                "the manual disable flag must skip the store even with a closed breaker");
     }
 }

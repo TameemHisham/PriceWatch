@@ -58,10 +58,18 @@ public class IkeaScraper implements SearchableScraper {
 
     private static final Logger log = LoggerFactory.getLogger(IkeaScraper.class);
     private final MarketplaceRegistry marketplaces;
+    private final ScraperRateLimiter rateLimiter;
     private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>();
 
+    /** Convenience for tests that only exercise parsing; uses a default breaker. */
     public IkeaScraper(MarketplaceRegistry marketplaces) {
+        this(marketplaces, new ScraperRateLimiter());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public IkeaScraper(MarketplaceRegistry marketplaces, ScraperRateLimiter rateLimiter) {
         this.marketplaces = marketplaces;
+        this.rateLimiter = rateLimiter;
     }
 
     private static final String MARKETPLACE_ID = "IKEA";
@@ -215,7 +223,8 @@ public class IkeaScraper implements SearchableScraper {
                 + "/search-result-page?q="
                 + URLEncoder.encode(searchPhrase(query), StandardCharsets.UTF_8)
                 + "&size=" + SEARCH_CANDIDATES;
-        return parseSearchResults(fetchSearch(url, marketplace), query);
+        return rateLimiter.guard(MARKETPLACE_ID,
+                () -> parseSearchResults(fetchSearch(url, marketplace), query));
     }
 
     /** The title as a query the endpoint will accept: collapsed, and cut on a word boundary. */
@@ -374,10 +383,16 @@ public class IkeaScraper implements SearchableScraper {
                     .header("Accept-Encoding", "gzip, deflate")
                     .header("Referer", "https://www." + marketplace.getHost() + "/")
                     .ignoreContentType(true) // the response is JSON, not a document
+                    .ignoreHttpErrors(true) // read the block off the response instead of throwing on it
                     .maxBodySize(0)
                     .timeout(15000);
             marketplace.applyProxy(connection, log);
-            return connection.execute().body();
+            Connection.Response response = connection.execute();
+            EdgeChallenge.check(response); // cf-mitigated / 403-503 interstitial → EdgeChallengeException
+            if (response.statusCode() >= 400) {
+                throw new ScrapeException("IKEA search answered HTTP " + response.statusCode() + " for " + url);
+            }
+            return response.body();
         } catch (IOException e) {
             throw new ScrapeException("Failed to fetch IKEA search results: " + url, e);
         }
@@ -387,8 +402,10 @@ public class IkeaScraper implements SearchableScraper {
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
-        Fetched fetched = fetch(url, marketplaceId, marketplace);
-        return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        return rateLimiter.guard(marketplaceId, () -> {
+            Fetched fetched = fetch(url, marketplaceId, marketplace);
+            return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        });
     }
 
     /**
@@ -399,7 +416,7 @@ public class IkeaScraper implements SearchableScraper {
                       ScrapeProperties.MarketplaceConfig marketplace) {
 
         if (isBotChallenge(document)) {
-            throw new ScrapeException("IKEA blocked request with a bot challenge");
+            throw new EdgeChallengeException("IKEA blocked request with a bot challenge");
         }
 
         requireExpectedHost(finalUrl, marketplace, requestedUrl);
@@ -470,11 +487,16 @@ public class IkeaScraper implements SearchableScraper {
                     .header("Sec-Fetch-Mode", "navigate")
                     .header("Sec-Fetch-Site", "none")
                     .cookieStore(cookies) // get cookies
+                    .ignoreHttpErrors(true) // read the block off the response instead of throwing on it
                     .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
                     .timeout(15000);
             marketplace.applyProxy(connection, log);
 
             Connection.Response response = connection.execute();
+            EdgeChallenge.check(response); // cf-mitigated / 403-503 interstitial → EdgeChallengeException
+            if (response.statusCode() >= 400) {
+                throw new ScrapeException("IKEA answered HTTP " + response.statusCode() + " for " + url);
+            }
             return new Fetched(response.parse(), response.url());
         } catch (IOException e) {
             throw new ScrapeException("Failed to fetch page: " + url, e);

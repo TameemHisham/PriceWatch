@@ -166,16 +166,23 @@ public class AmazonScraper implements ProductScraper {
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
-        rateLimiter.acquire(marketplaceId); // to prevent rate limiting
+        // guard runs the fetch+parse under this marketplace's breaker: it throttles, refuses when
+        // the breaker is open, and records the outcome (a CAPTCHA is a soft block, counted to a
+        // threshold before opening; a clean parse closes the breaker).
+        return rateLimiter.guard(marketplaceId, () -> scrapeGuarded(url, marketplaceId, marketplace));
+    }
+
+    private ProductData scrapeGuarded(String url, String marketplaceId,
+                                      ScrapeProperties.MarketplaceConfig marketplace) {
         Fetched fetched = fetch(url, marketplaceId, marketplace);
         Document document = fetched.document();
 
         if (document.html().contains("validateCaptcha")) {
-            rateLimiter.recordCaptchaBlock(marketplaceId);
-            throw new ScrapeException("Amazon blocked request with CAPTCHA");
+            // Soft: Amazon's CAPTCHA is often transient, so the breaker only opens after several
+            // in a row. EdgeChallengeException(soft=true) is what routes it to that counting path.
+            throw new EdgeChallengeException("Amazon blocked request with CAPTCHA", true);
         }
 
-        rateLimiter.recordSuccess(marketplaceId);
         requireExpectedHost(fetched.finalUrl(), marketplace, url);
 
         String title = findFirstMatch(document, TITLE_SELECTORS, false);

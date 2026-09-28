@@ -120,7 +120,7 @@ class JarirScraperTest {
     void rejectsPerimeterXChallengePage() {
         Document challenge = Jsoup.parse(
                 "<html><body><div id=\"px-captcha\"></div></body></html>", PRODUCT_URL);
-        ScrapeException thrown = assertThrows(ScrapeException.class, () ->
+        EdgeChallengeException thrown = assertThrows(EdgeChallengeException.class, () ->
                 scraper().parse(challenge, url(PRODUCT_URL), PRODUCT_URL, jarirConfig()));
         assertTrue(thrown.getMessage().contains("bot challenge"), thrown.getMessage());
     }

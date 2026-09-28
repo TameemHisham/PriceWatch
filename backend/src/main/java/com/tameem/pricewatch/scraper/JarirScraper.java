@@ -57,10 +57,18 @@ public class JarirScraper implements SearchableScraper {
 
     private static final Logger log = LoggerFactory.getLogger(JarirScraper.class);
     private final MarketplaceRegistry marketplaces;
+    private final ScraperRateLimiter rateLimiter;
     private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>();
 
+    /** Convenience for tests that only exercise parsing; uses a default breaker. */
     public JarirScraper(MarketplaceRegistry marketplaces) {
+        this(marketplaces, new ScraperRateLimiter());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public JarirScraper(MarketplaceRegistry marketplaces, ScraperRateLimiter rateLimiter) {
         this.marketplaces = marketplaces;
+        this.rateLimiter = rateLimiter;
     }
 
     private static final String MARKETPLACE_ID = "JARIR";
@@ -205,21 +213,23 @@ public class JarirScraper implements SearchableScraper {
             throw new ScrapeException("Marketplace JARIR has no configured search key");
         }
 
-        String previous = null;
-        for (int limit : QUERY_WORD_LIMITS) {
-            String phrase = firstWords(query, limit);
-            if (phrase.isBlank() || phrase.equals(previous)) {
-                continue; // a short title narrows to the same phrase at every rung
+        return rateLimiter.guard(MARKETPLACE_ID, () -> {
+            String previous = null;
+            for (int limit : QUERY_WORD_LIMITS) {
+                String phrase = firstWords(query, limit);
+                if (phrase.isBlank() || phrase.equals(previous)) {
+                    continue; // a short title narrows to the same phrase at every rung
+                }
+                previous = phrase;
+                List<SearchResult> hits = parseSearchResults(
+                        fetchSearch(searchUrl(phrase, key), marketplace), marketplace);
+                if (!hits.isEmpty()) {
+                    return hits;
+                }
+                log.debug("No Jarir hits for '{}' — narrowing the query", phrase);
             }
-            previous = phrase;
-            List<SearchResult> hits = parseSearchResults(
-                    fetchSearch(searchUrl(phrase, key), marketplace), marketplace);
-            if (!hits.isEmpty()) {
-                return hits;
-            }
-            log.debug("No Jarir hits for '{}' — narrowing the query", phrase);
-        }
-        return List.of();
+            return List.of();
+        });
     }
 
     /** The first {@code limit} whitespace-separated words, without any trailing separator. */
@@ -329,10 +339,16 @@ public class JarirScraper implements SearchableScraper {
                     .header("Accept-Encoding", "gzip, deflate")
                     .header("Referer", "https://www." + marketplace.getHost() + "/")
                     .ignoreContentType(true) // the response is JSON, not a document
+                    .ignoreHttpErrors(true) // read the block off the response instead of throwing on it
                     .maxBodySize(0)
                     .timeout(15000);
             marketplace.applyProxy(connection, log);
-            return connection.execute().body();
+            Connection.Response response = connection.execute();
+            EdgeChallenge.check(response); // cf-mitigated / 403-503 interstitial → EdgeChallengeException
+            if (response.statusCode() >= 400) {
+                throw new ScrapeException("Jarir search answered HTTP " + response.statusCode() + " for " + url);
+            }
+            return response.body();
         } catch (IOException e) {
             throw new ScrapeException("Failed to fetch Jarir search results: " + url, e);
         }
@@ -342,8 +358,10 @@ public class JarirScraper implements SearchableScraper {
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
-        Fetched fetched = fetch(url, marketplaceId, marketplace);
-        return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        return rateLimiter.guard(marketplaceId, () -> {
+            Fetched fetched = fetch(url, marketplaceId, marketplace);
+            return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        });
     }
 
     /**
@@ -354,7 +372,7 @@ public class JarirScraper implements SearchableScraper {
                       ScrapeProperties.MarketplaceConfig marketplace) {
 
         if (isBotChallenge(document)) {
-            throw new ScrapeException("Jarir blocked request with a bot challenge");
+            throw new EdgeChallengeException("Jarir blocked request with a bot challenge");
         }
 
         requireExpectedHost(finalUrl, marketplace, requestedUrl);
@@ -425,11 +443,16 @@ public class JarirScraper implements SearchableScraper {
                     .header("Sec-Fetch-Mode", "navigate")
                     .header("Sec-Fetch-Site", "none")
                     .cookieStore(cookies) // get cookies
+                    .ignoreHttpErrors(true) // read the block off the response instead of throwing on it
                     .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
                     .timeout(15000);
             marketplace.applyProxy(connection, log);
 
             Connection.Response response = connection.execute();
+            EdgeChallenge.check(response); // cf-mitigated / 403-503 interstitial → EdgeChallengeException
+            if (response.statusCode() >= 400) {
+                throw new ScrapeException("Jarir answered HTTP " + response.statusCode() + " for " + url);
+            }
             return new Fetched(response.parse(), response.url());
         } catch (IOException e) {
             throw new ScrapeException("Failed to fetch page: " + url, e);

@@ -7,6 +7,7 @@ import com.tameem.pricewatch.entity.ProductListing;
 import com.tameem.pricewatch.repositories.ExchangeRateRepository;
 import com.tameem.pricewatch.repositories.ProductListingRepository;
 import com.tameem.pricewatch.scraper.ScrapeException;
+import com.tameem.pricewatch.scraper.ScraperRateLimiter;
 import com.tameem.pricewatch.service.TrackedProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +22,15 @@ import org.springframework.web.client.RestClientResponseException;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class SchedulerScraper {
@@ -39,14 +43,18 @@ public class SchedulerScraper {
 
     private final ExchangeRateRepository exchangeRateRepository;
     private final MarketplaceRegistry marketplaces;
+    private final ScraperRateLimiter rateLimiter;
 
     private static final Logger log = LoggerFactory.getLogger(SchedulerScraper.class);
+    private static final DateTimeFormatter PROBE_TIME =
+            DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault());
 
-    public SchedulerScraper(ProductListingRepository productListingRepository, TrackedProductService trackedProductService,ExchangeRateRepository exchangeRateRepository, MarketplaceRegistry marketplaces) {
+    public SchedulerScraper(ProductListingRepository productListingRepository, TrackedProductService trackedProductService,ExchangeRateRepository exchangeRateRepository, MarketplaceRegistry marketplaces, ScraperRateLimiter rateLimiter) {
         this.productListingRepository = productListingRepository;
         this.trackedProductService = trackedProductService;
         this.exchangeRateRepository = exchangeRateRepository;
         this.marketplaces = marketplaces;
+        this.rateLimiter = rateLimiter;
         this.restClient= RestClient.builder()
                 .baseUrl("https://api.frankfurter.dev/v2/rates")
                 .build();
@@ -63,21 +71,28 @@ public class SchedulerScraper {
             return;
         };
 
-        // Drop listings on disabled marketplaces before the loop. One DEBUG line per disabled
-        // marketplace per sweep — not a WARN per listing, which a parked storefront like B&H
-        // would otherwise spray across every sweep.
+        // Drop listings on marketplaces that are disabled (hard manual override) or whose circuit
+        // breaker is open (self-healing skip). One DEBUG line per marketplace per reason per sweep
+        // — not a WARN per listing, which a parked storefront like B&H would otherwise spray
+        // across every sweep. Disabled wins over the breaker.
         List<ProductListing> toScrape = new ArrayList<>(listings.size());
-        Map<String, Integer> skippedByMarketplace = new LinkedHashMap<>();
+        Map<String, Integer> skippedDisabled = new LinkedHashMap<>();
+        Map<String, Integer> skippedOpen = new LinkedHashMap<>();
         for (ProductListing listing : listings) {
             String marketplaceId = listing.getMarketplace();
             if (marketplaceId != null && !marketplaces.isEnabled(marketplaceId)) {
-                skippedByMarketplace.merge(marketplaceId, 1, Integer::sum);
+                skippedDisabled.merge(marketplaceId, 1, Integer::sum);
+            } else if (marketplaceId != null && rateLimiter.isOpen(marketplaceId)) {
+                skippedOpen.merge(marketplaceId, 1, Integer::sum);
             } else {
                 toScrape.add(listing);
             }
         }
-        skippedByMarketplace.forEach((marketplaceId, count) ->
+        skippedDisabled.forEach((marketplaceId, count) ->
                 log.debug("Skipping {} listings on disabled marketplace {}", count, marketplaceId));
+        skippedOpen.forEach((marketplaceId, count) ->
+                log.debug("Skipping {} listings on circuit-broken marketplace {} ({})",
+                        count, marketplaceId, rateLimiter.openReason(marketplaceId)));
 
         int succeeded = 0;
         int failed = 0;
@@ -101,6 +116,20 @@ public class SchedulerScraper {
         }
         long timeAfterLoop = System.nanoTime();
         log.info("Sweep complete: {} listings checked, {} succeeded, {} failed, {}ms", toScrape.size(), succeeded, failed, (timeAfterLoop - timeBeforeLoop) / 1_000_000);
+        logBreakerSummary();
+    }
+
+    /** One INFO line a sweep naming every open breaker and its probe time, e.g.
+     *  "Breakers: CURRYS=OPEN(until 19:20), rest CLOSED". */
+    private void logBreakerSummary() {
+        String open = marketplaces.allMarketplaceIds().stream()
+                .filter(rateLimiter::isOpen)
+                .map(id -> {
+                    Instant probeAt = rateLimiter.snapshot(id).nextProbeAt();
+                    return id + "=OPEN(until " + (probeAt == null ? "?" : PROBE_TIME.format(probeAt)) + ")";
+                })
+                .collect(Collectors.joining(", "));
+        log.info("Breakers: {}", open.isEmpty() ? "all CLOSED" : open + ", rest CLOSED");
     }
 
     @Scheduled(cron = "@weekly")

@@ -46,10 +46,18 @@ public class FlipkartScraper implements SearchableScraper {
 
     private static final Logger log = LoggerFactory.getLogger(FlipkartScraper.class);
     private final MarketplaceRegistry marketplaces;
+    private final ScraperRateLimiter rateLimiter;
     private final Map<String, CookieStore> cookieStores = new ConcurrentHashMap<>();
 
+    /** Convenience for tests that only exercise parsing; uses a default breaker. */
     public FlipkartScraper(MarketplaceRegistry marketplaces) {
+        this(marketplaces, new ScraperRateLimiter());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public FlipkartScraper(MarketplaceRegistry marketplaces, ScraperRateLimiter rateLimiter) {
         this.marketplaces = marketplaces;
+        this.rateLimiter = rateLimiter;
     }
 
     private static final String MARKETPLACE_ID = "FLIPKART";
@@ -156,11 +164,13 @@ public class FlipkartScraper implements SearchableScraper {
         String qualified = host.startsWith("www.") ? host : "www." + host;
         String url = "https://" + qualified + "/search?q="
                 + URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
-        Fetched fetched = fetch(url, MARKETPLACE_ID, marketplace);
-        if (isBotChallenge(fetched.document())) {
-            throw new ScrapeException("Flipkart blocked search with a bot challenge");
-        }
-        return parseSearchResults(fetched.document());
+        return rateLimiter.guard(MARKETPLACE_ID, () -> {
+            Fetched fetched = fetch(url, MARKETPLACE_ID, marketplace);
+            if (isBotChallenge(fetched.document())) {
+                throw new EdgeChallengeException("Flipkart blocked search with a bot challenge");
+            }
+            return parseSearchResults(fetched.document());
+        });
     }
 
     /** Split out so tests can run the real parsing against a saved results page. */
@@ -194,8 +204,10 @@ public class FlipkartScraper implements SearchableScraper {
     public ProductData scrape(String url) {
         String marketplaceId = marketplaces.idFor(url);
         ScrapeProperties.MarketplaceConfig marketplace = marketplaces.configFor(marketplaceId);
-        Fetched fetched = fetch(url, marketplaceId, marketplace);
-        return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        return rateLimiter.guard(marketplaceId, () -> {
+            Fetched fetched = fetch(url, marketplaceId, marketplace);
+            return parse(fetched.document(), fetched.finalUrl(), url, marketplace);
+        });
     }
 
     /**
@@ -206,7 +218,7 @@ public class FlipkartScraper implements SearchableScraper {
                       ScrapeProperties.MarketplaceConfig marketplace) {
 
         if (isBotChallenge(document)) {
-            throw new ScrapeException("Flipkart blocked request with a bot challenge");
+            throw new EdgeChallengeException("Flipkart blocked request with a bot challenge");
         }
 
         requireExpectedHost(finalUrl, marketplace, requestedUrl);
@@ -272,11 +284,16 @@ public class FlipkartScraper implements SearchableScraper {
                     .header("Sec-Fetch-Mode", "navigate")
                     .header("Sec-Fetch-Site", "none")
                     .cookieStore(cookies) // get cookies
+                    .ignoreHttpErrors(true) // read the block off the response instead of throwing on it
                     .maxBodySize(0) // product pages run past Jsoup's default 2MB cap
                     .timeout(15000);
             marketplace.applyProxy(connection, log);
 
             Connection.Response response = connection.execute();
+            EdgeChallenge.check(response); // cf-mitigated / 403-503 interstitial → EdgeChallengeException
+            if (response.statusCode() >= 400) {
+                throw new ScrapeException("Flipkart answered HTTP " + response.statusCode() + " for " + url);
+            }
             return new Fetched(response.parse(), response.url());
         } catch (IOException e) {
             throw new ScrapeException("Failed to fetch page: " + url, e);
