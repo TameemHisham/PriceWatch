@@ -1,3 +1,6 @@
+/** Where cross-store discovery is for this product (Phase 5, async via Kafka). */
+export type DiscoveryStatus = "PENDING" | "DONE" | "FAILED";
+
 export interface TrackedProductResponse {
     id: number;
     name: string;
@@ -10,4 +13,5 @@ export interface TrackedProductResponse {
     currentPrice: number | null;
     storeCount: number;
     stores: string[];
+    discoveryStatus: DiscoveryStatus | null;
 }

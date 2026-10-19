@@ -69,6 +69,40 @@ export default function ProductDetail() {
         };
     }, [productId, validId]);
 
+    // Cross-store discovery runs asynchronously (Phase 5, via Kafka), so the first fetch comes
+    // back with discoveryStatus === "PENDING" and only the primary listing. Poll for completion:
+    // we setProduct only when the status actually flips (DONE/FAILED) — while it stays PENDING
+    // this effect's own timer chain keeps going with a 2s→5s backoff, and stops the moment the
+    // status changes, on unmount, or after a 2-minute cap.
+    const discoveryStatus = product?.discoveryStatus;
+    useEffect(() => {
+        if (discoveryStatus !== "PENDING") return;
+        let cancelled = false;
+        const deadline = Date.now() + 120_000;
+        let delay = 2000;
+        let timer: ReturnType<typeof setTimeout>;
+        const tick = async () => {
+            if (cancelled || Date.now() > deadline) return;
+            try {
+                const fresh = await getTrackedProduct(productId);
+                if (cancelled) return;
+                if (fresh.discoveryStatus !== "PENDING") {
+                    setProduct(fresh); // DONE/FAILED → show the result and stop polling
+                    return;
+                }
+            } catch {
+                // transient error — keep polling
+            }
+            delay = Math.min(delay + 1000, 5000);
+            timer = setTimeout(tick, delay);
+        };
+        timer = setTimeout(tick, delay);
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [productId, discoveryStatus]);
+
     // `replace` swaps the history entry so Back doesn't return to the broken URL.
     if (!validId) return <Navigate to="/" replace />;
     async function handleRefresh() {
@@ -278,6 +312,31 @@ export default function ProductDetail() {
                                 <div className="store-prices--header">
                                     Current price by store
                                 </div>
+
+                                {product.discoveryStatus === "PENDING" && (
+                                    <div
+                                        className="store-prices--discovery"
+                                        style={{
+                                            padding: "8px 16px",
+                                            fontSize: "0.85rem",
+                                            opacity: 0.7,
+                                        }}
+                                    >
+                                        Searching other stores…
+                                    </div>
+                                )}
+                                {product.discoveryStatus === "FAILED" && (
+                                    <div
+                                        className="store-prices--discovery"
+                                        style={{
+                                            padding: "8px 16px",
+                                            fontSize: "0.85rem",
+                                            color: "#c0392b",
+                                        }}
+                                    >
+                                        Couldn’t search other stores this time.
+                                    </div>
+                                )}
 
                                 <div className="store-prices--headings">
                                     <span>Store</span>
