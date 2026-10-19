@@ -16,7 +16,6 @@ export default function ExchangeRateProvider({
     const [exchangeRate, setExchangeRate] = useState<CurrencyResponse[] | null>(
         null,
     );
-    const [error, setError] = useState<string | null>(null);
     const { isAuthenticated } = useAuth();
 
     useEffect(() => {
@@ -27,14 +26,13 @@ export default function ExchangeRateProvider({
         const controller = new AbortController();
         const fetchData = async () => {
             try {
-                setError(null);
                 const response: CurrencyResponse[] = await getExchangeRates({
                     signal: controller.signal,
                 });
                 setExchangeRate(response);
             } catch (err) {
                 if (err instanceof Error && err.name !== "AbortError") {
-                    setError(err.message);
+                    console.error("Failed to load exchange rates:", err.message);
                 }
             }
         };
