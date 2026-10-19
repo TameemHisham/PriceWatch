@@ -130,6 +130,13 @@ export function refreshProduct(
     });
 }
 
+/** POST to re-run cross-store discovery (the "Retry discovery" button). 202, empty body. */
+export function retryDiscovery(id: number): Promise<void> {
+    return jsonRequest<void>(`${BASE}/${id}/discovery`, {
+        method: "POST",
+    });
+}
+
 /** DELETE a tracked product. Returns 204 with an empty body, so no JSON parsing. */
 export async function deleteProduct(id: number): Promise<void> {
     const token = getToken();

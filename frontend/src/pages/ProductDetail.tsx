@@ -6,6 +6,7 @@ import {
     deleteProduct,
     getTrackedProduct,
     refreshProduct,
+    retryDiscovery,
 } from "../api/scraperApi";
 import {
     formatPrice,
@@ -105,6 +106,18 @@ export default function ProductDetail() {
 
     // `replace` swaps the history entry so Back doesn't return to the broken URL.
     if (!validId) return <Navigate to="/" replace />;
+    // Re-run discovery after a FAILED one. Flipping status to PENDING locally restarts the
+    // polling effect, so the banner switches back to "Searching…" immediately.
+    async function handleRetryDiscovery() {
+        if (!product) return;
+        try {
+            setError(null);
+            await retryDiscovery(productId);
+            setProduct({ ...product, discoveryStatus: "PENDING" });
+        } catch (err) {
+            if (err instanceof Error) setError(err.message);
+        }
+    }
     async function handleRefresh() {
         try {
             setRefreshing(true);
@@ -334,7 +347,22 @@ export default function ProductDetail() {
                                             color: "#c0392b",
                                         }}
                                     >
-                                        Couldn’t search other stores this time.
+                                        Couldn’t search other stores this time.{" "}
+                                        <button
+                                            type="button"
+                                            onClick={handleRetryDiscovery}
+                                            style={{
+                                                background: "none",
+                                                border: "none",
+                                                color: "inherit",
+                                                textDecoration: "underline",
+                                                cursor: "pointer",
+                                                padding: 0,
+                                                font: "inherit",
+                                            }}
+                                        >
+                                            Retry
+                                        </button>
                                     </div>
                                 )}
 

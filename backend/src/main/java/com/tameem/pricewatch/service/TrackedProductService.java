@@ -421,6 +421,32 @@ public class TrackedProductService {
     }
 
     /**
+     * User-triggered re-run of discovery (the "Retry discovery" button on a FAILED product).
+     * Ownership-scoped via getEntity. Sets PENDING and re-publishes the event after commit —
+     * which also doubles as the manual recovery for the AFTER_COMMIT dual-write gap.
+     */
+    @Transactional
+    public void requestDiscovery(long productId) {
+        TrackedProduct product = getEntity(productId); // 404 if missing or not the caller's
+        product.setDiscoveryStatus(DiscoveryStatus.PENDING);
+        trackedProductRepository.save(product);
+        eventPublisher.publishEvent(ProductTrackedEvent.of(productId));
+    }
+
+    /**
+     * Marks discovery FAILED after its event has exhausted retries and been dead-lettered —
+     * called by the product.tracked.DLT listener, so no caller to ownership-scope. Leaves the
+     * product otherwise intact; the primary listing and its price history are untouched.
+     */
+    @Transactional
+    public void markDiscoveryFailed(long productId) {
+        trackedProductRepository.findById(productId).ifPresent(product -> {
+            product.setDiscoveryStatus(DiscoveryStatus.FAILED);
+            trackedProductRepository.save(product);
+        });
+    }
+
+    /**
      * Saves one listing + its initial price point (if any) for an already-scraped marketplace.
      * <p>
      * Does nothing when this product already holds a listing on that marketplace, and returns

@@ -90,6 +90,16 @@ ProductController {
     }
 
     /**
+     * POST /api/tracked-products/{id}/discovery — re-run cross-store discovery (the "Retry
+     * discovery" button on a FAILED product). Returns 202: the work happens asynchronously.
+     */
+    @PostMapping("/tracked-products/{id}/discovery")
+    public ResponseEntity<Void> retryDiscovery(@PathVariable long id) {
+        trackedProductService.requestDiscovery(id);
+        return ResponseEntity.accepted().build();
+    }
+
+    /**
      * POST /api/tracked-products/{id}/regions — opt this product into another storefront of the
      * same retailer. 201 with the new listing, or 200 with the existing one when already tracked.
      */

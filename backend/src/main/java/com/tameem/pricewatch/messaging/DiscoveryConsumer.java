@@ -42,4 +42,15 @@ public class DiscoveryConsumer {
                 event.trackedProductId(), partition, offset);
         trackedProductService.runDiscovery(event.trackedProductId());
     }
+
+    /**
+     * A discovery event that exhausted its retries lands here. Record it as FAILED so the UI
+     * stops showing "Searching…" and can offer a retry, instead of polling until it times out.
+     */
+    @KafkaListener(topics = KafkaTopics.PRODUCT_TRACKED_DLT, groupId = "discovery-dlt")
+    public void onProductTrackedDlt(@Payload String payload) {
+        ProductTrackedEvent event = mapper.readValue(payload, ProductTrackedEvent.class);
+        log.warn("Discovery dead-lettered for product {} — marking FAILED", event.trackedProductId());
+        trackedProductService.markDiscoveryFailed(event.trackedProductId());
+    }
 }
