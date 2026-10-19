@@ -5,8 +5,9 @@ import com.tameem.pricewatch.entity.ProductListing;
 import com.tameem.pricewatch.entity.Store;
 import com.tameem.pricewatch.repositories.ExchangeRateRepository;
 import com.tameem.pricewatch.repositories.ProductListingRepository;
+import com.tameem.pricewatch.messaging.KafkaTopics;
 import com.tameem.pricewatch.scraper.ScraperRateLimiter;
-import com.tameem.pricewatch.service.TrackedProductService;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,7 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -37,7 +39,8 @@ import static org.mockito.Mockito.when;
 class SchedulerScraperTest {
 
     private final ProductListingRepository listings = mock(ProductListingRepository.class);
-    private final TrackedProductService trackedProductService = mock(TrackedProductService.class);
+    @SuppressWarnings("unchecked")
+    private final KafkaTemplate<String, String> kafkaTemplate = mock(KafkaTemplate.class);
     private final ExchangeRateRepository exchangeRates = mock(ExchangeRateRepository.class);
     private final MarketplaceRegistry marketplaces = mock(MarketplaceRegistry.class);
     private final ScraperRateLimiter rateLimiter = mock(ScraperRateLimiter.class);
@@ -46,7 +49,7 @@ class SchedulerScraperTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        scheduler = new SchedulerScraper(listings, trackedProductService, exchangeRates, marketplaces, rateLimiter);
+        scheduler = new SchedulerScraper(listings, kafkaTemplate, exchangeRates, marketplaces, rateLimiter);
         // @Value-injected in production; set directly for a plain unit test.
         Field interval = SchedulerScraper.class.getDeclaredField("interval");
         interval.setAccessible(true);
@@ -75,8 +78,8 @@ class SchedulerScraperTest {
 
         scheduler.scrape();
 
-        verify(trackedProductService).refreshListing(enabled);
-        verify(trackedProductService, never()).refreshListing(disabled);
+        verify(kafkaTemplate).send(eq(KafkaTopics.LISTING_REFRESH), eq("NEWEGG"), anyString());
+        verify(kafkaTemplate, never()).send(eq(KafkaTopics.LISTING_REFRESH), eq("BH_PHOTO"), anyString());
     }
 
     @Test
@@ -95,7 +98,7 @@ class SchedulerScraperTest {
 
         scheduler.scrape();
 
-        verify(trackedProductService).refreshListing(healthy);
-        verify(trackedProductService, never()).refreshListing(broken);
+        verify(kafkaTemplate).send(eq(KafkaTopics.LISTING_REFRESH), eq("NEWEGG"), anyString());
+        verify(kafkaTemplate, never()).send(eq(KafkaTopics.LISTING_REFRESH), eq("CURRYS"), anyString());
     }
 }

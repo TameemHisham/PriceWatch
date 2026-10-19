@@ -619,6 +619,21 @@ public class TrackedProductService {
                 product.getDiscoveryStatus());
     }
 
+    /**
+     * Re-scrape one listing by id — the entry point for the Kafka refresh consumer, which has
+     * only the id (the DB is the source of truth). One listing per transaction, same as a direct
+     * refreshListing call; a listing deleted before its job is consumed is a no-op, not an error.
+     */
+    @Transactional
+    public void refreshListingById(long listingId) {
+        ProductListing listing = productListingRepository.findById(listingId).orElse(null);
+        if (listing == null) {
+            log.warn("Refresh skipped: listing {} no longer exists", listingId);
+            return;
+        }
+        refreshListing(listing);
+    }
+
     @Transactional
     public void refreshListing(ProductListing listing) {
         ProductData productData = scrapers.forUrl(listing.getUrl()).scrape(listing.getUrl());

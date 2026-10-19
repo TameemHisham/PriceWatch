@@ -6,9 +6,11 @@ import com.tameem.pricewatch.entity.ExchangeRate;
 import com.tameem.pricewatch.entity.ProductListing;
 import com.tameem.pricewatch.repositories.ExchangeRateRepository;
 import com.tameem.pricewatch.repositories.ProductListingRepository;
-import com.tameem.pricewatch.scraper.ScrapeException;
+import com.tameem.pricewatch.messaging.KafkaTopics;
+import com.tameem.pricewatch.messaging.ListingRefreshEvent;
 import com.tameem.pricewatch.scraper.ScraperRateLimiter;
-import com.tameem.pricewatch.service.TrackedProductService;
+import org.springframework.kafka.core.KafkaTemplate;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +40,9 @@ public class SchedulerScraper {
     @Value("${pricewatch.scrape.interval}")
     private Duration interval;
     private final ProductListingRepository productListingRepository;
-    private final TrackedProductService trackedProductService;
+    // Raw type: the single autoconfigured KafkaTemplate (String/String serializers on the wire).
+    private final KafkaTemplate kafkaTemplate;
+    private final ObjectMapper mapper = new ObjectMapper();
     private  final  RestClient restClient;
 
     private final ExchangeRateRepository exchangeRateRepository;
@@ -49,9 +53,9 @@ public class SchedulerScraper {
     private static final DateTimeFormatter PROBE_TIME =
             DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault());
 
-    public SchedulerScraper(ProductListingRepository productListingRepository, TrackedProductService trackedProductService,ExchangeRateRepository exchangeRateRepository, MarketplaceRegistry marketplaces, ScraperRateLimiter rateLimiter) {
+    public SchedulerScraper(ProductListingRepository productListingRepository, KafkaTemplate kafkaTemplate,ExchangeRateRepository exchangeRateRepository, MarketplaceRegistry marketplaces, ScraperRateLimiter rateLimiter) {
         this.productListingRepository = productListingRepository;
-        this.trackedProductService = trackedProductService;
+        this.kafkaTemplate = kafkaTemplate;
         this.exchangeRateRepository = exchangeRateRepository;
         this.marketplaces = marketplaces;
         this.rateLimiter = rateLimiter;
@@ -94,28 +98,24 @@ public class SchedulerScraper {
                 log.debug("Skipping {} listings on circuit-broken marketplace {} ({})",
                         count, marketplaceId, rateLimiter.openReason(marketplaceId)));
 
-        int succeeded = 0;
-        int failed = 0;
-        long timeBeforeLoop = System.nanoTime();
+        // Publish one refresh job per due listing instead of scraping inline. Keyed by
+        // marketplace, so each storefront is one ordered lane; RefreshConsumer scrapes the
+        // lanes in parallel, keeping the 2s politeness pause per-lane. The scheduler returns
+        // immediately — the sweep's cost is now N cheap sends, not N sequential scrapes.
+        int published = 0;
         for (ProductListing listing : toScrape) {
             try {
-                if (failed + succeeded != 0)
-                    Thread.sleep(2000);
-                trackedProductService.refreshListing(listing);
-                succeeded++;
-            } catch (InterruptedException e) {
-                failed++;
-                Thread.currentThread().interrupt();
-            } catch (ScrapeException e) {
-                failed++;
-                log.warn("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.toString());
-            } catch (Exception e) {
-                failed++;
-                log.error("Refresh failed for listing {} ({}): {}", listing.getId(), listing.getUrl(), e.toString());
+                ListingRefreshEvent event = new ListingRefreshEvent(
+                        listing.getId(), listing.getMarketplace(), listing.getUrl());
+                kafkaTemplate.send(KafkaTopics.LISTING_REFRESH, listing.getMarketplace(),
+                        mapper.writeValueAsString(event));
+                published++;
+            } catch (RuntimeException e) {
+                log.error("Failed to publish refresh for listing {} ({}): {}",
+                        listing.getId(), listing.getUrl(), e.toString());
             }
         }
-        long timeAfterLoop = System.nanoTime();
-        log.info("Sweep complete: {} listings checked, {} succeeded, {} failed, {}ms", toScrape.size(), succeeded, failed, (timeAfterLoop - timeBeforeLoop) / 1_000_000);
+        log.info("Sweep dispatched: {} listings published to {}", published, KafkaTopics.LISTING_REFRESH);
         logBreakerSummary();
     }
 
