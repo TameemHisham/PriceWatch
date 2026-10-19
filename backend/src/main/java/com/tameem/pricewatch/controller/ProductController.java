@@ -52,9 +52,9 @@ ProductController {
         } finally {
             long tookMs = (System.nanoTime() - start) / 1_000_000;
             if (success) {
-                log.info("BENCHMARK trackByName tookMs={}", tookMs);
+                log.info("BENCHMARK trackProduct tookMs={}", tookMs);
             } else {
-                log.warn("BENCHMARK trackByName FAILED tookMs={}", tookMs);
+                log.warn("BENCHMARK trackProduct FAILED tookMs={}", tookMs);
             }
         }
     }
@@ -66,9 +66,21 @@ ProductController {
     @PostMapping("/tracked-products/by-name")
     public ResponseEntity<TrackedProductResponse> trackProductByName(
             @RequestBody @Valid TrackByNameRequest request) {
-        TrackResult result = trackedProductService.trackProductByName(request.name());
-        HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
-        return ResponseEntity.status(status).body(result.product());
+        long start = System.nanoTime();
+        boolean success = false;
+        try {
+            TrackResult result = trackedProductService.trackProductByName(request.name());
+            HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+            success = true;
+            return ResponseEntity.status(status).body(result.product());
+        } finally {
+            long tookMs = (System.nanoTime() - start) / 1_000_000;
+            if (success) {
+                log.info("BENCHMARK trackByName tookMs={}", tookMs);
+            } else {
+                log.warn("BENCHMARK trackByName FAILED tookMs={}", tookMs);
+            }
+        }
     }
 
     /** POST /api/tracked-products/{id}/refresh — re-scrape now and record a new price point. */

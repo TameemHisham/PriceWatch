@@ -1,0 +1,39 @@
+# Local infra for PriceWatch. Phase 5 adds Kafka (KRaft, single node, no ZooKeeper).
+# Postgres currently runs as a separate `docker run` container (pricewatch-db) and is
+# folded in here only in Phase 8. Start Kafka:  docker compose up -d kafka
+services:
+  kafka:
+    # Pinned, not :latest (§7). Confirm the latest 4.x patch tag on Docker Hub.
+    image: apache/kafka:4.0.0
+    container_name: pricewatch-kafka
+    ports:
+      - "9092:9092"            # host-facing listener, for the Spring app on localhost
+    environment:
+      # --- KRaft roles: one node is both broker and controller ---
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093   # the quorum is just this node
+      CLUSTER_ID: pricewatch-local-cluster-0001       # any stable id; formats the log dir
+
+      # --- Listeners: three sockets the broker binds ---
+      #   HOST       localhost:9092  → the Spring app on the host machine
+      #   DOCKER     kafka:29092     → other containers on the compose network (Phase 8)
+      #   CONTROLLER kafka:29093     → KRaft internal metadata, never a client
+      KAFKA_LISTENERS: HOST://0.0.0.0:9092,DOCKER://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093
+      # What the broker TELLS each audience to use (the trap — must match their network):
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: HOST:PLAINTEXT,DOCKER:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER        # brokers talk to each other here
+
+      # --- Single-node settings (defaults assume a 3-node cluster) ---
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0       # don't wait to form a group locally
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"        # topics are declared, not conjured (§4.3)
+    volumes:
+      - kafka-data:/var/lib/kafka/data                # survive restarts, skip re-format
+
+volumes:
+  kafka-data:

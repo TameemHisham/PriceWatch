@@ -70,6 +70,13 @@
 			<version>1.22.2</version>
 		</dependency>
 		<dependency>
+			<!-- Boot 4 moved Kafka AUTO-CONFIGURATION out of spring-boot-autoconfigure into its
+			     own module; the bare spring-kafka lib gives KafkaTemplate etc. but no autoconfig
+			     (no KafkaTemplate bean). This starter bundles spring-kafka + that autoconfig. -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-kafka</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
@@ -88,6 +95,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<!-- EmbeddedKafka + test utilities for the integration tests (Session 4). -->
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
