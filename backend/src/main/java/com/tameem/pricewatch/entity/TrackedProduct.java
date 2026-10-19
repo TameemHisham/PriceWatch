@@ -27,7 +27,21 @@ public class TrackedProduct {
     @JoinColumn(name = "user_id")
     private User user;
 
+    // Where cross-store discovery is for this product. Nullable only so ddl-auto=update can
+    // add the column to existing rows; those are backfilled to DONE by migration.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discovery_status", length = 20)
+    private DiscoveryStatus discoveryStatus;
+
     public TrackedProduct() {}
+
+    public DiscoveryStatus getDiscoveryStatus() {
+        return discoveryStatus;
+    }
+
+    public void setDiscoveryStatus(DiscoveryStatus discoveryStatus) {
+        this.discoveryStatus = discoveryStatus;
+    }
 
     public String getImageUrl() {
         return imageUrl;

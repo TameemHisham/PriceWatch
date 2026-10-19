@@ -15,6 +15,8 @@ import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.ScrapeException;
 import com.tameem.pricewatch.scraper.UnsupportedMarketplaceException;
 import com.tameem.pricewatch.security.CurrentUserProvider;
+import com.tameem.pricewatch.messaging.ProductTrackedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -44,12 +46,14 @@ public class TrackedProductService {
     private final UserRepository userRepository;
 
     private final ExecutorService scraperExecutor;
+    private final ApplicationEventPublisher eventPublisher;
     public TrackedProductService(TrackedProductRepository trackedProductRepository,
                                  ProductListingRepository productListingRepository,
                                  PricePointRepository pricePointRepository,
                                  ScraperRegistry scrapers,
                                  CrossStoreDiscovery discovery,
-                                 MarketplaceRegistry marketplaces, ExchangeRateService exchangeRateService,CurrentUserProvider currentUserProvider,UserRepository userRepository,ExecutorService scraperExecutor) {
+                                 MarketplaceRegistry marketplaces, ExchangeRateService exchangeRateService,CurrentUserProvider currentUserProvider,UserRepository userRepository,ExecutorService scraperExecutor,
+                                 ApplicationEventPublisher eventPublisher) {
         this.trackedProductRepository = trackedProductRepository;
         this.productListingRepository = productListingRepository;
         this.pricePointRepository = pricePointRepository;
@@ -60,6 +64,7 @@ public class TrackedProductService {
         this.currentUserProvider=currentUserProvider;
         this.userRepository = userRepository;
         this.scraperExecutor = scraperExecutor;
+        this.eventPublisher = eventPublisher;
     }
 
     /** Asks the storefront's own scraper for a canonical key, so the same product always
@@ -161,9 +166,13 @@ public class TrackedProductService {
         saveListing(savedProduct, normalized, productData, requestedMarketplace,
                 ListingOrigin.USER_SUBMITTED);
 
-        // Look for the same product on other storefronts. Additive: the requested URL has
-        // already been scraped and saved above, and nothing here can change that listing.
-        attachDiscoveredListings(savedProduct, productData.title());
+        // Cross-store discovery moved OFF the request path (Phase 5). Mark the product
+        // PENDING and publish a Spring event; ProductTrackedPublisher sends it to Kafka only
+        // AFTER this transaction commits, and DiscoveryConsumer runs the actual discovery.
+        // The request returns now, after the primary scrape only.
+        savedProduct.setDiscoveryStatus(DiscoveryStatus.PENDING);
+        trackedProductRepository.save(savedProduct);
+        eventPublisher.publishEvent(ProductTrackedEvent.of(savedProduct.getId()));
         return new TrackResult(this.toResponse(savedProduct), true);
     }
 
@@ -388,6 +397,30 @@ public class TrackedProductService {
     }
 
     /**
+     * Runs cross-store discovery for one product, off the request path — called by
+     * DiscoveryConsumer when a product.tracked event is consumed. Idempotent: at-least-once
+     * delivery means this can be handed the same product twice (redelivery, rebalance), so a
+     * product already DONE is skipped. A missing product (deleted before the event was
+     * processed) is a no-op, not an error.
+     */
+    @Transactional
+    public void runDiscovery(long productId) {
+        TrackedProduct product = trackedProductRepository.findById(productId).orElse(null);
+        if (product == null) {
+            log.warn("Discovery skipped: product {} no longer exists", productId);
+            return;
+        }
+        if (product.getDiscoveryStatus() == DiscoveryStatus.DONE) {
+            log.debug("Discovery skipped: product {} already DONE (redelivery)", productId);
+            return;
+        }
+        attachMatches(product, discovery.findMatches(product.getName(), attachedMarketplaces(product)));
+        product.setDiscoveryStatus(DiscoveryStatus.DONE);
+        trackedProductRepository.save(product);
+        log.info("Discovery complete for product {}", productId);
+    }
+
+    /**
      * Saves one listing + its initial price point (if any) for an already-scraped marketplace.
      * <p>
      * Does nothing when this product already holds a listing on that marketplace, and returns
@@ -535,7 +568,7 @@ public class TrackedProductService {
                 product.getId(), product.getName(), product.getBrand(), product.getCategory(),
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
                 currency, lowestPrice, listings.size(),targetReached,recentPrices, trendPercent,
-                stores);
+                stores, product.getDiscoveryStatus());
     }
 
     /** Maps one listing to its response DTO, resolving the latest observed price. */
@@ -582,7 +615,8 @@ public class TrackedProductService {
                 product.getId(), product.getName(), product.getBrand(), product.getCategory(),
                 product.getTargetPrice(), product.getCreatedAt(), product.getImageUrl(),
                 currency, lowestPrice, listings.size(), listingResponse,targetReached,
-                this.getAllTimeLow(product, rates), availableRegions(product));
+                this.getAllTimeLow(product, rates), availableRegions(product),
+                product.getDiscoveryStatus());
     }
 
     @Transactional

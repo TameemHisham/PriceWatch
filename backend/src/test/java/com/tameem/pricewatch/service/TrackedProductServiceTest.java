@@ -20,6 +20,7 @@ import com.tameem.pricewatch.scraper.ProductData;
 import com.tameem.pricewatch.scraper.ProductScraper;
 import com.tameem.pricewatch.scraper.UnsupportedMarketplaceException;
 import com.tameem.pricewatch.security.CurrentUserProvider;
+import org.springframework.context.ApplicationEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,6 +85,7 @@ class TrackedProductServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private ProductScraper scraper;
     @Mock private ExecutorService scraperExecutor;
+    @Mock private ApplicationEventPublisher eventPublisher;
     private TrackedProductService service;
     private TrackedProduct existingProduct;
     private ProductListing existingListing;
@@ -93,7 +95,7 @@ class TrackedProductServiceTest {
     void setUp() {
         service = new TrackedProductService(trackedProductRepository, productListingRepository,
                 pricePointRepository, scrapers, discovery, marketplaces, exchangeRateService,
-                currentUserProvider, userRepository,scraperExecutor);
+                currentUserProvider, userRepository,scraperExecutor, eventPublisher);
 
         User owner = new User();
         owner.setId(USER_ID);
@@ -164,7 +166,6 @@ class TrackedProductServiceTest {
         when(productListingRepository.save(any(ProductListing.class)))
                 .thenAnswer(call -> call.getArgument(0));
         when(marketplaces.allMarketplaceIds()).thenReturn(java.util.Set.of(MARKETPLACE));
-        when(discovery.findMatches(anyString(), any())).thenReturn(Map.of());
         when(scrapers.forMarketplace(MARKETPLACE)).thenReturn(scraper);
         when(scraper.store()).thenReturn(Store.AMAZON);
 
@@ -184,15 +185,20 @@ class TrackedProductServiceTest {
         when(productListingRepository
                 .findByUrlContainingAndTrackedProduct_User_Id(ASIN, USER_ID))
                 .thenReturn(Optional.empty());
+        // Mock save now assigns an id: trackProduct publishes a ProductTrackedEvent carrying
+        // savedProduct.getId(), which the real DB fills in on persist but the mock otherwise leaves null.
         when(trackedProductRepository.save(any(TrackedProduct.class)))
-                .thenAnswer(call -> call.getArgument(0));
+                .thenAnswer(call -> {
+                    TrackedProduct p = call.getArgument(0);
+                    p.setId(PRODUCT_ID);
+                    return p;
+                });
         when(productListingRepository.save(any(ProductListing.class)))
                 .thenAnswer(call -> call.getArgument(0));
         when(productListingRepository.findByTrackedProductAndMarketplace(any(), anyString()))
                 .thenReturn(Optional.empty());
         when(scrapers.forMarketplace(anyString())).thenReturn(scraper);
         when(scraper.store()).thenReturn(Store.AMAZON);
-        when(discovery.findMatches(anyString(), any())).thenReturn(Map.of());
 
         service.trackProduct(PASTED_URL);
 

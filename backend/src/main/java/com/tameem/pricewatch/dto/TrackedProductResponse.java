@@ -1,5 +1,7 @@
 package com.tameem.pricewatch.dto;
 
+import com.tameem.pricewatch.entity.DiscoveryStatus;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -9,5 +11,6 @@ public record TrackedProductResponse(
         BigDecimal targetPrice, Instant createdAt, String imageUrl,
         String currency, BigDecimal currentPrice, int storeCount, boolean targetPriceReached,
         List<BigDecimal> recentPrices , BigDecimal trendPercent,
-        List<String> stores
+        List<String> stores,
+        DiscoveryStatus discoveryStatus
 ) {}
