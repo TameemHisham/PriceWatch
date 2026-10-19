@@ -106,6 +106,7 @@ Base path `/api`.
 | `GET`    | `/tracked-products`              | Dashboard list                                                          |
 | `GET`    | `/tracked-products/{id}`         | One product with its per-store listings                                 |
 | `POST`   | `/tracked-products/{id}/refresh` | Re-scrape now, append a price point                                     |
+| `POST`   | `/tracked-products/{id}/discovery` | Re-run cross-store discovery (async); `202`                           |
 | `DELETE` | `/tracked-products/{id}`         | Stop tracking; cascades to listings and price points                    |
 
 ---
@@ -116,22 +117,41 @@ Each phase of infrastructure in this project is preceded by a measurement, so th
 before/after is recorded rather than asserted. Numbers below are from this machine
 against live retailer pages, so they include real network latency.
 
-### Scheduled sweep (sequential)
+### Event-driven pipeline (Phase 5 — Kafka)
 
-The scheduler selects listings whose `last_checked` is older than the interval, then
-scrapes them one at a time on a single thread. A deliberate 2s pause sits between
-requests — the interval alone is not politeness if the sweep fires N requests back to
-back.
+Two slow paths moved onto Kafka (KRaft, single broker in docker-compose).
 
-| Date       | Listings swept | Wall clock | Notes                                                      |
-| ---------- | -------------- | ---------- | ---------------------------------------------------------- |
-| 2026-08-06 | 2              | 6s         | 2 scrapes + one 2s inter-request pause                     |
-| 2026-08-07 | 18             | 73s        | 8 priced, 10 with no offer at this location; 17 x 2s pause |
+**Tracking a product** used to return only after cross-store discovery (search ~5 stores +
+LLM attribute matching) finished. Now `POST /tracked-products` returns after the primary
+scrape: it marks the product `discoveryStatus=PENDING` and publishes `product.tracked`
+**after the DB commit** (`@TransactionalEventListener(AFTER_COMMIT)`, so a rolled-back track
+emits no event). A consumer (`discovery-worker`, keyed by product id) runs discovery and
+sets `DONE`; the detail page polls until then.
 
-Sequential cost is roughly `N × (scrape latency + pause)`, so it grows linearly with
-listings and is bounded by the slowest store in the set. This table is the baseline the
-queueing work is measured against; it is expected to become the argument for it once the
-tracked set is large enough for the linear growth to hurt.
+**The scheduled re-scrape sweep** ran every listing sequentially on one thread with a 2s
+pause between each. Now the scheduler publishes one `listing.refresh` job per due listing,
+keyed by **marketplace**; consumers (`refresh-worker`, 12 lanes) re-scrape concurrently,
+with the 2s politeness pause kept **per marketplace** instead of global.
+
+| Path | Before (sync) | After (Kafka) | Note |
+| --- | --- | --- | --- |
+| Track request latency | ~6.55s | ~2.67s | discovery moved off the request path (~59%) |
+| Full retrack sweep (~90 listings) | ~304s | ~92s | ~3.3×, bounded by the busiest marketplace lane |
+
+(Earlier sequential baselines: 2 listings / 6s, 18 / 73s. Live retailer pages — numbers
+include real network latency and vary with it.)
+
+**Delivery:** at-least-once with idempotent consumers (skip-if-`DONE` + a unique listing
+constraint) — Kafka's exactly-once does not extend to the Postgres writes or HTTP scrapes.
+Failures retry with bounded backoff then land in a dead-letter topic (`*.DLT`);
+`ScrapeException` is non-retryable (a parse failure won't recover on retry, and retrying
+hammers the retailer). A dead-lettered discovery marks the product `FAILED`.
+
+**Why Kafka over a thread pool:** the retrack speedup is parallelism — a thread pool keyed
+by marketplace would match the number. Kafka earns its place through durability (a sweep
+survives a restart), decoupling, and scaling consumers across instances (Phase 8). The
+`AFTER_COMMIT` publish leaves a known dual-write window (commit succeeds, then the app dies
+before the send); it is logged, with a transactional outbox as the production fix.
 
 ---
 
